@@ -14,7 +14,7 @@ export const uploadImage = async (file) => {
                 const stream = cloudinary.uploader.upload_stream(
                     {
                         folder: "ecommerce_charanjitGurbhi",
-                        transformation:[
+                        transformation: [
                             { width: 2000, height: 2000, crop: "pad", background: "white" },
                             { quality: "auto:good" },
                             { fetch_format: "auto" }
@@ -36,3 +36,25 @@ export const uploadImage = async (file) => {
         throw error
     }
 }
+
+export const deleteImage = async (imageUrl) => {
+    try {
+        const extractPublicId = (url) => {
+            if(!url) return null;
+            // Matches everything after /upload/ and an optional /v12345/ up to the file extension
+            const regex = /\/upload\/(?:v\d+\/)?([^\.]+)/;
+            const match = url.match(regex);
+            return match ? match[1] : null;
+        };
+        const publicId = extractPublicId(imageUrl);
+
+        const result = await cloudinary.uploader.destroy(publicId, {
+            invalidate: false //reduces credit usage, but the image may still be cached in some places 
+        });
+
+        return result; // Returns { result: 'ok' } if successful
+    } catch (error) {
+        console.error("Deletion failed:", error);
+        throw error;
+    }
+};
