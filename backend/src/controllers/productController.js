@@ -84,7 +84,7 @@ export const updateProduct = async (req, res) => {
     }
 
 }
-//todo get products by keyword
+//* optimize these later using cursor on scale
 export const getAllProducts = async (req, res) => {
     try {
         //fetching pageNumber and pageSize from query example:- https://a.com/hello?pn=2&ps=10
@@ -92,8 +92,10 @@ export const getAllProducts = async (req, res) => {
         const pageSize = req.query.ps ? Math.max(parseInt(req.query.ps, 10), 1) || 10 : 10;   //default 10
 
         //fetching the products pageByPage
-        const allProducts = await Product.find({}).skip((pageNumber - 1) * pageSize).limit(pageSize);
-        const productCount = await Product.countDocuments({});
+        const [allProducts, productCount] = await Promise.all([
+            Product.find({}).skip((pageNumber - 1) * pageSize).limit(pageSize),
+            Product.countDocuments({})
+        ])
         const totalPages = Math.ceil(productCount / pageSize);
         return res.status(200).json({
             message: "fetched all products",
@@ -105,7 +107,7 @@ export const getAllProducts = async (req, res) => {
         })
     } catch (error) {
         console.log("error getting all products", error.message);
-        res.status(500).json({ message: "internal server error" });
+        return res.status(500).json({ message: "internal server error" });
     }
 }
 export const getProductsByCategory = async (req, res) => {
@@ -147,5 +149,61 @@ export const getProductsByCategory = async (req, res) => {
     } catch (error) {
         console.log("error getting products By Category", error.message);
         return res.status(500).json({ message: "internal server error" });
+    }
+}
+export const getProductsByKeyword = async (req, res) => {
+    // Helper function to escape special regex characters
+    function escapeRegex(text) {
+        return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+    }
+    try {
+        const pageNumber = req.query.pn ? Math.max(parseInt(req.query.pn, 10), 1) || 1 : 1;
+        const pageSize = req.query.ps ? Math.max(parseInt(req.query.ps, 10), 1) || 10 : 10;
+        const keyword = req.query.productSearchKey;
+
+        //validating keyword
+        if(!keyword || keyword.length < 3){
+            return res.status(200).json({
+            message: "keyword too short",
+            currentPage: pageNumber,
+            pageSize: 10,
+            totalProducts: 0,
+            totalPages: 0,
+            hasNextPage: false,
+            hasPrevPage: false,
+            products: []
+            });
+        }
+        //sanitize the query
+        const safeKeyword = escapeRegex(keyword.trim());
+
+        //creating filter
+        const filter = {
+            $or: [
+                {name: {$regex: safeKeyword, $options:'i'}},
+                {category: {$regex: safeKeyword, $options:'i'}}
+            ]
+        };
+        //search products in db and find total documents
+        const [products, totalProducts] = await Promise.all([
+            Product.find(filter).skip((pageNumber - 1) * pageSize).limit(pageSize),
+            Product.countDocuments(filter)
+        ]);
+
+        const totalPages = Math.ceil(totalProducts/ pageSize);
+
+        return res.status(200).json({
+            message: "fetched products successfully",
+            currentPage: pageNumber,
+            pageSize: pageSize,
+            totalProducts: totalProducts,
+            totalPages: totalPages,
+            hasNextPage: pageNumber < totalPages,
+            hasPrevPage: pageNumber > 1,
+            products: products
+        })
+    } catch (error) {
+        console.log("error occurred getting products by keyword", error.message);
+        return res.status(500).json({message: "internal server error"})
     }
 }
