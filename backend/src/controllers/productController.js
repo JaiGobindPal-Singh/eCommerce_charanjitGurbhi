@@ -1,6 +1,7 @@
 import { uploadImage, deleteImage } from "../utils/imageHandler";
 import Product from "../models/product.model";
 
+//only admin access
 export const createProduct = async (req, res) => {
     try {
         const { name, description, category, price, comparePrice, stockAvailable } = req.body;
@@ -30,19 +31,121 @@ export const createProduct = async (req, res) => {
     }
 }
 export const deleteProduct = async (req, res) => {
-    try{
-        const {productId} = req.params;
+    try {
+        const { productId } = req.params;
         const deletedProduct = await Product.findByIdAndDelete(productId);
-        if(!deletedProduct){
-            return res.status(404).json({message: 'Product not found'});
+        if (!deletedProduct) {
+            return res.status(404).json({ message: 'Product not found' });
         }
         //delete the product image from cloudinary
         await deleteImage(deletedProduct.imageUrl);
 
-        return res.status(200).json({message: 'Product deleted successfully'});
+        return res.status(200).json({ message: 'Product deleted successfully' });
     } catch (error) {
         console.error('Error deleting product:', error);
-        return res.status(500).json({message: 'Internal server error'});
+        return res.status(500).json({ message: 'Internal server error' });
     }
 }
-//todo create product controller update , get products by diff methods
+
+export const updateProduct = async (req, res) => {
+    try {
+        //validating the data
+        const { productId, name, description, category, price, comparePrice, stockAvailable } = req.body;
+        if (!productId) {
+            return res.status(400).json({ message: 'Product ID is required' });
+        }
+        //check if product exists
+        const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+        //handle image update if a new file is uploaded
+        if (req.file) {
+            //delete the old image from cloudinary
+            await deleteImage(product.imageUrl);
+            //upload the new image and get the URL
+            const productImageUrl = await uploadImage(req.file);
+            product.imageUrl = productImageUrl;
+        }
+        //update the product details
+        if (name) product.name = name;
+        if (description) product.description = description;
+        if (category) product.category = category;
+        if (price) product.price = price;
+        if (comparePrice) product.comparePrice = comparePrice;
+        if (stockAvailable) product.stockAvailable = stockAvailable;
+
+        await product.save();
+        return res.status(200).json({ message: 'Product updated successfully', product });
+
+    } catch (error) {
+        console.error('Error updating product:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+
+}
+//todo get products by keyword
+export const getAllProducts = async (req, res) => {
+    try {
+        //fetching pageNumber and pageSize from query example:- https://a.com/hello?pn=2&ps=10
+        const pageNumber = req.query.pn ? Math.max(parseInt(req.query.pn, 10), 1) || 1 : 1;
+        const pageSize = req.query.ps ? Math.max(parseInt(req.query.ps, 10), 1) || 10 : 10;   //default 10
+
+        //fetching the products pageByPage
+        const allProducts = await Product.find({}).skip((pageNumber - 1) * pageSize).limit(pageSize);
+        const productCount = await Product.countDocuments({});
+        const totalPages = Math.ceil(productCount / pageSize);
+        return res.status(200).json({
+            message: "fetched all products",
+            totalPages,
+            currentPage: pageNumber,
+            hasNextPage: pageNumber < totalPages,
+            hasPrevPage: pageNumber > 1,
+            products: allProducts
+        })
+    } catch (error) {
+        console.log("error getting all products", error.message);
+        res.status(500).json({ message: "internal server error" });
+    }
+}
+export const getProductsByCategory = async (req, res) => {
+    try {
+        const pageNumber = req.query.pn ? Math.max(parseInt(req.query.pn, 10), 1) || 1 : 1;
+        const pageSize = req.query.ps ? Math.max(parseInt(req.query.ps, 10), 1) || 10 : 10;
+        const category = req.query.category;
+
+        // dynamic MongoDB filter object
+        const filter = {};
+        if (category) {
+            if (Array.isArray(category)) {
+                filter.category = category[0];
+            } else {
+                filter.category = category;
+            }
+        }
+
+        // Pass the filter object into both queries
+        const [allProducts, totalProducts] = await Promise.all([
+            Product.find(filter)
+                .skip((pageNumber - 1) * pageSize)
+                .limit(pageSize),
+            Product.countDocuments(filter)
+        ]);
+
+        const totalPages = Math.ceil(totalProducts / pageSize);
+
+        return res.status(200).json({
+            message: "fetched products successfully",
+            currentPage: pageNumber,
+            pageSize: pageSize,
+            totalProducts: totalProducts,
+            totalPages: totalPages,
+            hasNextPage: pageNumber < totalPages,
+            hasPrevPage: pageNumber > 1,
+            products: allProducts
+        });
+    } catch (error) {
+        console.log("error getting products By Category", error.message);
+        return res.status(500).json({ message: "internal server error" });
+    }
+}
