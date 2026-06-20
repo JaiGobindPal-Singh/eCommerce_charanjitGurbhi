@@ -15,17 +15,17 @@ export const createProduct = async (req, res) => {
         const product = new Product({
             name,
             description,
-            category,
+            category: !Array.isArray(category)?[category,"general"]:category,
             price,
             comparePrice,
             stockAvailable,
-            ingredients,
+            ingredients: !Array.isArray(ingredients)?[ingredients,]:ingredients,
             imageUrl: productImageUrl
         });
         try{
             await product.save();
         }catch(e){
-            deleteImage(productImageUrl);   //deletin image if unable to save product
+            deleteImage(productImageUrl);   //deleting image if unable to save product
             throw e;
         }
         
@@ -40,6 +40,7 @@ export const deleteProduct = async (req, res) => {
     try {
         const { productId } = req.params;
         const deletedProduct = await Product.findByIdAndDelete(productId);
+        
         if (!deletedProduct) {
             return res.status(404).json({ message: 'Product not found' });
         }
@@ -73,13 +74,13 @@ export const updateProduct = async (req, res) => {
             product.imageUrl = productImageUrl;
         }
         //update the product details
-        if (name) product.name = name;
-        if (description) product.description = description;
-        if (ingredients) product.ingredients = ingredients;
-        if (category) product.category = category;
-        if (price) product.price = price;
-        if (comparePrice) product.comparePrice = comparePrice;
-        if (stockAvailable) product.stockAvailable = stockAvailable;
+        if (name && name !== product.name){product.name = name;}
+        if (description && description !== product.description) product.description = description;
+        if (ingredients && ingredients !== product.ingredients) product.ingredients = ingredients;
+        if (category && category !== product.category) product.category = category;
+        if (price && price !== product.price) product.price = price;
+        if (comparePrice && comparePrice !== product.comparePrice) product.comparePrice = comparePrice;
+        if (stockAvailable && stockAvailable !== product.stockAvailable) product.stockAvailable = stockAvailable;
 
         await product.save();
         return res.status(200).json({ message: 'Product updated successfully', product });
@@ -114,7 +115,7 @@ export const getAllProducts = async (req, res) => {
             products: allProducts
         })
     } catch (error) {
-        console.log("error getting all products", error.message);
+        // console.log("error getting all products", error.message);
         return res.status(500).json({ message: "internal server error" });
     }
 }
@@ -155,7 +156,7 @@ export const getProductsByCategory = async (req, res) => {
             products: allProducts
         });
     } catch (error) {
-        console.log("error getting products By Category", error.message);
+        // console.log("error getting products By Category", error.message);
         return res.status(500).json({ message: "internal server error" });
     }
 }
@@ -211,7 +212,7 @@ export const getProductsByKeyword = async (req, res) => {
             products: products
         })
     } catch (error) {
-        console.log("error occurred getting products by keyword", error.message);
+        // console.log("error occurred getting products by keyword", error.message);
         return res.status(500).json({message: "internal server error"})
     }
 }
@@ -231,7 +232,7 @@ export const getProductById = async (req, res) =>{
             product
         })
     }catch(error){
-        console.log("error in getting product by id", error.message);
+        // console.log("error in getting product by id", error.message);
         return res.status(500).json({message:"internal server error"});
     }
 }

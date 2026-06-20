@@ -15,9 +15,12 @@ export const uploadImage = async (file) => {
                     {
                         folder: "ecommerce_charanjitGurbhi",
                         transformation: [
-                            { width: 2000, height: 2000, crop: "pad", background: "white" },
-                            { quality: "auto:good" },
-                            { fetch_format: "auto" }
+                            {
+                                width: 1200,
+                                height: 1200,
+                                crop: "limit",
+                                quality: "auto"
+                            }
                         ]
                     },
                     (error, result) => {
@@ -40,7 +43,7 @@ export const uploadImage = async (file) => {
 export const deleteImage = async (imageUrl) => {
     try {
         const extractPublicId = (url) => {
-            if(!url) return null;
+            if (!url) return null;
             // Matches everything after /upload/ and an optional /v12345/ up to the file extension
             const regex = /\/upload\/(?:v\d+\/)?([^\.]+)/;
             const match = url.match(regex);

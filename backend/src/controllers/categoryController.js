@@ -7,6 +7,10 @@ export const createCategory = async (req, res) => {
         if(!name || !req.file){
             return res.status(400).json({message: 'Name and icon image are required'});
         }
+        const p =await Category.exists({name:name});
+        if(p){
+            return res.status(400).json({message:"category already exists"});
+        }
         const iconUrl = await uploadImage(req.file);
         const category = new Category({
             name, 
