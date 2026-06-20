@@ -12,6 +12,10 @@ const productSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    ingredients:{
+      type: [String],
+      default: []
+    },
     imageUrl: {
       type: String,
       default: '',

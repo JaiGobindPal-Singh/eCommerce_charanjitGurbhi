@@ -4,7 +4,7 @@ import Product from "../models/product.model.js";
 //only admin access
 export const createProduct = async (req, res) => {
     try {
-        const { name, description, category, price, comparePrice, stockAvailable } = req.body;
+        const { name, description, category, price, comparePrice, stockAvailable, ingredients } = req.body;
         if (!name || !description || !price || !comparePrice || !req.file) {
             return res.status(400).json({ message: 'All fields and product image are required' });
         }
@@ -19,10 +19,16 @@ export const createProduct = async (req, res) => {
             price,
             comparePrice,
             stockAvailable,
+            ingredients,
             imageUrl: productImageUrl
         });
-        await product.save();
-
+        try{
+            await product.save();
+        }catch(e){
+            deleteImage(productImageUrl);   //deletin image if unable to save product
+            throw e;
+        }
+        
         //returning the response
         return res.status(201).json({ message: 'Product created successfully', product });
     } catch (error) {
@@ -49,7 +55,7 @@ export const deleteProduct = async (req, res) => {
 export const updateProduct = async (req, res) => {
     try {
         //validating the data
-        const { productId, name, description, category, price, comparePrice, stockAvailable } = req.body;
+        const { productId, name, description, category, price, comparePrice, stockAvailable, ingredients } = req.body;
         if (!productId) {
             return res.status(400).json({ message: 'Product ID is required' });
         }
@@ -69,6 +75,7 @@ export const updateProduct = async (req, res) => {
         //update the product details
         if (name) product.name = name;
         if (description) product.description = description;
+        if (ingredients) product.ingredients = ingredients;
         if (category) product.category = category;
         if (price) product.price = price;
         if (comparePrice) product.comparePrice = comparePrice;
@@ -115,7 +122,7 @@ export const getProductsByCategory = async (req, res) => {
     try {
         const pageNumber = req.query.pn ? Math.max(parseInt(req.query.pn, 10), 1) || 1 : 1;
         const pageSize = req.query.ps ? Math.max(parseInt(req.query.ps, 10), 1) || 10 : 10;
-        const category = req.query.category;
+        const category = req.params.category;
 
         // dynamic MongoDB filter object
         const filter = {};
@@ -160,7 +167,7 @@ export const getProductsByKeyword = async (req, res) => {
     try {
         const pageNumber = req.query.pn ? Math.max(parseInt(req.query.pn, 10), 1) || 1 : 1;
         const pageSize = req.query.ps ? Math.max(parseInt(req.query.ps, 10), 1) || 10 : 10;
-        const keyword = req.query.productSearchKey;
+        const keyword = req.params.productSearchKey;
 
         //validating keyword
         if(!keyword || keyword.length < 3){
@@ -206,5 +213,25 @@ export const getProductsByKeyword = async (req, res) => {
     } catch (error) {
         console.log("error occurred getting products by keyword", error.message);
         return res.status(500).json({message: "internal server error"})
+    }
+}
+export const getProductById = async (req, res) =>{
+    try{
+        const productId = req.params.id;
+        if(!productId){
+            return res.status(404).json({message:"product id is required"});
+        }
+        //fetching and validating product
+        const product = await Product.findById(productId);
+        if(!product){
+            return res.status(404).json({message:"product does not exist"});
+        }
+        return res.status(200).json({
+            message:"product fetched",
+            product
+        })
+    }catch(error){
+        console.log("error in getting product by id", error.message);
+        return res.status(500).json({message:"internal server error"});
     }
 }
