@@ -1,5 +1,5 @@
-import { uploadImage, deleteImage } from "../utils/imageHandler";
-import Product from "../models/product.model";
+import { uploadImage, deleteImage } from "../utils/imageHandler.js";
+import Product from "../models/product.model.js";
 
 //only admin access
 export const createProduct = async (req, res) => {
@@ -46,7 +46,6 @@ export const deleteProduct = async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 }
-
 export const updateProduct = async (req, res) => {
     try {
         //validating the data
@@ -84,7 +83,9 @@ export const updateProduct = async (req, res) => {
     }
 
 }
-//* optimize these later using cursor on scale
+
+//* optimize these later using cursor on application scale
+//! bug: if frontend sends the pn greater than available products then it return []
 export const getAllProducts = async (req, res) => {
     try {
         //fetching pageNumber and pageSize from query example:- https://a.com/hello?pn=2&ps=10
