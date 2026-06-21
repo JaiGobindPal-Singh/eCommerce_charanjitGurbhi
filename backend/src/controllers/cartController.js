@@ -6,6 +6,9 @@ export const addToCart = async (req, res) => {
         const { productId, quantity = 1 } = req.body;
         const userId = req.user.id;
 
+        if (quantity < 1) {
+            return res.status(400).json({ message: "quantity is required" });
+        }
         // Check product exists
         const product = await Product.findById(productId);
         if (!product) {
@@ -77,7 +80,7 @@ export const removeFromCart = async (req, res) => {
                     items: { product: productId }
                 }
             },
-            {new:true}
+            { new: true, runValidators: true }
         );
         //error if cart does not exist
         if (!cart) {
@@ -94,8 +97,8 @@ export const removeFromCart = async (req, res) => {
     }
 };
 
-export const clearCart = async(req,res) =>{
-    try{
+export const clearCart = async (req, res) => {
+    try {
         const userId = req.user.id
         const cart = await Cart.findOneAndUpdate(
             { user: userId },
@@ -104,15 +107,81 @@ export const clearCart = async(req,res) =>{
                     items: []
                 }
             },
-            {new:true}
+            { new: true, runValidators: true }
         )
-        if(!cart){
-            return res.status(200).json({message:"cart does not exist"});
+        if (!cart) {
+            return res.status(400).json({ message: "cart does not exist" });
         }
-        return res.status(200).json({message:"cart cleared", cart});
-    }catch(error){
+        return res.status(200).json({ message: "cart cleared", cart });
+    } catch (error) {
         console.log("error clearCart", error);
-        res.status(500).json({message:"internal server error"});
+        res.status(500).json({ message: "internal server error" });
     }
 }
-//todo updateQuantity, getCart
+
+export const updateQuantity = async (req, res) => {
+    try {
+        const { productId, quantity } = req.body;
+        const userId = req.user.id;
+        //validating req parameters
+        if (!productId || !quantity) {
+            return res.status(400).json({
+                message: "quantity and product id is required"
+            });
+        }
+        //validating quantity
+        if (quantity < 1) {
+            return res.status(400).json({
+                message: "Quantity must be at least 1"
+            });
+        }
+
+        const cart = await Cart.findOneAndUpdate(
+            {
+                user: userId,
+                "items.product": productId
+            },
+            {
+                $set: { "items.$.quantity": quantity }
+            },
+            {
+                new: true,
+                runValidators: true
+            }
+        );
+
+        if (!cart) {
+            return res.status(404).json({
+                message: "Cart or product not found "
+            });
+        }
+
+        return res.status(200).json(cart);
+    } catch (error) {
+        console.log("error in update quantity", error);
+        return res.status(500).json({ message: "internal server error" });
+    }
+}
+
+export const getCart = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        //fetching cart from db and populate product
+        const cart = await Cart.findOne({ user: userId })
+            .populate("items.product");
+
+        if (!cart) {
+            return res.status(200).json({
+                user: null,
+                items: [],
+                billing: {},
+            });
+        }
+
+        return res.status(200).json(cart);
+    } catch (error) {
+        console.log("error fetching cart", error);
+        return res.status(500).json({ message: "internal server error" });
+    }
+}

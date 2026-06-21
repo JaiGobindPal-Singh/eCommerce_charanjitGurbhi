@@ -30,7 +30,7 @@ const chargeSchema = new mongoose.Schema({
         type: Number,
         required: true
     }
-})
+},{_id: false})
 
 const cartSchema = new mongoose.Schema({
     user: {
