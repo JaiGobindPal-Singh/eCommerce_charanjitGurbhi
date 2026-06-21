@@ -18,7 +18,13 @@ export const authenticateUser = async (req, res, next) => {
             return res.status(401).json({message: 'Unauthorized'});
         }
 
-        req.user = user; //attach user to request object
+         //attach user to request object
+        req.user = {
+            id: String(user._id),
+            name:user.name,
+            phone:user.phone,
+            role:user.role
+        }
         next();
     }catch(error){
         console.error('Authentication error:', error);
