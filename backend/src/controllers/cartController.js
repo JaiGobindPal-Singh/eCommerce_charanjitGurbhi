@@ -185,3 +185,31 @@ export const getCart = async (req, res) => {
         return res.status(500).json({ message: "internal server error" });
     }
 }
+
+//method to create the new cart if user register or login during checkout
+export const createCart = async(req, res) =>{
+    try{
+        const userId = req.user.id;
+        const {items=[], billing={}} = req.body;
+        let cart;
+        cart = await Cart.findOneAndUpdate(
+            {user:userId},
+            {$set:{
+                items: items
+            }},
+            {new:true, runValidators:true}
+        )
+        if(!cart){
+            cart = new Cart({
+                user: userId,
+                items:items,
+                billing:billing
+            })
+            await cart.save();
+        }
+        res.status(200).json(cart)
+    }catch(error){
+        console.log("error in create cart", error);
+        res.status(500).json({message:"internal server error"});
+    }
+}
