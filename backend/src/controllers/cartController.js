@@ -1,11 +1,16 @@
 import Cart from "../models/cart.model.js";
 import Product from "../models/product.model.js"
+import { verifyMongoId } from "../utils/mongo.utils.js";
 
 export const addToCart = async (req, res) => {
     try {
         const { productId, quantity = 1 } = req.body;
         const userId = req.user.id;
 
+        //mongo id verification
+        if(!verifyMongoId(productId)){
+            return res.status(400).json({ message: "invalid product" });
+        }
         if (quantity < 1) {
             return res.status(400).json({ message: "quantity is required" });
         }
@@ -51,10 +56,10 @@ export const addToCart = async (req, res) => {
         cart.markModified('items');     //!DON'T Remove 
 
         await cart.save();
-        res.status(200).json({ message: "product added", cart });
+        res.status(200).json(cart);
 
     } catch (error) {
-        console.log("error in cart controller", error);
+        console.log("error in add cart controller", error);
         res.status(500).json({
             message: "internal server error"
         });
@@ -72,6 +77,10 @@ export const removeFromCart = async (req, res) => {
                 message: "product id and userId is required"
             });
         }
+        //mongo id verification
+        if(!verifyMongoId(productId)){
+            return res.status(400).json({ message: "invalid product" });
+        }
         //accessing cart and validating
         const cart = await Cart.findOneAndUpdate(
             { user: userId },
@@ -80,7 +89,7 @@ export const removeFromCart = async (req, res) => {
                     items: { product: productId }
                 }
             },
-            { new: true, runValidators: true }
+            { returnDocument:"after", runValidators: true }
         );
         //error if cart does not exist
         if (!cart) {
@@ -107,12 +116,12 @@ export const clearCart = async (req, res) => {
                     items: []
                 }
             },
-            { new: true, runValidators: true }
+            { returnDocument:"after", runValidators: true }
         )
         if (!cart) {
             return res.status(400).json({ message: "cart does not exist" });
         }
-        return res.status(200).json({ message: "cart cleared", cart });
+        return res.status(200).json(cart);
     } catch (error) {
         console.log("error clearCart", error);
         res.status(500).json({ message: "internal server error" });
@@ -128,6 +137,11 @@ export const updateQuantity = async (req, res) => {
             return res.status(400).json({
                 message: "quantity and product id is required"
             });
+        }
+        
+        //mongo id verification
+        if(!verifyMongoId(productId)){
+            return res.status(400).json({ message: "invalid product" });
         }
         //validating quantity
         if (quantity < 1) {
@@ -145,7 +159,7 @@ export const updateQuantity = async (req, res) => {
                 $set: { "items.$.quantity": quantity }
             },
             {
-                new: true,
+                returnDocument: "after",
                 runValidators: true
             }
         );
@@ -197,7 +211,7 @@ export const createCart = async(req, res) =>{
             {$set:{
                 items: items
             }},
-            {new:true, runValidators:true}
+            {returnDocument:"after", runValidators:true}
         )
         if(!cart){
             cart = new Cart({

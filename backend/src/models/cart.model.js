@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import User from "./User";
+import User from "./User.js";
 
 // Schema for individual items within the cart
 const cartItemSchema = new mongoose.Schema({
@@ -58,11 +58,11 @@ const cartSchema = new mongoose.Schema({
 })
 
 //middleware to automatically calculate total
-cartSchema.pre('save', function(next){
+cartSchema.pre('save', function(){
     //checking if there are items in cart
     if ((this.items || []).length === 0) {
     this.billing.totalBill = 0;
-    return next();
+    return;
     }
 
     //calculate total bill
@@ -75,12 +75,12 @@ cartSchema.pre('save', function(next){
     //round off in case charges are in paisa
     this.billing.totalBill = Math.round(finalTotal );
 
-    next();
+    
 })
 
-cartSchema.post('findOneAndUpdate', async function(doc, next){
+cartSchema.post('findOneAndUpdate', async function(doc){
     if(!doc){
-        return next();
+        return;
     }
     //checking if there are items in cart
     if ((doc.items || []).length === 0) {
@@ -89,7 +89,7 @@ cartSchema.post('findOneAndUpdate', async function(doc, next){
             { _id: doc._id }, 
             { $set: { "billing.totalBill": 0 } }
         );
-    return next();
+    return;
     }
 
     //calculate total bill
@@ -107,7 +107,7 @@ cartSchema.post('findOneAndUpdate', async function(doc, next){
             { $set: { "billing.totalBill": finalTotal } }
         );
     }
-    next();
+    
 })
 
 

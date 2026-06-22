@@ -1,5 +1,5 @@
 import express from 'express';
-import authenticateUser from '../middleware/authMiddleware.js'
+import {authenticateUser} from '../middleware/authMiddleware.js'
 import { addToCart, clearCart, removeFromCart, updateQuantity, getCart, createCart } from '../controllers/cartController.js';
 const router = express.Router();
 
@@ -12,3 +12,4 @@ router.get('/', authenticateUser, getCart);
 
 router.post('/create', authenticateUser, createCart);
 
+export default router
