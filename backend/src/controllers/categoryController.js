@@ -22,7 +22,7 @@ export const createCategory = async (req, res) => {
 
 export const getAllCategories = async (req, res) => {
     try{
-        const categories = await Category.find();
+        const categories = await Category.find().lean();
         return res.status(200).json({categories});
     }catch(error){
         console.error('Error fetching categories:', error);
@@ -33,7 +33,7 @@ export const getAllCategories = async (req, res) => {
 export const getCategoryByStep = async (req, res) => {
     try{
         const {step} = req.params;
-        const categories = await Category.find().skip((step - 1) * 10).limit(10);
+        const categories = await Category.find().skip((step - 1) * 10).limit(10).lean();
         return res.status(200).json({categories});
     }catch(error){
         console.error('Error fetching categories by step:', error);

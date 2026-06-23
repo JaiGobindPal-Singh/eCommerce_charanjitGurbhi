@@ -33,7 +33,7 @@ export const createProduct = async (req, res) => {
 export const deleteProduct = async (req, res) => {
     try {
         const { productId } = req.params;
-        const deletedProduct = await Product.findByIdAndDelete(productId);
+        const deletedProduct = await Product.findByIdAndDelete(productId).lean();
         if (!deletedProduct) {
             return res.status(404).json({ message: 'Product not found' });
         }
@@ -94,7 +94,7 @@ export const getAllProducts = async (req, res) => {
 
         //fetching the products pageByPage
         const [allProducts, productCount] = await Promise.all([
-            Product.find({}).skip((pageNumber - 1) * pageSize).limit(pageSize),
+            Product.find({}).skip((pageNumber - 1) * pageSize).limit(pageSize).lean(),
             Product.countDocuments({})
         ])
         const totalPages = Math.ceil(productCount / pageSize);
@@ -107,7 +107,7 @@ export const getAllProducts = async (req, res) => {
             products: allProducts
         })
     } catch (error) {
-        console.log("error getting all products", error.message);
+        // console.log("error getting all products", error.message);
         return res.status(500).json({ message: "internal server error" });
     }
 }
@@ -131,7 +131,7 @@ export const getProductsByCategory = async (req, res) => {
         const [allProducts, totalProducts] = await Promise.all([
             Product.find(filter)
                 .skip((pageNumber - 1) * pageSize)
-                .limit(pageSize),
+                .limit(pageSize).lean(),
             Product.countDocuments(filter)
         ]);
 
@@ -148,7 +148,7 @@ export const getProductsByCategory = async (req, res) => {
             products: allProducts
         });
     } catch (error) {
-        console.log("error getting products By Category", error.message);
+        // console.log("error getting products By Category", error.message);
         return res.status(500).json({ message: "internal server error" });
     }
 }
@@ -187,7 +187,7 @@ export const getProductsByKeyword = async (req, res) => {
         };
         //search products in db and find total documents
         const [products, totalProducts] = await Promise.all([
-            Product.find(filter).skip((pageNumber - 1) * pageSize).limit(pageSize),
+            Product.find(filter).skip((pageNumber - 1) * pageSize).limit(pageSize).lean(),
             Product.countDocuments(filter)
         ]);
 
@@ -204,7 +204,7 @@ export const getProductsByKeyword = async (req, res) => {
             products: products
         })
     } catch (error) {
-        console.log("error occurred getting products by keyword", error.message);
+        // console.log("error occurred getting products by keyword", error.message);
         return res.status(500).json({message: "internal server error"})
     }
 }

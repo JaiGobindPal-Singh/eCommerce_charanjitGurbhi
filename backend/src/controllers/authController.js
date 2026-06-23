@@ -9,7 +9,7 @@ export const registerUser = async (req, res) => {
             return res.status(400).json({message: 'Name, phone and password are required'});
         }
 
-        const user = await User.findOne({phone});
+        const user = await User.findOne({phone}).lean();
         if(user){
             return res.status(400).json({message: 'User already exists'});
         }
@@ -50,7 +50,7 @@ export const loginUser = async (req, res) => {
         if(!phone || !password){
             return res.status(400).json({message: 'Phone and password are required'});
         }
-        const user = await User.findOne({phone});
+        const user = await User.findOne({phone}).lean();
         if(!user){
             return res.status(400).json({message: 'Invalid phone or password'});
         }

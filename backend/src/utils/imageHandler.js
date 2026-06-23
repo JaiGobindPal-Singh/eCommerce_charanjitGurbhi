@@ -32,7 +32,7 @@ export const uploadImage = async (file) => {
         return result.secure_url; //return the secure url of the uploaded image
 
     } catch (error) {
-        console.log("error uploading image", error.message);
+        // console.log("error uploading image", error.message);
         throw error
     }
 }
