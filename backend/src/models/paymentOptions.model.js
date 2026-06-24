@@ -31,7 +31,10 @@ const paymentOptionsSchema = new mongoose.Schema({
         trim: true
     },
     availableCities: {
-        type: [String],
+        type: [{
+            type:String,
+            lowercase:true
+        }],
         required: function () {
             return this.paymentOption == "cod"
         }
