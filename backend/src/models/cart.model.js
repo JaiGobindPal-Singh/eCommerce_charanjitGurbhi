@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import User from "./User.js";
 
 // Schema for individual items within the cart
-const cartItemSchema = new mongoose.Schema({
+export const cartItemSchema = new mongoose.Schema({
     product: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product',
@@ -21,7 +21,7 @@ const cartItemSchema = new mongoose.Schema({
     }
 }, { _id: false });
 
-const chargeSchema = new mongoose.Schema({
+export const chargeSchema = new mongoose.Schema({
     chargeName: {
         type: String,
         required: true,

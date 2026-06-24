@@ -4,6 +4,7 @@ import categoryRoutes from './routes/categoryRoutes.js'
 import productRoutes from './routes/productRoutes.js'
 import cartRoutes from './routes/cartRoutes.js'
 import paymentRoutes from './routes/paymentRoutes.js'
+import orderRoutes from './routes/orderRoutes.js'
 // import adminRoutes from './routes/adminRoutes.js';
 // import productRoutes from './routes/productRoutes.js';
 // import catalogRoutes from './routes/catalogRoutes.js';
@@ -21,6 +22,7 @@ app.use('/api/v0/auth', authRoutes);
 app.use('/api/v0/categories', categoryRoutes);
 app.use('/api/v0/products', productRoutes);
 app.use('/api/v0/payment', paymentRoutes);
+app.use('/api/v0/orders', paymentRoutes);
 
 app.get('/health', (_request, response) => {
     response.json({ status: 'ok' });
