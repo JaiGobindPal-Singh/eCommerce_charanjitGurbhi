@@ -22,7 +22,7 @@ app.use('/api/v0/auth', authRoutes);
 app.use('/api/v0/categories', categoryRoutes);
 app.use('/api/v0/products', productRoutes);
 app.use('/api/v0/payment', paymentRoutes);
-app.use('/api/v0/orders', paymentRoutes);
+app.use('/api/v0/orders', orderRoutes);
 
 app.get('/health', (_request, response) => {
     response.json({ status: 'ok' });

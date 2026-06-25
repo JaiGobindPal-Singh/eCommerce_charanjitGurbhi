@@ -19,7 +19,7 @@ export const createOrder = async (req, res) => {
             return res.status(400).json({ message: "delivery details required" });
         }
         if (!deliveryDetails.deliveryAddress.fullName ||
-            !deliveryDetails.deliveryAddress.phoneNumber ||
+            !deliveryDetails.deliveryAddress.phone ||
             !deliveryDetails.deliveryAddress.fullAddress ||
             !deliveryDetails.deliveryAddress.city ||
             !deliveryDetails.deliveryAddress.state
@@ -84,14 +84,24 @@ export const createOrder = async (req, res) => {
 export const updateOrderStatus = async (req, res) => {
     try {
         const { orderId } = req.params;
-        const {
-            status,
-            cancellationReason
-        } = req.body;
+        const status = String(req.body.status);
+        const cancellationReason = String(req.body.cancellationReason || "");
+        const {deliveryPartner, trackingId} = req.body;
 
+        //validate order and status
         if (!orderId || !verifyMongoId(orderId)) {
             return res.status(400).json({ message: "invalid order" });
         }
+        if(!status || !([
+            'payment_confirmed',
+            'processing',
+            'out_for_delivery',
+            'delivered',
+            'cancelled'
+        ].includes(status.trim()))){
+            return res.status(400).json({message:"invalid status option"})
+        }
+
         // Find order
         const order = await Order.findById(orderId);
         if (!order) {
@@ -100,33 +110,16 @@ export const updateOrderStatus = async (req, res) => {
             });
         }
 
-        // Prevent changing completed orders
-        if (
-            order.status === 'delivered' ||
-            order.status === 'cancelled'
-        ) {
-            return res.status(400).json({
-                message: `Cannot update a ${order.status} order`
-            });
-        }
-
         // Validate cancellation
         if (
-            status === 'cancelled' &&
-            !cancellationReason?.trim()
+            status == 'cancelled' &&
+            cancellationReason.length < 3
         ) {
             return res.status(400).json({
                 message: 'Cancellation reason is required'
             });
         }
-
-        // Skip if status is unchanged
-        if (order.status === status) {
-            return res.status(400).json({
-                message: 'Order already has this status'
-            });
-        }
-
+        
         // Update status
         order.status = status;
 
@@ -135,6 +128,11 @@ export const updateOrderStatus = async (req, res) => {
             order.cancellationReason = cancellationReason;
         }
 
+        // Handle out for delivery
+        if( status === 'out_for_delivery'){
+            order.deliveryDetails.deliveryPartner = deliveryPartner || "";
+            order.deliveryDetails.trackingId = trackingId || "";
+        }
         // Add history
         order.statusHistory.push({
             status
@@ -143,7 +141,7 @@ export const updateOrderStatus = async (req, res) => {
         await order.save();
         return res.status(200).json({
             message: 'Order updated successfully',
-            order
+            order: order._id
         });
 
     } catch (error) {
@@ -161,7 +159,13 @@ export const getUserOrders = async (req, res) => {
         //fetching orders from db
         const orders = await Order.find({
             user: userId
-        }).select('status items billing.totalBill createdAt').sort({ createdAt: -1 }).lean();
+        }).select('status items billing.totalBill createdAt')
+        .sort({ createdAt: -1 })
+        .populate({
+            path: 'items.product',
+            select: 'name'
+        })
+        .lean();
 
         return res.status(200).json({
             orders
@@ -177,7 +181,6 @@ export const getUserOrders = async (req, res) => {
 export const getOrderDetails = async (req, res) => {
     try {
         const { orderId } = req.params;
-        const userId = req.user.id;
         //validating order id
         if (!orderId || !verifyMongoId(orderId)) {
             return res.status(400).json({ message: "invalid order" });
@@ -185,8 +188,7 @@ export const getOrderDetails = async (req, res) => {
         //fetching order
         const fullOrder = await Order.findOne({
             _id: orderId,
-            user: userId
-        }).populate('billing.paymentMode');
+        }).populate({path:'billing.paymentMode',select:'paymentOption'});
 
         if (!fullOrder) {
             return res.status(404).json({ message: "order does not exist" });
@@ -195,5 +197,47 @@ export const getOrderDetails = async (req, res) => {
     } catch (error) {
         console.log("error getting order details", error);
         return res.status(500).json({ message: "internal server error" });
+    }
+}
+export const getPendingOrders = async (req, res) =>{
+    try {
+        const orders = await Order.find({
+            status: { $nin: ['delivered', 'cancelled'] }
+        }).sort({ createdAt: -1 }).populate({path:'billing.paymentMode',select:'paymentOption'});
+
+        return res.status(200).json(orders);
+    } catch (error) {
+        console.error('Get pending orders error:', error);
+        return res.status(500).json({
+            message: 'Internal server error'
+        });
+    }
+}
+export const getCompletedOrders = async (req, res) =>{
+    try {
+        const orders = await Order.find({
+            status: { $eq: 'delivered' }
+        }).sort({ createdAt: -1 }).populate({path:'billing.paymentMode',select:'paymentOption'});
+
+        return res.status(200).json(orders);
+    } catch (error) {
+        console.error('Get completed order err:', error);
+        return res.status(500).json({
+            message: 'Internal server error'
+        });
+    }
+}
+export const getCancelledOrders = async (req, res) =>{
+    try {
+        const orders = await Order.find({
+            status: { $eq: 'cancelled' }
+        }).sort({ createdAt: -1 }).populate({path:'billing.paymentMode',select:'paymentOption'});
+
+        return res.status(200).json(orders);
+    } catch (error) {
+        console.error('Get cancelled order err:', error);
+        return res.status(500).json({
+            message: 'Internal server error'
+        });
     }
 }

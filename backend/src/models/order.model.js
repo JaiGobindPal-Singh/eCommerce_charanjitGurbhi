@@ -8,7 +8,7 @@ const addressSchema = new mongoose.Schema(
             required: true,
             trim: true
         },
-        phoneNumber: {
+        phone: {
             type: String,
             required: true,
             trim: true
@@ -21,12 +21,14 @@ const addressSchema = new mongoose.Schema(
         city: {
             type: String,
             required: true,
-            trim: true
+            trim: true,
+            lowercase: true
         },
         state: {
             type: String,
             required: true,
-            trim: true
+            trim: true,
+            lowercase: true
         },
         postalCode: {
             type: String,
