@@ -1,9 +1,16 @@
-import Header from '../components/Header.jsx';
+import HeroBanner from '../components/HeroBanner.jsx';
+import HomepageBestSellers from '../components/HomepageBestSellers.jsx';
+import HomepageCategory from '../components/HomepageCategory.jsx';
+import promiseBanner from '../assets/promise.png';
 
 function Homepage() {
     return (
-        <div id="homepage-main" className="w-full min-h-screen overflow-x-hidden bg-main-background text-dark-textcolor">
-            <Header />
+        <div id="homepage-main" className="w-full min-h-screen overflow-x-hidden text-dark-textcolor">
+            
+            <HeroBanner img={""} />
+            <HomepageCategory />
+            <HomepageBestSellers />
+            <HeroBanner img={promiseBanner} />
         </div>
     )
 }

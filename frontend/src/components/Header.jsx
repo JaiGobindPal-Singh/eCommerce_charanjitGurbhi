@@ -1,8 +1,9 @@
 import { NavLink } from "react-router-dom";
-import { Search, UserRound, ShoppingCart, X, Menu, House, ShoppingBasket, List, ReceiptText, Phone } from 'lucide-react';
+import { Search, UserRound, ShoppingCart, X, Menu, House, ShoppingBasket, List, ReceiptText} from 'lucide-react';
 import headerDecorator from "../assets/headerDecorator.png"
 import companyLogo from "../assets/companyLogo1.png"
 import { useState } from "react";
+
 function HamburgerMenu({menuOpen, toggleHamburger}) {
     const menuItemStyle = "text-main-background  hover:bg-white/20 transition-all duration-200 rounded-xl px-4 py-2 max-lg:px-2 max-lg:py-1 flex items-center flex gap-4";
     return (
@@ -48,15 +49,6 @@ function HamburgerMenu({menuOpen, toggleHamburger}) {
                             backgroundColor: isActive ? "var(--color-main-background)" : "",
                             color: isActive ? "var(--color-dark-textcolor" : ""
                         })}><ReceiptText/>Orders</NavLink>
-
-                    <NavLink to="/contact"
-                        className={menuItemStyle}
-                        style={({ isActive }) => ({
-                            backgroundColor: isActive ? "var(--color-main-background)" : "",
-                            color: isActive ? "var(--color-dark-textcolor" : ""
-                        })}><Phone />Contact</NavLink>
-
-
                 </div>
             </div>
         </>
@@ -114,12 +106,6 @@ export default function Header({ searchFunc, profileFunc, cartFunc }) {
                                 color: isActive ? "white" : ""
                             })}>Orders</NavLink>
 
-                        <NavLink to="/contact"
-                            className={linkClass}
-                            style={({ isActive }) => ({
-                                backgroundColor: isActive ? "var(--color-light-textcolor)" : "",
-                                color: isActive ? "white" : ""
-                            })}>Contact</NavLink>
                     </div>
                 </nav>
                 <div className="options flex gap-2 items-center">

@@ -9,6 +9,7 @@ export default {
       colors:{
         'main-background': '#FDF5E9',
         'dark-textcolor': '#581A0F',
+        'section-background': '#FDF6EA',
         'light-textcolor': '#882B1D',
       }
     },
