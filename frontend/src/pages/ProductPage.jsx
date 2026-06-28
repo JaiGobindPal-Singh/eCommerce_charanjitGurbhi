@@ -1,0 +1,70 @@
+import { useState } from "react"
+import { Search, IndianRupee } from "lucide-react"
+function ProductCard({product, onClick}){
+    const placeholder = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><rect width='100%' height='100%' fill='%23f3f4f6'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='%23999' font-size='20'>No Image</text></svg>";
+    return (
+        <div 
+            className="w-full max-w-sm bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-200 cursor-pointer" 
+            onClick={onClick}
+        >
+            <div className="flex flex-col max-sm:flex-row">
+                <div className="w-full bg-gray-100 flex items-center justify-center overflow-hidden max-md:h-40 max-sm:w-[40%] max-sm:h-32">
+                    <img 
+                        className="object-cover w-full h-full" 
+                        src={product?.imageUrl || placeholder} 
+                        alt={product?.name || 'product'} 
+                        loading="lazy"
+                    />
+                </div>
+                <div className="p-3 flex-1">
+                    <div className="capitalize font-semibold text-lg truncate max-md:text-sm max-sm:text-sm">{product?.name || "--"}</div>
+                    <div className="mt-2 flex items-center gap-2">
+                        <div className='flex items-center gap-1 font-semibold text-sm max-sm:text-xs'>
+                            <IndianRupee />
+                            <span>{product?.price ?? "--"}</span>
+                        </div>
+                        <div className='text-sm text-gray-500 line-through max-sm:text-xs'>{product?.comparePrice || ""}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+export default function ProductPage() {
+    const [searchValue, setSearchValue] = useState("");
+    const product = {
+        name:"amla candy",
+        price: 1200,
+        comparePrice: 2300,
+        imageUrl: ""
+    }
+    return (
+        <>
+            <div className="productPage w-full bg-gradient-to-r from-main-background to-[#EEDEC1]  ">
+                <div className="searchHeader shadow-md shadow-[#EEDEC1]  w-full h-24 flex items-center px-5 justify-between max-sm:h-16 ">
+                    <h1 className="text-dark-textcolor font-semibold text-4xl max-sm:text-xl ">Products</h1>
+
+                    {/* //? add logic here what to do after search */}
+                    <form onSubmit={(e)=>{e.preventDefault();console.log(searchValue)}} className=" bg-gradient-to-r from-main-background to-[#F5EFCC] w-1/2 h-10 rounded-3xl flex items-center justify-between px-5 drop-shadow-md shadow-black">
+                        <input type="text" value={searchValue} onChange={(e)=>setSearchValue(e.target.value)}  className="w-3/4 h-8 px-2 bg-transparent border-none focus:outline-none" placeholder="Search by Keyword"/>
+                        <Search />
+                    </form>
+
+                </div>
+                <div className="productsGrid grid grid-cols-4 gap-4 py-5 px-5 w-full min-h-[80dvh] max-lg:grid-cols-3 justify-items-center max-sm:grid-cols-1">
+                    {/* //?todo fetch products and show them*/}
+                    <ProductCard product={product}/>
+                    <ProductCard product={product}/>
+                    <ProductCard product={product}/>
+                    <ProductCard product={product}/>
+                    <ProductCard product={product}/>
+                    <ProductCard product={product}/>
+                    <ProductCard product={product}/>
+                    <ProductCard product={product}/>
+                    <ProductCard product={product}/>
+                </div>
+
+            </div>
+        </>
+    )
+}

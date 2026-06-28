@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Search, UserRound, ShoppingCart, X, Menu, House, ShoppingBasket, List, ReceiptText} from 'lucide-react';
+import { UserRound, ShoppingCart, X, Menu, House, ShoppingBasket, List, ReceiptText} from 'lucide-react';
 import headerDecorator from "../assets/headerDecorator.png"
 import companyLogo from "../assets/companyLogo1.png"
 import { useState } from "react";
@@ -54,7 +54,7 @@ function HamburgerMenu({menuOpen, toggleHamburger}) {
         </>
     )
 }
-export default function Header({ searchFunc, profileFunc, cartFunc }) {
+export default function Header({ profileFunc, cartFunc }) {
     
     const [menuOpen, setMenuOpen] = useState(false);
     const toggleHamburger = (val)=>{
@@ -109,9 +109,8 @@ export default function Header({ searchFunc, profileFunc, cartFunc }) {
                     </div>
                 </nav>
                 <div className="options flex gap-2 items-center">
-                    <button className={btnClass} onClick={searchFunc}><Search /></button>
-                    <button className={btnClass + " max-md:hidden"} onClick={profileFunc}><UserRound /></button>
                     <button className={btnClass} onClick={cartFunc} ><ShoppingCart /></button>
+                    <button className={btnClass + " max-md:hidden"} onClick={profileFunc}><UserRound /></button>
                     <button className={menuClass} onClick={()=>{toggleHamburger(true)}} ><Menu /></button>
                 </div>
             </div>
