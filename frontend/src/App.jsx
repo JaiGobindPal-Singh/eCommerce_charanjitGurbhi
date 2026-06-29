@@ -5,6 +5,8 @@ import Footer from "./components/Footer.jsx"
 import ProductsPage from "./pages/ProductsPage.jsx"
 import DisplayProductPage from "./pages/DisplayProductPage.jsx"
 import CategoriesPage from "./pages/CategoriesPage.jsx"
+import OrdersPage from "./pages/OrdersPage.jsx"
+import OrderDisplayPage from "./pages/OrderDisplayPage.jsx"
 
 
 const MainLayout = () => (
@@ -29,6 +31,8 @@ const App = () => {
         <Route path="/" element={<Homepage />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/orders" element={<OrdersPage />} />
+        <Route path="/orders/:orderId" element={<OrderDisplayPage />} />
       </Route>
 
       {/* footer only pages */}

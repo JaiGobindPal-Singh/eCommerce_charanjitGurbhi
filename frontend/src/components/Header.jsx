@@ -8,7 +8,7 @@ function HamburgerMenu({menuOpen, toggleHamburger}) {
     const menuItemStyle = "text-main-background  hover:bg-white/20 transition-all duration-200 rounded-xl px-4 py-2 max-lg:px-2 max-lg:py-1 flex items-center flex gap-4";
     return (
         <>
-            {menuOpen && <div onClick={()=>toggleHamburger(false)} className="hmBackground absolute z-10 bg-black opacity-40 w-full h-full ">
+            {menuOpen && <div onClick={()=>toggleHamburger(false)} className="hmBackground absolute z-40 bg-black opacity-40 w-full h-full ">
             </div>}
             <div className={`hamburger z-50 bg-light-textcolor h-full w-48 fixed bottom-0 ${menuOpen? "right-0":"-right-52"} transition-all duration-500  `}>
                 <X className="text-main-background absolute right-6 top-20 hover:bg-white hover:text-dark-textcolor rounded-lg " onClick={()=>toggleHamburger(false)} />
