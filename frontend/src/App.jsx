@@ -1,22 +1,42 @@
-import { Routes, Route } from "react-router-dom"
+import { Routes, Route, Outlet } from "react-router-dom"
 import Homepage from './pages/Homepage.jsx' 
 import Header from "./components/Header.jsx"
 import Footer from "./components/Footer.jsx"
 import ProductsPage from "./pages/ProductsPage.jsx"
 import DisplayProductPage from "./pages/DisplayProductPage.jsx"
-const App = () => {
+import CategoriesPage from "./pages/CategoriesPage.jsx"
 
-  return (
-    <>
-    <Header/>
-    <Routes>
-      <Route path="/" element={<Homepage/>} />
-      <Route path="/products" element={<ProductsPage/>} />
-      <Route path="/products/:productId" element={<DisplayProductPage/>}/>
-    </Routes>
+
+const MainLayout = () => (
+  <>
+    <Header />
+    <Outlet /> 
+    <Footer />
+  </>
+);
+const FooterOnlyLayout = ()=>(
+<>
+<Outlet /> 
     <Footer />
     </>
-  )
-}
+)
 
+const App = () => {
+  return (
+    <Routes>
+      {/* pages that NEED the Header and Footer together */}
+      <Route element={<MainLayout />}>
+        <Route path="/" element={<Homepage />} />
+        <Route path="/products" element={<ProductsPage />} />
+        <Route path="/categories" element={<CategoriesPage />} />
+      </Route>
+
+      {/* footer only pages */}
+      <Route element={<FooterOnlyLayout/>}>
+        <Route path="/products/:productId" element={<DisplayProductPage />} />
+      </Route>
+      
+    </Routes>
+  );
+};
 export default App

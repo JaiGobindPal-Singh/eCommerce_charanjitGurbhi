@@ -1,7 +1,8 @@
 import { useState } from "react"
-import { Search, IndianRupee } from "lucide-react"
+import { Search, IndianRupee, } from "lucide-react"
 import { useNavigate } from "react-router-dom";
 import { addToCartMethod } from "../utils/cartUtils";
+import { useSearchParams } from "react-router-dom";
 function ProductCard({product, onClick}){
     
     const placeholder = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><rect width='100%' height='100%' fill='%23f3f4f6'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='%23999' font-size='20'>No Image</text></svg>";
@@ -40,9 +41,11 @@ function ProductCard({product, onClick}){
 }
 export default function ProductsPage() {
     const navigate = useNavigate();
-    const [searchValue, setSearchValue] = useState("");
-    const productClick = (e)=>{
-        e.stopPropagation();
+    const [searchParams] = useSearchParams();
+    const search = searchParams.get("search");    
+
+    const [searchValue, setSearchValue] = useState(search || "");
+    const productClick = (product)=>{
         navigate(`/products/${product.id}`)
     }
 
@@ -58,26 +61,39 @@ export default function ProductsPage() {
         <>
             <div className="productPage w-full bg-gradient-to-r from-main-background to-[#EEDEC1]  ">
                 <div className="searchHeader shadow-md shadow-[#EEDEC1]  w-full h-24 flex items-center px-5 justify-between max-sm:h-16 ">
-                    <h1 className="text-dark-textcolor font-semibold text-4xl max-sm:text-xl ">Products</h1>
+                    <div className="flex flex-col items-start gap-2">
+                        <h1 className="text-dark-textcolor font-semibold text-4xl max-sm:text-xl">Products</h1>
+                        <div className="inline-flex items-center gap-2 text-sm max-sm:text-xs">
+                        <button
+                            type="button"
+                            onClick={() => navigate("/")}
+                            className="inline-flex items-center gap-2 hover:bg-slate-200 transition-colors duration-200 text-dark-textcolor"
+                        >
+                            <span>Home</span>
+                        </button>
+                        <span className="text-dark-textcolor">&gt;</span>
+                        <span className="text-dark-textcolor font-semibold">Products</span>
+                    </div>
+                    </div>
 
                     {/* //? add logic here what to do after search */}
                     <form onSubmit={(e)=>{e.preventDefault();console.log(searchValue)}} className=" bg-gradient-to-r from-main-background to-[#F5EFCC] w-1/2 h-10 rounded-3xl flex items-center justify-between px-5 drop-shadow-md shadow-black">
-                        <input type="text" value={searchValue} onChange={(e)=>setSearchValue(e.target.value)}  className="w-3/4 h-8 px-2 bg-transparent border-none focus:outline-none" placeholder="Search by Keyword"/>
+                        <input type="text" value={searchValue} onChange={(e)=>setSearchValue(e.target.value)}  className="w-3/4 h-8 px-2 bg-transparent border-none focus:outline-none" placeholder={`Search by "Keyword", "Category", "name" `}/>
                         <Search />
                     </form>
 
                 </div>
                 <div className="productsGrid grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 py-5 px-5 w-full min-h-[80dvh] justify-items-center 1">
                     {/* //?todo fetch products and show them*/}
-                    <ProductCard product={product} onClick={productClick}/>
-                    <ProductCard product={product}/>
-                    <ProductCard product={product}/>
-                    <ProductCard product={product}/>
-                    <ProductCard product={product}/>
-                    <ProductCard product={product}/>
-                    <ProductCard product={product}/>
-                    <ProductCard product={product}/>
-                    <ProductCard product={product}/>
+                    <ProductCard product={product} onClick={() => productClick(product)}/>
+                    <ProductCard product={product} onClick={() => productClick(product)}/>
+                    <ProductCard product={product} onClick={() => productClick(product)}/>
+                    <ProductCard product={product} onClick={() => productClick(product)}/>
+                    <ProductCard product={product} onClick={() => productClick(product)}/>
+                    <ProductCard product={product} onClick={() => productClick(product)}/>
+                    <ProductCard product={product} onClick={() => productClick(product)}/>
+                    <ProductCard product={product} onClick={() => productClick(product)}/>
+                    <ProductCard product={product} onClick={() => productClick(product)}/>
                 </div>
 
             </div>
