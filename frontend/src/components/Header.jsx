@@ -68,7 +68,7 @@ export default function Header({ profileFunc, cartFunc }) {
 
 
     return (
-        <header className="w-full">
+        <header className="w-full h-38">
             <HamburgerMenu toggleHamburger={toggleHamburger} menuOpen={menuOpen}/>
             <img src={headerDecorator} alt="Header design" className="w-full h-7" />
             <div className="flex items-center justify-between w-full gap-8 px-8 max-md:gap-4 max-md:px-4">

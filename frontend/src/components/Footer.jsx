@@ -21,11 +21,11 @@ export default function Footer() {
         </div>
 
         <div className="flex flex-col gap-8 lg:w-2/3">
-          <div className="grid gap-8 md:grid-cols-[320px_auto] items-start">
+          <div className="grid gap-8 md:grid-cols-[320px_auto] items-start ">
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3397.671753076301!2d74.868374!3d31.615452999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMzHCsDM2JzU1LjYiTiA3NMKwNTInMDYuMiJF!5e0!3m2!1sen!2sin!4v1782640435797!5m2!1sen!2sin"
               loading="lazy"
-              className="h-56 w-full rounded-xl border border-dark-textcolor"
+              className="h-56 w-full rounded-xl border border-dark-textcolor  "
               title="Company location"
             ></iframe>
             <div className="flex flex-col justify-center gap-4 rounded-xl border border-dark-textcolor bg-section-background p-6 text-sm sm:text-base">
