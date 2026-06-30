@@ -29,7 +29,7 @@ export default function DisplayProductPage() {
 
     
     return (
-        <div className=" bg-main-background text-dark-textcolor px-4 py-8 flex justify-center">
+        <div className="page bg-main-background text-dark-textcolor px-4 py-8 flex justify-center">
             <div className="mx-auto max-w-5xl rounded-3xl bg-gradient-to-r from-main-background to-[#EEDEC1] p-6 shadow-lg shadow-slate-200">
                 <button
                     type="button"

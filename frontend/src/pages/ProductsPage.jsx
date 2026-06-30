@@ -59,7 +59,7 @@ export default function ProductsPage() {
     }
     return (
         <>
-            <div className="productPage w-full bg-gradient-to-r from-main-background to-[#EEDEC1]  ">
+            <div className=" page productPage w-full bg-gradient-to-r from-main-background to-[#EEDEC1]  ">
                 <div className="searchHeader shadow-md shadow-[#EEDEC1]  w-full h-24 flex items-center px-5 justify-between max-sm:h-16 ">
                     <div className="flex flex-col items-start gap-2">
                         <h1 className="text-dark-textcolor font-semibold text-4xl max-sm:text-xl">Products</h1>

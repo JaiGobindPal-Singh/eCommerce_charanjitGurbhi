@@ -29,3 +29,17 @@ body {
   background-color: var(--color-main-background);
   color: var(--color-dark-textcolor);
 }
+.page {
+  animation: pageTransition 0.7s ease;
+}
+
+@keyframes pageTransition {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

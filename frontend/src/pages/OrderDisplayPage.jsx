@@ -113,7 +113,7 @@ function OrderDisplayPage() {
     console.log(billing);
     if (!order) {
         return (
-            <div className="min-h-screen bg-main-background px-4 py-8 text-dark-textcolor sm:px-6 lg:px-8">
+            <div className="page min-h-screen bg-main-background px-4 py-8 text-dark-textcolor sm:px-6 lg:px-8">
                 <div className="mx-auto max-w-5xl rounded-2xl border border-[#f2dcc4] bg-section-background p-8 text-center shadow-sm">
                     <h1 className="text-2xl font-semibold">Order not found</h1>
                     <p className="mt-2 text-sm text-light-textcolor">

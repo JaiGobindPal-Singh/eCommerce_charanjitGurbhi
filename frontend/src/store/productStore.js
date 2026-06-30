@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 const initialState = {
-    hasNextPage: false,
+    hasNextPage: true,
     products: [],
     currentPage:0
 };

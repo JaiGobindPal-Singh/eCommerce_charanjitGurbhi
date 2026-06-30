@@ -9,20 +9,21 @@ import api from "../configs/axiosConfig.js";
  */
 export const fetchProducts = async (page) => {
     try {
-        const {currentPage, hasNextPage, stateProducts} = useProductStore.getState();
+        const {currentPage, hasNextPage, products} = useProductStore.getState();
 
         //checking if next page exist or page is current page
         if(currentPage == page || !hasNextPage){
-            return [];
+            return products;
         }
         // load stored products if needed
         if(page <= currentPage){
-            if(stateProducts && stateProducts.length > 0) return stateProducts;
+            if(products && products.length > 0) return products;
+
         }
         //fetching from api 
         const response = await api.get(`products?ps=10&pn=${page}`);
         const payload = response?.data ?? {};
-
+        console.log(response);
         //storing in store
         useProductStore.getState().setProducts({
             hasNextPage: payload?.hasNextPage ?? false,
@@ -32,7 +33,7 @@ export const fetchProducts = async (page) => {
         return payload?.products ?? [];
 
     } catch (e) {
-        console.error('error fetching products', e.message);
+        console.error('error fetching products', e);
     }
 };
 
