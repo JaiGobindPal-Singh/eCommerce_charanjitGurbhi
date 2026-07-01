@@ -1,7 +1,7 @@
 import loader from "../assets/loader.png"
-export default function Loader() {
+export default function Loader({className}) {
   return (
-    <div className="flex justify-center items-center h-3/4  fixed z-30 w-screen  bg-main-background pointer-events-none bottom-0 max-md:h-[80%]">
+    <div className={"flex justify-center items-center z-30  bg-transparent pointer-events-none " + className}>
       <img 
         src={loader} 
         alt="Rotating Planet" 

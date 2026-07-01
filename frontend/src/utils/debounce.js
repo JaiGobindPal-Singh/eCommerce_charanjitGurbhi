@@ -4,9 +4,17 @@
  * @param {Number} timeout timeout for executing callback   
  * @returns {Promise} 
  */
-export const createDebounceFunc = (prevFunc, cb, timeout) => {
-    clearTimeout(prevFunc);       //clearing previous timeout
-    return setTimeout(() => {
-        cb();
-    }, timeout);
-}
+export const createDebounceFunc = (prevTimer, cb, timeout) => {
+    clearTimeout(prevTimer);
+
+    return new Promise((resolve, reject) => {
+        setTimeout(async () => {
+            try {
+                const result = await cb();
+                resolve(result);
+            } catch (err) {
+                reject(err);
+            }
+        }, timeout);
+    });
+};
