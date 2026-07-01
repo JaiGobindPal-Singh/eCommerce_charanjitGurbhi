@@ -5,7 +5,7 @@ import promiseBanner from '../assets/promise.png';
 function Homepage() {
     return (
         <div id="page homepage-main" className="w-full min-h-screen overflow-x-hidden text-dark-textcolor">
-            
+
             <HeroBanner img={promiseBanner} />
             <HomepageCategory />
             <HomepageBestSellers />

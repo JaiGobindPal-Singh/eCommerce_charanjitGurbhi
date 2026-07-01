@@ -12,12 +12,12 @@ function OrderDisplayPage() {
                 paymentOption: "upi"
             },
             "charges": [{
-                chargeName:"delivery",
-                chargeAmount:"1234"
+                chargeName: "delivery",
+                chargeAmount: "1234"
             },
             {
-                chargeName:"delivery",
-                chargeAmount:"1234"
+                chargeName: "delivery",
+                chargeAmount: "1234"
             },
             ],
             "totalBill": 149
@@ -233,13 +233,13 @@ function OrderDisplayPage() {
                                 {
 
                                     billing?.charges.map((charge) => {
-                                        return(
+                                        return (
 
                                             <div className="flex items-center justify-between text-light-textcolor">
-                                            
-                                            <span>{charge.chargeName}</span>
-                                            <span>{charge.chargeAmount}</span>
-                                        </div>
+
+                                                <span>{charge.chargeName}</span>
+                                                <span>{charge.chargeAmount}</span>
+                                            </div>
                                         )
                                     })}
                                 <div className="my-2 h-px bg-[#f2dcc4]" />

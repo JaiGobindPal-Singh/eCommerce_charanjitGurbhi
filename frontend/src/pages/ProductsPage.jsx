@@ -85,7 +85,7 @@ export default function ProductsPage() {
         const value = e.target.value;
 
         setSearchValue(value);
-        if(searchValue && searchValue.length > 2){
+        if (searchValue && searchValue.length > 2) {
             setIsLoading(true);
             clearProductStore();
             setProducts([]);
@@ -170,20 +170,20 @@ export default function ProductsPage() {
                 </div>
                 {
                     isLoading ? <Loader className="min-h-[50dvh] max-md:h-[10dvh]" /> :
-                
-                <div className="productsGrid grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 py-5 px-5 w-full min-h-[50dvh] justify-items-center transition-all duration-1000 max-md:min-h-[20dvh]">
-                    {products.length ?products?.map((product, index, pds) => {
-                        if (index == pds.length - 1) {
-                            return (
-                                <ProductCard ref={ref} key={product._id} product={product} isLoading={isLoading} onClick={() => productClick(product?._id)} />
-                            )
-                        }
-                        return (
-                            <ProductCard key={product._id} product={product} isLoading={isLoading} onClick={() => productClick(product?._id)} />
-                        )
-                    }):<h1>No products found</h1>}
-                </div>
-}
+
+                        <div className="productsGrid grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 py-5 px-5 w-full min-h-[50dvh] justify-items-center transition-all duration-1000 max-md:min-h-[20dvh]">
+                            {products.length ? products?.map((product, index, pds) => {
+                                if (index == pds.length - 1) {
+                                    return (
+                                        <ProductCard ref={ref} key={product._id} product={product} isLoading={isLoading} onClick={() => productClick(product?._id)} />
+                                    )
+                                }
+                                return (
+                                    <ProductCard key={product._id} product={product} isLoading={isLoading} onClick={() => productClick(product?._id)} />
+                                )
+                            }) : <h1>No products found</h1>}
+                        </div>
+                }
             </div>
         </>
     )

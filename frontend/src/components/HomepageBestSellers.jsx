@@ -57,10 +57,10 @@ export default function HomepageBestSellers() {
             <div className="categoryBox w-full grid grid-cols-4 items-center justify-items-center pt-10 max-md:grid-cols-3 max-sm:grid-cols-2 ">
 
                 {/* //todo here fetch 3 products and show them  */}
-                {products?.slice(0, 4).map((product)=>{
-                return <ProductCard key={product._id} product={product} isLoading={isLoading} onClick={()=>navigate('/products')}/>
+                {products?.slice(0, 4).map((product) => {
+                    return <ProductCard key={product._id} product={product} isLoading={isLoading} onClick={() => navigate('/products')} />
                 })}
-            
+
             </div>
         </div>
     )

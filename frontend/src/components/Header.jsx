@@ -1,17 +1,17 @@
 import { NavLink } from "react-router-dom";
-import { UserRound, ShoppingCart, X, Menu, House, ShoppingBasket, List, ReceiptText} from 'lucide-react';
+import { UserRound, ShoppingCart, X, Menu, House, ShoppingBasket, List, ReceiptText } from 'lucide-react';
 import headerDecorator from "../assets/headerDecorator.png"
 import companyLogo from "../assets/companyLogo1.png"
 import { useState } from "react";
 
-function HamburgerMenu({menuOpen, toggleHamburger}) {
+function HamburgerMenu({ menuOpen, toggleHamburger }) {
     const menuItemStyle = "text-main-background  hover:bg-white/20 transition-all duration-200 rounded-xl px-4 py-2 max-lg:px-2 max-lg:py-1 flex items-center flex gap-4";
     return (
         <>
-            {menuOpen && <div onClick={()=>toggleHamburger(false)} className="hmBackground absolute z-40 bg-black opacity-40 w-full h-full ">
+            {menuOpen && <div onClick={() => toggleHamburger(false)} className="hmBackground absolute z-40 bg-black opacity-40 w-full h-full ">
             </div>}
-            <div className={`hamburger z-50 bg-light-textcolor h-full w-48 fixed bottom-0 ${menuOpen? "right-0":"-right-52"} transition-all duration-500  `}>
-                <X className="text-main-background absolute right-6 top-20 hover:bg-white hover:text-dark-textcolor rounded-lg " onClick={()=>toggleHamburger(false)} />
+            <div className={`hamburger z-50 bg-light-textcolor h-full w-48 fixed bottom-0 ${menuOpen ? "right-0" : "-right-52"} transition-all duration-500  `}>
+                <X className="text-main-background absolute right-6 top-20 hover:bg-white hover:text-dark-textcolor rounded-lg " onClick={() => toggleHamburger(false)} />
                 <div className="links px-5 text-base font-semibold w-full">
                     <div className="h-40 w-full"></div>
 
@@ -20,44 +20,44 @@ function HamburgerMenu({menuOpen, toggleHamburger}) {
                         style={({ isActive }) => ({
                             backgroundColor: isActive ? "var(--color-main-background)" : "",
                             color: isActive ? "var(--color-dark-textcolor" : ""
-                        })}><UserRound/> Profile</NavLink>
+                        })}><UserRound /> Profile</NavLink>
 
                     <NavLink to="/"
                         className={menuItemStyle}
                         style={({ isActive }) => ({
                             backgroundColor: isActive ? "var(--color-main-background)" : "",
                             color: isActive ? "var(--color-dark-textcolor" : ""
-                        })}><House/>Home</NavLink>
+                        })}><House />Home</NavLink>
 
                     <NavLink to="/products"
                         className={menuItemStyle}
                         style={({ isActive }) => ({
                             backgroundColor: isActive ? "var(--color-main-background)" : "",
                             color: isActive ? "var(--color-dark-textcolor" : ""
-                        })}><ShoppingBasket/>Products</NavLink>
+                        })}><ShoppingBasket />Products</NavLink>
 
                     <NavLink to="/categories"
                         className={menuItemStyle}
                         style={({ isActive }) => ({
                             backgroundColor: isActive ? "var(--color-main-background)" : "",
                             color: isActive ? "var(--color-dark-textcolor" : ""
-                        })}><List/>Categories</NavLink>
-                        
+                        })}><List />Categories</NavLink>
+
                     <NavLink to="/orders"
                         className={menuItemStyle}
                         style={({ isActive }) => ({
                             backgroundColor: isActive ? "var(--color-main-background)" : "",
                             color: isActive ? "var(--color-dark-textcolor" : ""
-                        })}><ReceiptText/>Orders</NavLink>
+                        })}><ReceiptText />Orders</NavLink>
                 </div>
             </div>
         </>
     )
 }
 export default function Header({ profileFunc, cartFunc }) {
-    
+
     const [menuOpen, setMenuOpen] = useState(false);
-    const toggleHamburger = (val)=>{
+    const toggleHamburger = (val) => {
         setMenuOpen(val);
     }
     const linkClass = "text-dark-textcolor hover:bg-light-textcolor hover:text-white transition-all duration-200 rounded-xl px-4 py-2 max-lg:px-2 max-lg:py-1 flex items-center max-md:hidden";
@@ -69,7 +69,7 @@ export default function Header({ profileFunc, cartFunc }) {
 
     return (
         <header className="w-full h-38">
-            <HamburgerMenu toggleHamburger={toggleHamburger} menuOpen={menuOpen}/>
+            <HamburgerMenu toggleHamburger={toggleHamburger} menuOpen={menuOpen} />
             <img src={headerDecorator} alt="Header design" className="w-full h-7" />
             <div className="flex items-center justify-between w-full gap-8 px-8 max-md:gap-4 max-md:px-4">
                 <div className="flex">
@@ -111,7 +111,7 @@ export default function Header({ profileFunc, cartFunc }) {
                 <div className="options flex gap-2 items-center">
                     <button className={btnClass} onClick={cartFunc} ><ShoppingCart /></button>
                     <button className={btnClass + " max-md:hidden"} onClick={profileFunc}><UserRound /></button>
-                    <button className={menuClass} onClick={()=>{toggleHamburger(true)}} ><Menu /></button>
+                    <button className={menuClass} onClick={() => { toggleHamburger(true) }} ><Menu /></button>
                 </div>
             </div>
         </header>
