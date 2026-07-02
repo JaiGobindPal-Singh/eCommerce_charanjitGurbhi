@@ -75,8 +75,9 @@ export default function CategoriesPage() {
 
                 </div>
                 <div className="CategoriesGrid grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-4 py-5 px-5 w-full min-h-[80dvh] justify-items-center 1">
+                    {!isLoading && !categories?.length && "No Categories found"}
                     {
-                        isLoading ? <Loader /> : categories.map((cat) => {
+                        isLoading ? <Loader /> : categories?.map((cat) => {
                             return <CategoryCard category={cat} onCategoryClick={categoryClick} />
                         })
                     }
