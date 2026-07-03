@@ -3,6 +3,7 @@ import { UserRound, ShoppingCart, X, Menu, House, ShoppingBasket, List, ReceiptT
 import headerDecorator from "../assets/headerDecorator.png"
 import companyLogo from "../assets/companyLogo1.png"
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function HamburgerMenu({ menuOpen, toggleHamburger }) {
     const menuItemStyle = "text-main-background  hover:bg-white/20 transition-all duration-200 rounded-xl px-4 py-2 max-lg:px-2 max-lg:py-1 flex items-center flex gap-4";
@@ -54,12 +55,14 @@ function HamburgerMenu({ menuOpen, toggleHamburger }) {
         </>
     )
 }
-export default function Header({ profileFunc, cartFunc }) {
 
+export default function Header() {
+    const navigate = useNavigate();
     const [menuOpen, setMenuOpen] = useState(false);
     const toggleHamburger = (val) => {
         setMenuOpen(val);
     }
+
     const linkClass = "text-dark-textcolor hover:bg-light-textcolor hover:text-white transition-all duration-200 rounded-xl px-4 py-2 max-lg:px-2 max-lg:py-1 flex items-center max-md:hidden";
 
     const btnClass = "text-dark-textcolor hover:bg-light-textcolor hover:text-white transition-all duration-200 rounded-xl p-2";
@@ -109,11 +112,12 @@ export default function Header({ profileFunc, cartFunc }) {
                     </div>
                 </nav>
                 <div className="options flex gap-2 items-center">
-                    <button className={btnClass} onClick={cartFunc} ><ShoppingCart /></button>
-                    <button className={btnClass + " max-md:hidden"} onClick={profileFunc}><UserRound /></button>
+                    <button className={btnClass} onClick={()=>navigate('/cart')} ><ShoppingCart /></button>
+                    <button className={btnClass + " max-md:hidden"} onClick={()=>navigate('/profile')}><UserRound /></button>
                     <button className={menuClass} onClick={() => { toggleHamburger(true) }} ><Menu /></button>
                 </div>
             </div>
+            
         </header>
     );
 }

@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import Notification from './components/Notification.jsx'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import './index.css'
@@ -10,6 +10,7 @@ createRoot(document.getElementById('root')).render(
     <BrowserRouter>
     <ScrollToTop />
       <App />
+      <Notification/>
     </BrowserRouter>
   // {/* </StrictMode> */}
 )

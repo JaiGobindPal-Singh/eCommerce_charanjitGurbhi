@@ -10,6 +10,7 @@ import orderRoutes from "./routes/orderRoutes.js";
 // import catalogRoutes from './routes/catalogRoutes.js';
 // import cartRoutes from './routes/cartRoutes.js';
 // import orderRoutes from './routes/orderRoutes.js';
+import { isUserLoggedIn } from "./controllers/authController.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
@@ -37,5 +38,6 @@ app.use("/api/v0/orders", orderRoutes);
 app.get("/health", (_request, response) => {
   response.json({ status: "ok" });
 });
+app.get('/api/v0/check-user', isUserLoggedIn);
 
 export default app;

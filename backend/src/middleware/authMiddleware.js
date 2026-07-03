@@ -1,6 +1,4 @@
-import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
-import { env } from '../config/env.js';
 import { decryptToken } from '../utils/jwt.js';
 
 export const authenticateUser = async (req, res, next) => {
@@ -10,7 +8,7 @@ export const authenticateUser = async (req, res, next) => {
         if(!token){
             return res.status(401).json({message: 'Unauthorized'});
         }
-        const decoded = jwt.verify(token, env.jwtSecret);
+        const decoded = decryptToken(token);
 
         //fetch user from database using decoded token
         const user = await User.findById(decoded.id).lean();

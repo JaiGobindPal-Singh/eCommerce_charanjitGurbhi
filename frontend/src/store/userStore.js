@@ -1,11 +1,15 @@
-import {create} from 'zustand';
+import { create } from 'zustand';
 
-const userStore = create((set)=>({
+const initialState = {
     name: "",
     id: "",
     phone: "",
     role: "",
-    setUser: (user)=> set({...user})  //set the user
+}
+const userStore = create((set) => ({
+    ...initialState,
+    setUser: (user) => set({ ...user }),  //set the user
+    resetUser: () => set(initialState)
 }));
 
 export default userStore;

@@ -23,12 +23,12 @@ export default function Footer() {
           <div className="grid gap-8 md:grid-cols-[320px_auto] items-start ">
             
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d714.2579701982206!2d74.87026927998282!3d31.61734623901238!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMzHCsDM3JzAxLjciTiA3NMKwNTInMTEuNCJF!5e0!3m2!1sen!2sin!4v1782978337989!5m2!1sen!2sin"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3397.6474010290076!2d74.869038!3d31.6161201!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39197b574522d7c5%3A0xc1e18e631c58a6c4!2sGurmukh%20Singh%20Harbhajan%20Singh!5e0!3m2!1sen!2sin!4v1783060218679!5m2!1sen!2sin"
               loading="lazy"
-              className="h-[17.5rem] w-full rounded-xl border border-dark-textcolor  "
+              className="h-[18.5rem] w-full rounded-xl border border-dark-textcolor  "
               title="Company location"
             ></iframe>
-            <div className="flex flex-col justify-center gap-4 rounded-xl border border-dark-textcolor bg-section-background p-6 text-sm sm:text-base">
+            <div className="flex flex-col justify-center gap-2 rounded-xl border border-dark-textcolor bg-section-background p-4 text-sm sm:text-base">
               <div>
                 <p className="text-light-textcolor uppercase tracking-widest text-xs">Mail</p>
                 <p className="font-semibold text-dark-textcolor">ghmeetproducts@gmail.com</p>
@@ -43,6 +43,12 @@ export default function Footer() {
                 <p className="text-light-textcolor uppercase tracking-widest text-xs">Address</p>
                 <p className="font-semibold text-dark-textcolor leading-relaxed">
                   Chowk Quilla Bhangian, Namak Mandi, Amritsar (143001)
+                </p>
+              </div>
+              <div>
+                <p className="text-light-textcolor uppercase tracking-widest text-xs">GSTIN: </p>
+                <p className="font-semibold text-dark-textcolor leading-relaxed">
+                  03AOKPS9915E1ZQ
                 </p>
               </div>
             </div>
