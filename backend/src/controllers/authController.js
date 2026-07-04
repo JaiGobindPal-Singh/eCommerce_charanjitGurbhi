@@ -94,7 +94,11 @@ export const loginUser = async (req, res) => {
 
 export const logoutUser = async (req, res) => {
     try {
-        res.clearCookie('token');
+        res.clearCookie('token', {
+            httpOnly: true,
+            sameSite: 'none',
+            secure: true
+        });
         return res.status(200).json({ message: 'User logged out successfully' });
     } catch (error) {
         console.error('Error logging out user:', error);
@@ -106,7 +110,6 @@ export const isUserLoggedIn = async (req, res) => {
         const token = req.cookies.token;
         //authenticate user using JWT token from cookies
         if (!token) {
-            console.log("no token")
             return res.status(200).json({ user: {} });
         }
         const decoded = decryptToken(token);

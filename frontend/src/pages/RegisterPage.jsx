@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {getUser} from "../utils/userUtils.js"
+import {getUser, registerUser} from "../utils/userUtils.js"
+import { generateNotification } from "../utils/notificationUtils.js";
 export default function RegisterPage() {
     const navigate = useNavigate();
     useEffect(() => {
@@ -30,8 +31,16 @@ export default function RegisterPage() {
             setinvalidPass(true);
             return;
         }
-        console.log({ phone, password });
-        navigate('/');
+        registerUser(name, phone, password).then((res)=>{
+            if(res.id){
+                navigate('/');
+                generateNotification("Registration success");
+            };
+        }).catch((e)=>{
+            generateNotification("Some Error Occurred");
+            console.error("error in register " + e.message);
+            setPassword("");
+        })
         
     };
 

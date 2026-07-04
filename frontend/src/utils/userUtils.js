@@ -55,3 +55,37 @@ export const loginUser = async (phone, password) => {
     userStore.getState().setUser({ ...normalizedUser });
     return normalizedUser;
 };
+export const registerUser = async(name, phone, password)=>{
+    if(!name || !phone || !password){
+        throw new Error("all registeration credentials are required");
+    }
+    const response = await api.post("/auth/register", {
+        name,
+        phone,
+        password,
+    });
+    const payload = response?.data;
+    console.log(payload);
+    const serverUser = payload?.user ?? payload;
+    if (!serverUser) {
+        throw new Error("user not found");
+    }
+    const normalizedUser = {
+        name: serverUser?.name || "",
+        phone: serverUser?.phone || "",
+        id: serverUser?._id || serverUser?.id || "",
+        role: serverUser?.role || "",
+    };
+    console.log(normalizedUser);
+    if (!normalizedUser.id) {
+        throw new Error("user id missing from registration response");
+    }
+    
+    userStore.getState().setUser({ ...normalizedUser });
+    return normalizedUser;
+}
+export const logoutUser = async()=>{
+    api.post("/auth/logout").then(()=>{
+        userStore.getState().resetUser();
+    });
+}
