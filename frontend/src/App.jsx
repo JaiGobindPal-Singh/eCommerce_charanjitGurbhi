@@ -43,8 +43,7 @@ const App = () => {
       if (normalizedUser.id) {
         userStore.getState().setUser(normalizedUser);
       }
-    }).catch((error) => {
-      console.error("check-user failed", error);
+    }).catch(() => {
     });
   }, [])
 

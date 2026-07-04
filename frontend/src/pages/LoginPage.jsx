@@ -35,8 +35,8 @@ export default function LoginPage() {
         loginUser(phone,password).then(()=>{
             generateNotification("Welcome Back")();
             navigate('/');
-        }).catch(()=>{
-            generateNotification("Invalid Credentials")();
+        }).catch((e)=>{
+            generateNotification(e.response?.data?.error || e.message)();
             setPassword("");
         })
         

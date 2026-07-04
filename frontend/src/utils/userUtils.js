@@ -2,13 +2,12 @@ import api from "../configs/axiosConfig";
 import userStore from "../store/userStore";
 
 export const getUser = async () => {
-    try {
         const { name, phone, role, id } = userStore.getState();
         let user = {};
         if (!name || !phone || !role || !id) {
             const response = await api.get("/check-user");
             const payload = response?.data;
-            const serverUser = payload?.user ?? payload?.data ?? payload;
+            const serverUser = payload?.user ;
             if (serverUser) {
                 user = {
                     name: serverUser?.name || "",
@@ -24,10 +23,6 @@ export const getUser = async () => {
             user = { name, phone, role, id };
         }
         return user;
-    } catch (e) {
-        console.error("error getting user", e.message);
-        return {};
-    }
 };
 export const loginUser = async (phone, password) => {
     if (!phone || !password) {
@@ -38,7 +33,7 @@ export const loginUser = async (phone, password) => {
         password,
     });
     const payload = response?.data;
-    const serverUser = payload?.user ?? payload?.data ?? payload;
+    const serverUser = payload?.user;
     if (!serverUser) {
         throw new Error("user not found");
     }
@@ -57,7 +52,7 @@ export const loginUser = async (phone, password) => {
 };
 export const registerUser = async(name, phone, password)=>{
     if(!name || !phone || !password){
-        throw new Error("all registeration credentials are required");
+        throw new Error("All registration credentials are required");
     }
     const response = await api.post("/auth/register", {
         name,
@@ -65,7 +60,7 @@ export const registerUser = async(name, phone, password)=>{
         password,
     });
     const payload = response?.data;
-    console.log(payload);
+
     const serverUser = payload?.user ?? payload;
     if (!serverUser) {
         throw new Error("user not found");
@@ -76,7 +71,6 @@ export const registerUser = async(name, phone, password)=>{
         id: serverUser?._id || serverUser?.id || "",
         role: serverUser?.role || "",
     };
-    console.log(normalizedUser);
     if (!normalizedUser.id) {
         throw new Error("user id missing from registration response");
     }

@@ -14,15 +14,14 @@ function ProfilePopup({ isProfileOpen, setIsProfileOpen }) {
         getUser().then((usr) => {
             setUser(usr);
             setIsLoading(false);
-        }).catch((err) => {
-            console.error(err);
+        }).catch(() => {
             setIsLoading(false);
         });
     }, [isProfileOpen])
 
     const manageLogout =async ()=>{
         await logoutUser();
-        generateNotification("Logged Out");
+        generateNotification("Logged Out")();
         setIsProfileOpen(false);
         navigate('/login');
     }
@@ -45,7 +44,10 @@ function ProfilePopup({ isProfileOpen, setIsProfileOpen }) {
                         </p>
                         </div>
                         {user?.id && <button className="bg-light-textcolor px-2 py-1 rounded-xl text-main-background transition-all duration-150 border-2 font-semibold hover:scale-110" onClick={manageLogout}>Logout</button>}
-                        {!user?.id && <button className="bg-light-textcolor px-2 py-1 rounded-xl text-main-background transition-all duration-150 border-2 font-semibold hover:scale-110" onClick={()=>navigate('/register')}>Register or Login</button>}
+                        {!user?.id && <button className="bg-light-textcolor px-2 py-1 rounded-xl text-main-background transition-all duration-150 border-2 font-semibold hover:scale-110" onClick={()=>{
+                            setIsProfileOpen(false);
+                            navigate('/register');
+                        }}>Register or Login</button>}
                         
                 </div>
             }

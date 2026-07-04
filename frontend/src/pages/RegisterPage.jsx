@@ -34,11 +34,10 @@ export default function RegisterPage() {
         registerUser(name, phone, password).then((res)=>{
             if(res.id){
                 navigate('/');
-                generateNotification("Registration success");
+                generateNotification("Registration success")();
             };
         }).catch((e)=>{
-            generateNotification("Some Error Occurred");
-            console.error("error in register " + e.message);
+            generateNotification(e.response?.data?.error || e.message )();
             setPassword("");
         })
         
