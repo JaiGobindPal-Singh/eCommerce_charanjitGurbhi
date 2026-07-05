@@ -9,16 +9,16 @@ export const addToCart = async (req, res) => {
 
         //mongo id verification
         if(!verifyMongoId(productId)){
-            return res.status(400).json({ message: "invalid product" });
+            return res.status(400).json({ error: "invalid product" });
         }
         if (quantity < 1) {
-            return res.status(400).json({ message: "quantity is required" });
+            return res.status(400).json({ error: "quantity is required" });
         }
         // Check product exists
         const product = await Product.findById(productId).lean();
         if (!product) {
             return res.status(404).json({
-                message: "Product not found"
+                error: "Product not found"
             });
         }
 
@@ -35,7 +35,7 @@ export const addToCart = async (req, res) => {
                 }]
             });
             await cart.save();    //using this so middleware in mongoose execute properly
-            return res.status(201).json({ message: "product added", cart });
+            return res.status(201).json({ cart });
         }
 
         // Check if product already exists
@@ -56,12 +56,12 @@ export const addToCart = async (req, res) => {
         cart.markModified('items');     //!DON'T Remove 
 
         await cart.save();
-        res.status(200).json(cart);
+        res.status(200).json({cart});
 
     } catch (error) {
         // console.log("error in add cart controller", error);
         res.status(500).json({
-            message: "internal server error"
+            error: "internal server error"
         });
     }
 };
@@ -193,7 +193,12 @@ export const getCart = async (req, res) => {
             });
         }
 
-        return res.status(200).json(cart);
+        return res.status(200).json({cart:{
+            id:cart._id,
+            user: cart.user,
+            items:cart.items,
+            billing:cart.billing,
+        }});
     } catch (error) {
         // console.log("error fetching cart", error);
         return res.status(500).json({ message: "internal server error" });

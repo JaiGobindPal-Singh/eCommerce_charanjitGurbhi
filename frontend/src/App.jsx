@@ -9,6 +9,7 @@ import OrdersPage from "./pages/OrdersPage.jsx"
 import OrderDisplayPage from "./pages/OrderDisplayPage.jsx"
 import RegisterPage from "./pages/RegisterPage.jsx"
 import LoginPage from "./pages/LoginPage.jsx"
+import CartPage from "./pages/CartPage.jsx"
 import { useEffect } from "react"
 import api from "./configs/axiosConfig.js"
 import userStore from "./store/userStore.js"
@@ -56,6 +57,7 @@ const App = () => {
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/orders" element={<OrdersPage />} />
         <Route path="/orders/:orderId" element={<OrderDisplayPage />} />
+        <Route path="/cart" element={<CartPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
       </Route>

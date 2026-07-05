@@ -53,11 +53,11 @@ const orderSchema = new mongoose.Schema({
         type: String,
         enum: [
             'order_placed',
-            'payment_confirmed',
             'processing',
             'out_for_delivery',
             'delivered',
-            'cancelled'
+            'cancelled',
+            'returned'
         ],
         lowercase: true,
         default: 'order_placed',
@@ -69,11 +69,11 @@ const orderSchema = new mongoose.Schema({
             required:true,
             enum: [
                 'order_placed',
-                'payment_confirmed',
                 'processing',
                 'out_for_delivery',
                 'delivered',
-                'cancelled'
+                'cancelled',
+                'returned'
             ],
             lowercase: true
         },
