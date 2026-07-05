@@ -96,9 +96,9 @@ export const logoutUser = async (req, res) => {
             sameSite: 'none',
             secure: true
         });
-        return res.status(200).json({ message: 'User logged out successfully' });
+        return res.status(200).json({ success: true });
     } catch (error) {
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ error: 'Internal server error' });
     }
 }
 export const isUserLoggedIn = async (req, res) => {
@@ -116,9 +116,15 @@ export const isUserLoggedIn = async (req, res) => {
             return res.status(200).json({ user: {} });
         }
 
+
         //attach user to request object
         res.status(200).json({
-            user
+            user:{
+                id: user._id,
+                name:user.name,
+                role:user.role,
+                phone: user.phone
+            }
         });
     } catch (error) {
         return res.status(401).json({ user: {} });

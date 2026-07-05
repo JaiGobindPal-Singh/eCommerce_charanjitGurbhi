@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Search, IndianRupee, } from "lucide-react"
 import { useNavigate } from "react-router-dom";
-import { addToCartMethod } from "../utils/cartUtils";
+import { addToCart } from "../utils/cartUtils";
 import { useSearchParams } from "react-router-dom";
 import SkeletonLoading from "../components/SkeletonLoading";
 import { clearProductStore, fetchProductsByKey, moreProductsExists } from "../utils/productUtils.js";
@@ -43,7 +43,7 @@ function ProductCard({ product, onClick, isLoading, ref }) {
                     {!isLoading ?
                         <button className={"text-left mt-2 bg-light-textcolor rounded-3xl px-3 md:px-3 py-2 md:py-2 font-semibold text-sm md:text-xs max-sm:text-xs text-white hover:scale-110 transition-all duration-150"} disabled={isLoading} onClick={
                             (e) => {
-                                addToCartMethod(product.id, 1);
+                                addToCart(product.id, 1);
                                 e.stopPropagation();
                             }}>Add To Cart</button>
                         : <SkeletonLoading />}
@@ -108,12 +108,12 @@ export default function ProductsPage() {
                 setProducts((prevProducts) => {
                     const existingIds = new Set(
                         prevProducts
-                            .map((product) => product?._id || product?.id)
+                            .map((product) => product?.id)
                             .filter(Boolean)
                     );
 
                     const uniqueNextProducts = nextProducts.filter((product) => {
-                        const key = product?._id || product?.id;
+                        const key = product?.id;
                         if (!key) return true;
                         if (existingIds.has(key)) return false;
                         existingIds.add(key);
@@ -175,11 +175,11 @@ export default function ProductsPage() {
                             {products.length ? products?.map((product, index, pds) => {
                                 if (index == pds.length - 1) {
                                     return (
-                                        <ProductCard ref={ref} key={product._id} product={product} isLoading={isLoading} onClick={() => productClick(product?._id)} />
+                                        <ProductCard ref={ref} key={product.id} product={product} isLoading={isLoading} onClick={() => productClick(product?.id)} />
                                     )
                                 }
                                 return (
-                                    <ProductCard key={product._id} product={product} isLoading={isLoading} onClick={() => productClick(product?._id)} />
+                                    <ProductCard key={product.id} product={product} isLoading={isLoading} onClick={() => productClick(product?.id)} />
                                 )
                             }) : <h1>No products found</h1>}
                         </div>

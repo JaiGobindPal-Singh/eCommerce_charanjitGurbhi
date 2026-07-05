@@ -54,7 +54,7 @@ export const deleteImage = async (imageUrl) => {
 
         return result; // Returns { result: 'ok' } if successful
     } catch (error) {
-        console.error("Deletion failed:", error);
+        // console.error("Deletion failed:", error);
         throw error;
     }
 };

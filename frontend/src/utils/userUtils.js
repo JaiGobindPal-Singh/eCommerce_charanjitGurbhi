@@ -12,7 +12,7 @@ export const getUser = async () => {
                 user = {
                     name: serverUser?.name || "",
                     phone: serverUser?.phone || "",
-                    id: serverUser?._id || serverUser?.id || "",
+                    id: serverUser?.id || "",
                     role: serverUser?.role || "",
                 };
                 if (user.id) {
@@ -40,7 +40,7 @@ export const loginUser = async (phone, password) => {
     const normalizedUser = {
         name: serverUser?.name || "",
         phone: serverUser?.phone || "",
-        id: serverUser?._id || serverUser?.id || "",
+        id: serverUser?.id || "",
         role: serverUser?.role || "",
     };
     if (!normalizedUser.id) {
@@ -68,7 +68,7 @@ export const registerUser = async(name, phone, password)=>{
     const normalizedUser = {
         name: serverUser?.name || "",
         phone: serverUser?.phone || "",
-        id: serverUser?._id || serverUser?.id || "",
+        id: serverUser?.id || "",
         role: serverUser?.role || "",
     };
     if (!normalizedUser.id) {

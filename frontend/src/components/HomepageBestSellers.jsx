@@ -63,7 +63,7 @@ export default function HomepageBestSellers() {
                     <ProductCard  isLoading={true}/>
                 </>}
                 {products?.slice(0, 4).map((product) => {
-                    return <ProductCard key={product._id} product={product} isLoading={isLoading} onClick={() => navigate('/products')} />
+                    return <ProductCard key={product.id} product={product} isLoading={isLoading} onClick={() => navigate('/products')} />
                 })}
 
             </div>

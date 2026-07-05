@@ -1,6 +1,6 @@
-import zustand from 'zustand';
+import {create} from 'zustand';
 
-const useCartStore = zustand((set) => ({
+const useCartStore = create((set) => ({
     cartItems: [],
     addToCart: (item) => set((state) => ({
         cartItems: [...state.cartItems, item]
@@ -16,7 +16,9 @@ const useCartStore = zustand((set) => ({
             cartItems: state.cartItems.map((item) =>
                 item.id === itemId ? { ...item, quantity } : item
             )
-        }))
+        })),
+        setCart: (items) => 
+            set({cartItems:items})
 }));
 
 export default useCartStore;

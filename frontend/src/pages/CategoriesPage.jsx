@@ -78,7 +78,7 @@ export default function CategoriesPage() {
                     {!isLoading && !categories?.length && "No Categories found"}
                     {
                         isLoading ? <Loader /> : categories?.map((cat) => {
-                            return <CategoryCard category={cat} onCategoryClick={categoryClick} />
+                            return <CategoryCard key={cat.id} category={cat} onCategoryClick={categoryClick} />
                         })
                     }
                 </div>

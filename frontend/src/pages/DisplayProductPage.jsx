@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom"
 import { useEffect, useState } from "react"
-import { addToCartMethod } from "../utils/cartUtils";
+import { addToCart } from "../utils/cartUtils";
 import { IndianRupee, ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getProduct } from "../utils/productUtils";
@@ -94,7 +94,7 @@ export default function DisplayProductPage() {
                         </div>
                         <button
                             className={`w-full rounded-3xl px-6 py-4 text-lg font-semibold text-white transition ${product.stockAvailable ? 'bg-dark-textcolor hover:bg-light-textcolor hover:text-white' : 'bg-gray-300 cursor-not-allowed text-gray-700'}`}
-                            onClick={() => product.stockAvailable && addToCartMethod(productId, quantity)}
+                            onClick={() => product.stockAvailable && addToCart(productId, quantity)}
                             disabled={!product.stockAvailable || isLoading}
                         >
                             {product.stockAvailable ? 'Add to Cart' : 'Out of Stock'}

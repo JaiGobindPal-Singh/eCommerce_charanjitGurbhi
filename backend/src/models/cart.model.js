@@ -13,11 +13,6 @@ export const cartItemSchema = new mongoose.Schema({
         required: true,
         min: [1, 'Quantity cannot be less than 1.'],
         default: 1
-    },
-    priceAtAddition: {
-        type: Number,
-        required: true,
-        min: [0, 'Price cannot be negative.']
     }
 }, { _id: false });
 
@@ -42,74 +37,9 @@ const cartSchema = new mongoose.Schema({
         type: [cartItemSchema],
         default: []
     },
-    billing:{
-        charges:{
-            type: [chargeSchema],
-            default: []
-        },
-        totalBill:{
-            type: Number,
-            required: true,
-            default: 0
-        }
-    }
 }, {
     timestamps: true
 })
-
-//middleware to automatically calculate total
-cartSchema.pre('save', function(){
-    //checking if there are items in cart
-    if ((this.items || []).length === 0) {
-    this.billing.totalBill = 0;
-    return;
-    }
-
-    //calculate total bill
-    const finalTotal = ((this.items || []).reduce((total, item)=>{
-        return total + (item.quantity * item.priceAtAddition);
-    }, 0)) + ((this.billing?.charges || []).reduce((rv, charge)=>{
-        return rv + charge.chargeAmount;
-    }, 0));
-
-    //round off in case charges are in paisa
-    this.billing.totalBill = Math.round(finalTotal );
-
-    
-})
-
-cartSchema.post('findOneAndUpdate', async function(doc){
-    if(!doc){
-        return;
-    }
-    //checking if there are items in cart
-    if ((doc.items || []).length === 0) {
-        doc.billing.totalBill = 0;
-        await doc.constructor.updateOne(
-            { _id: doc._id }, 
-            { $set: { "billing.totalBill": 0 } }
-        );
-    return;
-    }
-
-    //calculate total bill
-    const finalTotal = Math.round(((doc.items || []).reduce((total, item)=>{
-        return total + (item.quantity * item.priceAtAddition);
-    }, 0)) + ((doc.billing?.charges || []).reduce((rv, charge)=>{
-        return rv + charge.chargeAmount;
-    }, 0)));
-
-    if (doc.billing.totalBill !== finalTotal) {
-        doc.billing.totalBill = finalTotal;
-        // Using updateOne prevents an infinite loop back into findOneAndUpdate
-        await doc.constructor.updateOne(
-            { _id: doc._id }, 
-            { $set: { "billing.totalBill": finalTotal } }
-        );
-    }
-    
-})
-
 
 const Cart = mongoose.model('Cart', cartSchema);
 export default Cart;

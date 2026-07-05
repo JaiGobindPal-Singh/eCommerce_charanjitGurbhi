@@ -12,7 +12,7 @@ export const initializeUpiPayment = (upiUrl, amount) => {
         const finalUpiUrl = upiUrl + amountUrl;
         return finalUpiUrl;
     } catch (error) {
-        console.log("error initialize payment");
+        // console.log("error initialize payment");
         throw error;
     }
 }

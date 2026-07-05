@@ -25,7 +25,7 @@ export const authenticateUser = async (req, res, next) => {
         }
         next();
     }catch(error){
-        console.error('Authentication error:', error);
+        // console.error('Authentication error:', error);
         return res.status(401).json({message: 'Unauthorized'});
     }
 }
@@ -42,7 +42,7 @@ export const authorizeAdmin = (req, res, next) => {
         }
         next();
     }catch(error){
-        console.error('Admin Authorization error:', error);
+        // console.error('Admin Authorization error:', error);
         return res.status(403).json({message: 'Forbidden'});
     }
 }

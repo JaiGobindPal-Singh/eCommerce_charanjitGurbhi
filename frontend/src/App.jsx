@@ -34,13 +34,14 @@ const App = () => {
   useEffect(() => {
     api.get("/check-user").then((response) => {
       const payload = response?.data;
-      const serverUser = payload?.user ?? payload?.data ?? payload;
+      const serverUser = payload?.user
       const normalizedUser = {
         name: serverUser?.name || "",
         phone: serverUser?.phone || "",
-        id: serverUser?._id || serverUser?.id || "",
+        id:  serverUser?.id || "",
         role: serverUser?.role || "",
       };
+      console.log(normalizedUser);
       if (normalizedUser.id) {
         userStore.getState().setUser(normalizedUser);
       }

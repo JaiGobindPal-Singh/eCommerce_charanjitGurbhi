@@ -53,7 +53,7 @@ export default function HomepageCategory() {
             <div className="categoryBox w-full grid grid-cols-4 items-center justify-items-center pt-10 max-md:grid-cols-3 max-sm:grid-cols-2 max-md:pt-5">
                 {!isLoading && categories?.length &&
                     categories?.slice(0, 4).map((cat) => {
-                        return <CategoryCard key={cat._id} title={cat.name} image={cat.iconUrl} onClick={() => navigate(`/products?search=${cat.name}`)} isLoading={false} />
+                        return <CategoryCard key={cat.id} title={cat.name} image={cat.iconUrl} onClick={() => navigate(`/products?search=${cat.name}`)} isLoading={false} />
                     })
                 }
                 {!categories?.length && <>
