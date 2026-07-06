@@ -8,7 +8,16 @@ import { clearProductStore, fetchProductsByKey, moreProductsExists } from "../ut
 import { useRef } from "react";
 import { useInView } from 'react-intersection-observer';
 import Loader from "../components/Loader.jsx";
+import { generateNotification } from "../utils/notificationUtils.js";
 function ProductCard({ product, onClick, isLoading, ref }) {
+    const [addedToCartBtn, setaddedToCartBtn] = useState(false);
+    const handleButtonUI = ()=>{
+        setaddedToCartBtn(true);
+        setTimeout(() => {
+            setaddedToCartBtn(false);
+        }, 500);
+    }
+
     return (
         <div
             ref={ref}
@@ -41,9 +50,11 @@ function ProductCard({ product, onClick, isLoading, ref }) {
                             </> : <SkeletonLoading />}
                     </div>
                     {!isLoading ?
-                        <button className={"text-left mt-2 bg-light-textcolor rounded-3xl px-3 md:px-3 py-2 md:py-2 font-semibold text-sm md:text-xs max-sm:text-xs text-white hover:scale-110 transition-all duration-150"} disabled={isLoading} onClick={
+                        <button className={`text-left mt-2 rounded-3xl px-3 md:px-3 py-2 md:py-2 font-semibold text-sm md:text-xs max-sm:text-xs hover:scale-110 text-white transition-all duration-150 ${!addedToCartBtn ? 'bg-dark-textcolor hover:bg-light-textcolor hover:text-white' : 'bg-gray-300 cursor-not-allowed text-gray-700'}`} disabled={isLoading} onClick={
                             (e) => {
-                                addToCart(product.id, 1);
+                                addToCart(product, 1);
+                                handleButtonUI();
+                                generateNotification("Added to cart")();
                                 e.stopPropagation();
                             }}>Add To Cart</button>
                         : <SkeletonLoading />}
@@ -85,7 +96,7 @@ export default function ProductsPage() {
         const value = e.target.value;
 
         setSearchValue(value);
-        if (searchValue && searchValue.length > 2) {
+        if (searchValue && searchValue.length >= 2) {
             setIsLoading(true);
             clearProductStore();
             setProducts([]);
@@ -96,6 +107,10 @@ export default function ProductsPage() {
                 setCurrentPage(1);
                 setDelayedSearchValue(value);
             }, 300);
+        } else if (value.length === 0) {
+            clearTimeout(timeoutRef.current);
+            setCurrentPage(1);
+            setDelayedSearchValue("");
         }
     };
     useEffect(() => {
@@ -175,11 +190,11 @@ export default function ProductsPage() {
                             {products.length ? products?.map((product, index, pds) => {
                                 if (index == pds.length - 1) {
                                     return (
-                                        <ProductCard ref={ref} key={product.id} product={product} isLoading={isLoading} onClick={() => productClick(product?.id)} />
+                                        <ProductCard ref={ref} key={`${product.id}-${index}`} product={product} isLoading={isLoading} onClick={() => productClick(product?.id)} />
                                     )
                                 }
                                 return (
-                                    <ProductCard key={product.id} product={product} isLoading={isLoading} onClick={() => productClick(product?.id)} />
+                                    <ProductCard key={`${product.id}-${index}`} product={product} isLoading={isLoading} onClick={() => productClick(product?.id)} />
                                 )
                             }) : <h1>No products found</h1>}
                         </div>

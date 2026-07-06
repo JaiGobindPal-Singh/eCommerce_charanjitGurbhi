@@ -1,25 +1,8 @@
-
-import { useMemo, useState } from "react";
+import { getCart, removeFromCart, updateProductQuantity } from "../utils/cartUtils";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, IndianRupee, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-const initialItems = [
-    {
-        id: 1,
-        name: "Herbal Tea Box",
-        price: 540,
-        quantity: 2,
-        image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=500&q=80",
-    },
-    {
-        id: 2,
-        name: "Handcrafted Candle",
-        price: 740,
-        quantity: 1,
-        image: "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=500&q=80",
-    },
-];
-
+import { generateNotification } from "../utils/notificationUtils";
 function formatCurrency(value) {
     return new Intl.NumberFormat("en-IN", {
         style: "currency",
@@ -33,15 +16,15 @@ function CartItem({ item, onQuantityChange, onRemove }) {
         <div className="flex flex-col gap-4 rounded-3xl border border-[#EBD8C0] bg-section-background p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
                 <img
-                    src={item.image}
-                    alt={item.name}
+                    src={item.product.imageUrl}
+                    alt={item.product.name}
                     className="h-24 w-24 rounded-2xl object-cover"
                 />
                 <div>
-                    <h3 className="text-lg font-semibold text-dark-textcolor">{item.name}</h3>
+                    <h3 className="text-lg font-semibold text-dark-textcolor">{item.product.name}</h3>
                     <p className="mt-1 flex items-center gap-1 text-sm text-light-textcolor">
                         <IndianRupee className="h-4 w-4" />
-                        {item.price}
+                        {item.product.price}
                     </p>
                 </div>
             </div>
@@ -50,8 +33,9 @@ function CartItem({ item, onQuantityChange, onRemove }) {
                 <div className="flex items-center rounded-full border border-[#EBD8C0] bg-main-background p-1">
                     <button
                         type="button"
-                        onClick={() => onQuantityChange(item.id, item.quantity - 1)}
+                        onClick={() => onQuantityChange(item.product.id, item.quantity - 1)}
                         className="rounded-full p-2 text-light-textcolor transition hover:bg-[#f6e3c4]"
+                        disabled={item.quantity === 1}
                     >
                         <Minus className="h-4 w-4" />
                     </button>
@@ -60,7 +44,7 @@ function CartItem({ item, onQuantityChange, onRemove }) {
                     </span>
                     <button
                         type="button"
-                        onClick={() => onQuantityChange(item.id, item.quantity + 1)}
+                        onClick={() => onQuantityChange(item.product.id, item.quantity + 1)}
                         className="rounded-full p-2 text-light-textcolor transition hover:bg-[#f6e3c4]"
                     >
                         <Plus className="h-4 w-4" />
@@ -69,11 +53,11 @@ function CartItem({ item, onQuantityChange, onRemove }) {
 
                 <div className="flex items-center gap-3">
                     <p className="text-base font-semibold text-dark-textcolor">
-                        {formatCurrency(item.price * item.quantity)}
+                        {formatCurrency(item.product.price * item.quantity)}
                     </p>
                     <button
                         type="button"
-                        onClick={() => onRemove(item.id)}
+                        onClick={() => onRemove(item)}
                         className="rounded-full p-2 text-light-textcolor transition hover:bg-[#f6e3c4]"
                     >
                         <Trash2 className="h-4 w-4" />
@@ -86,26 +70,51 @@ function CartItem({ item, onQuantityChange, onRemove }) {
 
 export default function CartPage() {
     const navigate = useNavigate();
-    const [items, setItems] = useState(initialItems);
+    const [items, setItems] = useState([]);
 
-    const subtotal = useMemo(
-        () => items.reduce((acc, item) => acc + item.price * item.quantity, 0),
+
+    useEffect(() => {
+        getCart().then((cartItems) => {
+            setItems(cartItems || []);
+        }).catch((error) => {
+            console.error("Error fetching cart items:", error);
+        })
+    }, [])
+
+    const cartTotal = useMemo(
+        () => items?.reduce((acc, item) => acc + item.product.price * item.quantity, 0),
         [items]
     );
 
-    const shipping = subtotal > 0 ? 120 : 0;
-    const total = subtotal + shipping;
-
-    const updateQuantity = (id, quantity) => {
-        setItems((currentItems) =>
-            currentItems
-                .map((item) => (item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item))
-                .filter((item) => item.quantity > 0)
-        );
+    const updateQuantity = (itemId, quantity) => {
+        if (!quantity || quantity < 1) {
+            return;
+        }
+        updateProductQuantity(itemId, quantity).then(() => {
+            setItems((currentItems) =>
+                currentItems.map((currentItem) =>
+                    (currentItem.product?.id ?? currentItem.id) === itemId
+                        ? { ...currentItem, quantity }
+                        : currentItem
+                )
+            );
+        }).catch((error) => {
+            generateNotification("unable to update quantity")();
+            console.error(error);
+        });
     };
 
-    const removeItem = (id) => {
-        setItems((currentItems) => currentItems.filter((item) => item.id !== id));
+    const removeItem = (item) => {
+        const itemId = item?.product?.id || item?.id;
+        removeFromCart(item).then(() =>
+            setItems((currentItems) =>
+                currentItems.filter((currentItem) =>
+                    (currentItem.product?.id ?? currentItem.id) !== itemId
+                )
+            )
+        ).catch((error) => {
+            console.error("Error removing item from cart:", error);
+        });
     };
 
     return (
@@ -127,9 +136,7 @@ export default function CartPage() {
                                 <p className="text-sm uppercase tracking-[0.25em] text-light-textcolor">Your cart</p>
                                 <h1 className="text-3xl font-semibold sm:text-4xl">Shopping bag</h1>
                             </div>
-                            <div className="rounded-full bg-section-background px-4 py-2 text-sm font-medium text-light-textcolor">
-                                {items.length} item{items.length !== 1 ? "s" : ""}
-                            </div>
+                            
                         </div>
 
                         {items.length === 0 ? (
@@ -151,7 +158,7 @@ export default function CartPage() {
                             <div className="space-y-4">
                                 {items.map((item) => (
                                     <CartItem
-                                        key={item.id}
+                                        key={item.product.id}
                                         item={item}
                                         onQuantityChange={updateQuantity}
                                         onRemove={removeItem}
@@ -164,17 +171,10 @@ export default function CartPage() {
                     <aside className="rounded-[2rem] border border-[#EBD8C0] bg-section-background p-6 shadow-sm">
                         <h2 className="text-2xl font-semibold">Order summary</h2>
                         <div className="mt-6 space-y-3 text-sm text-light-textcolor">
-                            <div className="flex items-center justify-between">
-                                <span>Subtotal</span>
-                                <span>{formatCurrency(subtotal)}</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span>Shipping</span>
-                                <span>{shipping === 0 ? "Free" : formatCurrency(shipping)}</span>
-                            </div>
+
                             <div className="mt-4 flex items-center justify-between border-t border-[#EBD8C0] pt-4 text-base font-semibold text-dark-textcolor">
-                                <span>Total</span>
-                                <span>{formatCurrency(total)}</span>
+                                <span>Cart Total</span>
+                                <span>{formatCurrency(cartTotal)}</span>
                             </div>
                         </div>
 

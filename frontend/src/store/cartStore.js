@@ -8,13 +8,13 @@ const useCartStore = create((set) => ({
 
     removeFromCart: (itemId) => set((state) => ({
         cartItems: state.cartItems.filter(
-            (item) => item.id !== itemId)
+            (item) => (item.product?.id ?? item.id) !== itemId)
     })),
 
     updateQuantity: (itemId, quantity) =>
         set((state) => ({
             cartItems: state.cartItems.map((item) =>
-                item.id === itemId ? { ...item, quantity } : item
+                (item.product?.id ?? item.id) === itemId ? { ...item, quantity } : item
             )
         })),
         setCart: (items) => 

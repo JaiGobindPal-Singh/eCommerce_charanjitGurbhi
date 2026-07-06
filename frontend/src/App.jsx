@@ -41,7 +41,6 @@ const App = () => {
         id:  serverUser?.id || "",
         role: serverUser?.role || "",
       };
-      console.log(normalizedUser);
       if (normalizedUser.id) {
         userStore.getState().setUser(normalizedUser);
       }

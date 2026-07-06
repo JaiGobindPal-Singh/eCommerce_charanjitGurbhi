@@ -5,11 +5,13 @@ import { IndianRupee, ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getProduct } from "../utils/productUtils";
 import SkeletonLoading from "../components/SkeletonLoading";
+import { generateNotification } from "../utils/notificationUtils";
 export default function DisplayProductPage() {
     const { productId } = useParams();
     const [quantity, setQuantity] = useState(1);
     const [isLoading, setIsLoading] = useState(true);
     const [product, setProduct] = useState({});
+    const [addedToCartBtn, setaddedToCartBtn] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -18,6 +20,13 @@ export default function DisplayProductPage() {
             setIsLoading(false);
         })
     }, [productId]);
+
+    const handleButtonUI = ()=>{
+        setaddedToCartBtn(true);
+        setTimeout(() => {
+            setaddedToCartBtn(false);
+        }, 500);
+    }
 
 
     //?sample data test
@@ -93,8 +102,14 @@ export default function DisplayProductPage() {
                             </div>
                         </div>
                         <button
-                            className={`w-full rounded-3xl px-6 py-4 text-lg font-semibold text-white transition ${product.stockAvailable ? 'bg-dark-textcolor hover:bg-light-textcolor hover:text-white' : 'bg-gray-300 cursor-not-allowed text-gray-700'}`}
-                            onClick={() => product.stockAvailable && addToCart(productId, quantity)}
+                            className={`w-full rounded-3xl px-6 py-4 text-lg font-semibold text-white transition ${product.stockAvailable && !addedToCartBtn ? 'bg-dark-textcolor hover:bg-light-textcolor hover:text-white' : 'bg-gray-300 cursor-not-allowed text-gray-700'}`}
+                            onClick={() => {
+                                product.stockAvailable && addToCart(product, quantity)
+                                handleButtonUI();
+                                generateNotification("Added to cart")();
+                            }
+
+                        }
                             disabled={!product.stockAvailable || isLoading}
                         >
                             {product.stockAvailable ? 'Add to Cart' : 'Out of Stock'}
