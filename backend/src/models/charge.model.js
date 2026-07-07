@@ -14,7 +14,7 @@ const chargeSchema = new mongoose.Schema({
             type: [String],
             trim: true
         },
-        amount:{
+        minAmount:{
             type: Number,
             default:0
         }

@@ -16,16 +16,6 @@ export const cartItemSchema = new mongoose.Schema({
     }
 }, { _id: false });
 
-export const chargeSchema = new mongoose.Schema({
-    chargeName: {
-        type: String,
-        required: true,
-    },
-    chargeAmount: {
-        type: Number,
-        required: true
-    }
-},{_id: false})
 
 const cartSchema = new mongoose.Schema({
     user: {

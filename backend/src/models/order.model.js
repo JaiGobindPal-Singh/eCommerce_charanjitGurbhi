@@ -1,5 +1,17 @@
 import mongoose from 'mongoose';
-import { cartItemSchema, chargeSchema } from './cart.model.js';
+import { cartItemSchema } from './cart.model.js';
+
+export const chargeSchema = new mongoose.Schema({
+    chargeName: {
+        type: String,
+        required: true,
+    },
+    chargeAmount: {
+        type: Number,
+        required: true
+    }
+},{_id: false})
+
 
 const addressSchema = new mongoose.Schema(
     {
@@ -52,13 +64,15 @@ const orderSchema = new mongoose.Schema({
     status: {
         type: String,
         enum: [
-            'order_placed',
-            'processing',
-            'out_for_delivery',
-            'delivered',
-            'cancelled',
-            'returned'
-        ],
+                'order_placed',
+                'processing',
+                'out_for_delivery',
+                'return_requested',
+                'return_approved',
+                'delivered',
+                'cancelled',
+                'returned'
+            ],
         lowercase: true,
         default: 'order_placed',
         trim: true
@@ -71,6 +85,8 @@ const orderSchema = new mongoose.Schema({
                 'order_placed',
                 'processing',
                 'out_for_delivery',
+                'return_requested',
+                'return_approved',
                 'delivered',
                 'cancelled',
                 'returned'
@@ -118,6 +134,11 @@ const orderSchema = new mongoose.Schema({
         },
         trim: true,
         maxlength:150
+    },
+    returnReason:{
+        type: String,
+        trim: true,
+        maxLength: 150
     }
 },{
     timestamps: true

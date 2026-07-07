@@ -2,9 +2,13 @@ import Charge from "../models/charge.model.js";
 
 export const getAllCharges = async (req, res)=>{
     try{
-        const charges = await Charge.find({});
+        const charges = await Charge.find({}).lean();
         return res.status(200).json({
-            charges: charges
+            charges: charges.map((ch)=>{
+                const {_id, __v, ...rest} = ch;
+                rest.id = _id;
+                return rest;
+            })
         })
     }catch(e){
         return res.status(500).json({error:"Internal server error"});
@@ -22,7 +26,7 @@ export const createCharge = async (req, res)=>{
         const chargeExist = await Charge.find({
             chargeName: chargeName
         }).lean();
-        if(chargeExist){
+        if(chargeExist.length){
             return res.status(400).json({error:"charge already exist"});
         }
         //creating new charge
@@ -33,7 +37,13 @@ export const createCharge = async (req, res)=>{
         });
         await charge.save();
         return res.status(201).json({
-            charge: charge
+            charge: {
+                chargeName:charge.chargeName,
+                chargeAmount: charge.chargeAmount,
+                noChargeConditions: charge.noChargeConditions,
+                id:charge._id
+
+            }
         });
 
     }catch(e){
@@ -50,8 +60,9 @@ export const updateCharge = async (req, res)=>{
             return res.status(400).json({error:"charge amount is required and must be a number"});
         }
         //finding if charge exist
-        const chargeExist = await Charge.findById(chargeId).lean();
-        if(!chargeExist){
+        const chargeExist = await Charge.findById(chargeId);
+
+        if(!chargeExist || !(Object.keys(chargeExist).length)){
             return res.status(404).json({error:"charge not found"});
         }
         //updating charge
@@ -59,9 +70,14 @@ export const updateCharge = async (req, res)=>{
         chargeExist.chargeAmount = chargeAmount? chargeAmount : chargeExist.chargeAmount;
         chargeExist.noChargeConditions = noChargeConditions? noChargeConditions : chargeExist.noChargeConditions;
         await chargeExist.save();
-
+        
         return res.status(200).json({
-            charge: chargeExist
+            charge: {
+                chargeName: chargeExist.chargeName,
+                chargeAmount: chargeExist.chargeAmount,
+                noChargeConditions: chargeExist.noChargeConditions,
+                id: chargeExist._id
+            }
         });
     }catch(e){
         return res.status(500).json({error:"Internal server error"});

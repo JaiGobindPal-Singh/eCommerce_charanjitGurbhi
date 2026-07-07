@@ -12,11 +12,11 @@ export const createOrder = async (req, res) => {
 
         //validate payment mode
         if (!paymentMode || !verifyMongoId(paymentMode)) {
-            return res.status(400).json({ message: "invalid payment option" });
+            return res.status(400).json({ error: "invalid payment option" });
         }
         //validate delivery details
         if (!deliveryDetails || !deliveryDetails.deliveryAddress) {
-            return res.status(400).json({ message: "delivery details required" });
+            return res.status(400).json({ error: "delivery details required" });
         }
         if (!deliveryDetails.deliveryAddress.fullName ||
             !deliveryDetails.deliveryAddress.phone ||
@@ -24,7 +24,7 @@ export const createOrder = async (req, res) => {
             !deliveryDetails.deliveryAddress.city ||
             !deliveryDetails.deliveryAddress.state
         ) {
-            return res.status(400).json({ message: "all delivery details are required" });
+            return res.status(400).json({ error: "all delivery details are required" });
         }
 
         // Get cart
@@ -32,14 +32,14 @@ export const createOrder = async (req, res) => {
 
         if (!cart) {
             return res.status(404).json({
-                message: 'Cart not found'
+                error: 'Cart not found'
             });
         }
 
         // Check cart is empty
         if (!cart.items?.length) {
             return res.status(400).json({
-                message: 'Cart is empty'
+                error: 'Cart is empty'
             });
         }
 

@@ -5,11 +5,7 @@ import productRoutes from "./routes/productRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
-// import adminRoutes from './routes/adminRoutes.js';
-// import productRoutes from './routes/productRoutes.js';
-// import catalogRoutes from './routes/catalogRoutes.js';
-// import cartRoutes from './routes/cartRoutes.js';
-// import orderRoutes from './routes/orderRoutes.js';
+import chargeRoutes from "./routes/chargeRoutes.js"
 import { isUserLoggedIn } from "./controllers/authController.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -33,6 +29,7 @@ app.use("/api/v0/auth", authRoutes);
 app.use("/api/v0/categories", categoryRoutes);
 app.use("/api/v0/products", productRoutes);
 app.use("/api/v0/payment", paymentRoutes);
+app.use("/api/v0/charges", chargeRoutes);
 app.use("/api/v0/orders", orderRoutes);
 
 app.get("/health", (_request, response) => {
