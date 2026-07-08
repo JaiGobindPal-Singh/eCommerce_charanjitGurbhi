@@ -7,6 +7,31 @@ const userSchema = new mongoose.Schema(
             required: true,
             trim: true,
         },
+        address:{
+            streetAddress:{
+                type: String,
+                trim: true,
+                lowercase: true,
+                default: ""
+            },
+            city:{
+                type: String,
+                trim: true,
+                lowercase: true,
+                default: ""
+            },
+            state:{
+                type: String,
+                trim: true,
+                lowercase: true,
+                default: ""
+            },
+            postalCode:{
+                type:String,
+                trim: true,
+                default: ""
+            }
+        },
         phone: {
             type: String,
             required: true,

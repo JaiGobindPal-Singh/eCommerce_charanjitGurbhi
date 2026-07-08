@@ -21,7 +21,8 @@ export const authenticateUser = async (req, res, next) => {
             id: String(user._id),
             name:user.name,
             phone:user.phone,
-            role:user.role
+            role:user.role,
+            address: user.address
         }
         next();
     }catch(error){

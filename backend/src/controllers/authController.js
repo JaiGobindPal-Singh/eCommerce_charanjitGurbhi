@@ -5,7 +5,7 @@ import { generateToken, decryptToken } from "../utils/jwt.js";
 
 export const registerUser = async (req, res) => {
     try {
-        const { name, phone, password } = req.body;
+        const { name, phone, password, streetAddress="", city="", state="", postalCode="" } = req.body;
         if (!name || !phone || !password) {
             return res.status(400).json({ error: 'Name, phone and password are required' });
         }
@@ -21,6 +21,10 @@ export const registerUser = async (req, res) => {
             name,
             phone,
             password: hashedPassword,
+            streetAddress,
+            city,
+            state, 
+            postalCode,
             role: 'client'
         });
         await newUser.save();
@@ -130,4 +134,27 @@ export const isUserLoggedIn = async (req, res) => {
         return res.status(401).json({ user: {} });
     }
 }
+export const setUserAddress = async( req, res) =>{
+    try{
 
+        const {streetAddress, city, state, postalCode=""} = req.body;
+        if(!streetAddress || !city || !state){
+            return res.status(400).json({error:"address details are required"});
+        }
+        if(!req.user?.id){
+            return res.status(400).json({
+                error: "Login required"
+            })
+        }
+        const addressObj = {streetAddress, city, state, postalCode}
+        const user = await User.findByIdAndUpdate(req.user?.id,{
+            $set: {address: addressObj}
+        });
+        return res.status(200).json({
+            success: true
+        })
+    }catch(e){
+        console.log(e);
+        return res.status(500).json({error: "internal server error"})
+    }
+}

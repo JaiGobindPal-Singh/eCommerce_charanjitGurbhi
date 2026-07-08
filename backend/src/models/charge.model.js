@@ -9,10 +9,15 @@ const chargeSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    fixed: {
+        type:Boolean,
+        default: false
+    },
     noChargeConditions:{
         city:{
             type: [String],
-            trim: true
+            trim: true,
+            lowercase: true
         },
         minAmount:{
             type: Number,

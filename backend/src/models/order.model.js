@@ -25,7 +25,7 @@ const addressSchema = new mongoose.Schema(
             required: true,
             trim: true
         },
-        fullAddress: {
+        streetAddress: {
             type: String,
             required: true,
             trim: true
