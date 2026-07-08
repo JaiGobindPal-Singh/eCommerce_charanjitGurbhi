@@ -1,15 +1,17 @@
-import User from "../models/User.js";
+import User from '../models/user.model.js'
 import { generateHash, verifyHash } from "../utils/bcrypt.js";
 import { generateToken, decryptToken } from "../utils/jwt.js";
 
 
 export const registerUser = async (req, res) => {
     try {
-        const { name, phone, password, streetAddress="", city="", state="", postalCode="" } = req.body;
+        const { name, phone, password, streetAddress = "", city = "", state = "", postalCode = "" } = req.body;
         if (!name || !phone || !password) {
             return res.status(400).json({ error: 'Name, phone and password are required' });
         }
-
+        if (password.trim().length < 8) {
+            return res.status(400).json({ error: "short password" })
+        }
         //fetching user from db to check if user exist
         const user = await User.findOne({ phone }).lean();
         if (user) {
@@ -21,10 +23,6 @@ export const registerUser = async (req, res) => {
             name,
             phone,
             password: hashedPassword,
-            streetAddress,
-            city,
-            state, 
-            postalCode,
             role: 'client'
         });
         await newUser.save();
@@ -44,7 +42,11 @@ export const registerUser = async (req, res) => {
                 id: newUser._id,
                 name: newUser.name,
                 phone: newUser.phone,
-                role: newUser.role
+                role: newUser.role,
+                streetAddress: user.streetAddress,
+                city: user.city,
+                state: user.state,
+                postalCode: user.postalCode,
             }
         });
 
@@ -67,7 +69,7 @@ export const loginUser = async (req, res) => {
         //verify password
         const isPasswordValid = await verifyHash(password, user.password);
         if (!isPasswordValid) {
-            return res.status(400).json({error: 'invalid phone or password' });
+            return res.status(400).json({ error: 'invalid phone or password' });
         }
 
         //generate JWT token for the user and save as cookie
@@ -79,12 +81,17 @@ export const loginUser = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
+        
         return res.status(200).json({
             user: {
                 id: user._id,
                 name: user.name,
                 phone: user.phone,
-                role: user.role
+                role: user.role,
+                streetAddress: user.address.streetAddress,
+                city: user.address.city,
+                state: user.address.state,
+                postalCode: user.address.postalCode,
             }
         });
 
@@ -120,41 +127,44 @@ export const isUserLoggedIn = async (req, res) => {
             return res.status(200).json({ user: {} });
         }
 
-
         //attach user to request object
         res.status(200).json({
-            user:{
+            user: {
                 id: user._id,
-                name:user.name,
-                role:user.role,
-                phone: user.phone
+                name: user.name,
+                role: user.role,
+                phone: user.phone,
+                streetAddress: user.address.streetAddress,
+                city: user.address.city,
+                state: user.address.state,
+                postalCode: user.address.postalCode,
             }
         });
     } catch (error) {
         return res.status(401).json({ user: {} });
     }
 }
-export const setUserAddress = async( req, res) =>{
-    try{
+export const setUserAddress = async (req, res) => {
+    try {
 
-        const {streetAddress, city, state, postalCode=""} = req.body;
-        if(!streetAddress || !city || !state){
-            return res.status(400).json({error:"address details are required"});
+        const { streetAddress, city, state, postalCode = "" } = req.body;
+        if (!streetAddress || !city || !state) {
+            return res.status(400).json({ error: "address details are required" });
         }
-        if(!req.user?.id){
+        if (!req.user?.id) {
             return res.status(400).json({
                 error: "Login required"
             })
         }
-        const addressObj = {streetAddress, city, state, postalCode}
-        const user = await User.findByIdAndUpdate(req.user?.id,{
-            $set: {address: addressObj}
+        const addressObj = { streetAddress, city, state, postalCode }
+        const user = await User.findByIdAndUpdate(req.user?.id, {
+            $set: { address: addressObj }
         });
         return res.status(200).json({
             success: true
         })
-    }catch(e){
+    } catch (e) {
         console.log(e);
-        return res.status(500).json({error: "internal server error"})
+        return res.status(500).json({ error: "internal server error" })
     }
 }

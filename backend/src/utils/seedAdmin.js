@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { env } from '../config/env.js';
-import User from '../models/User.js';
+import User from '../models/user.model.js';
 
 export const seedAdminUser = async() =>{
     try{

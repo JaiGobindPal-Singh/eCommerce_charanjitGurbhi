@@ -1,7 +1,7 @@
-import PaymentOptions from "../models/paymentOptions.model.js";
-import { initializeUpiPayment, confirmPayment } from "../utils/payment.js";
-import { verifyMongoId } from "../utils/mongo.utils.js";
-import Cart from "../models/cart.model.js";
+import PaymentOptions from "./paymentOptions.model.js";
+import { initializeUpiPayment, confirmPayment } from "../../utils/payment.js";
+import { verifyMongoId } from "../../utils/mongo.utils.js";
+import Cart from "../../models/cart.model.js";
 
 export const getPaymentMethods = async (req, res) => {
     try {

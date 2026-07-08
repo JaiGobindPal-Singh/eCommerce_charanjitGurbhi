@@ -1,4 +1,4 @@
-import User from '../models/User.js';
+import User from '../models/user.model.js';
 import { decryptToken } from '../utils/jwt.js';
 
 export const authenticateUser = async (req, res, next) => {

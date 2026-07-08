@@ -1,5 +1,5 @@
-import { getPaymentMethods, updatePaymentMethod, removePaymentMethod,addPaymentMethod } from "../controllers/paymentController.js";
-import { authenticateUser, authorizeAdmin } from "../middleware/authMiddleware.js";
+import { getPaymentMethods, updatePaymentMethod, removePaymentMethod,addPaymentMethod } from "./payment.controller.js";
+import { authenticateUser, authorizeAdmin } from "../../middleware/authMiddleware.js";
 import express from 'express';
 
 const router = express.Router();

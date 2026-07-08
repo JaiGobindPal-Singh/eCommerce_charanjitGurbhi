@@ -7,14 +7,14 @@ import {
   getProductsByKeyword,
   updateProduct,
   getProductById,
-} from "../controllers/productController.js";
+} from "../controllers/product.controller.js";
 import { authorizeAdmin } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 //admin routes
-router.post("/create", authorizeAdmin, createProduct);
-router.delete("/delete", authorizeAdmin, deleteProduct);
-router.put("/update", authorizeAdmin, updateProduct);
+router.post("/", authorizeAdmin, createProduct);
+router.delete("/", authorizeAdmin, deleteProduct);
+router.put("/", authorizeAdmin, updateProduct);
 
 //client routes
 router.get("/", getAllProducts);
