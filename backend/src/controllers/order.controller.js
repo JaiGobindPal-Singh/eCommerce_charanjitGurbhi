@@ -2,18 +2,74 @@ import Order from "../models/order.model.js";
 import Cart from "../models/cart.model.js";
 import { verifyMongoId } from "../utils/mongo.utils.js"
 
+const findApplicableCharges = async (user, cart) => {
+    //getting charges
+    const charges = await Charge.find({}).lean();
+
+    //no charges exist
+    if (!(Object.keys(charges).length)) {
+        return [];
+    }
+
+    const calculateChargePercent = (cartTotal, percent) => {
+        return cartTotal * percent / 100;
+    }
+    //getting fixed charges
+    const fixedCharges = charges
+        .filter((ch) => ch.fixed)
+        .map((ch) => ({ [ch.chargeName]: ch.chargeAmount ?? calculateChargePercent(cartTotal, ch.chargePercent) }));
+
+    //evaluating optional charges
+    const userCity = user?.address?.city;
+    const optionalCharges = charges
+        .filter((ch) => {
+            if (ch.fixed) return false;
+
+            const cityExempt =
+                ch.noChargeConditions?.city.length ? ch.noChargeConditions?.city?.includes(userCity.toLowerCase()) ?? false : true;
+
+            const minAmount = ch.noChargeConditions?.minAmount ?? 0;
+            const amountExempt = minAmount > 0 ? cartTotal >= minAmount : true;
+
+            return !(cityExempt && amountExempt);
+        })
+        .map((ch) => ({ [ch.chargeName]: ch.chargeAmount ?? calculateChargePercent(cartTotal, ch.chargePercent) }));
+
+    return [...fixedCharges, ...optionalCharges]
+    
+
+
+}
+const calculateTotalPayable = (cart, charges) => {
+    //calculating cart total
+    const cartTotal = cart?.items?.reduce((sum, item) => {
+        return sum + (item.product?.price || 0) * item.quantity;
+    }, 0) || 0;
+
+    //calculating charges total
+    let totalCharges = 0;
+        charges.forEach((ch)=>{
+        totalCharges += Number(Object.values(ch).reduce((sum, current) => sum + current, 0));
+    })
+    
+    //return total payable
+    return cartTotal + totalCharges;
+}
+
 export const createOrder = async (req, res) => {
     try {
         const userId = req.user.id;
         const {
-            deliveryDetails,
-            paymentMode,
+            deliveryDetails
+            // paymentMode,//* @degraded for manual payment
         } = req.body;
 
         //validate payment mode
-        if (!paymentMode || !verifyMongoId(paymentMode)) {
-            return res.status(400).json({ error: "invalid payment option" });
-        }
+        //*@degraded manual payment
+        // if (!paymentMode || !verifyMongoId(paymentMode)) {
+        //     return res.status(400).json({ error: "invalid payment option" });
+        // }
+
         //validate delivery details
         if (!deliveryDetails || !deliveryDetails.deliveryAddress) {
             return res.status(400).json({ error: "delivery details required" });
@@ -35,14 +91,17 @@ export const createOrder = async (req, res) => {
                 error: 'Cart not found'
             });
         }
-
         // Check cart is empty
         if (!cart.items?.length) {
             return res.status(400).json({
                 error: 'Cart is empty'
             });
         }
+        //getting applicable charges and totalBill
+        const charges = await findApplicableCharges(req.user, cart);
+        const totalBill = calculateTotalPayable(cart, charges);
 
+        //todo verify total bill meets the orderConditions
         // Create order
         const order = await Order.create({
             user: userId,
@@ -53,8 +112,8 @@ export const createOrder = async (req, res) => {
             items: cart.items,
             billing: {
                 paymentMode,
-                charges: cart.billing.charges,
-                totalBill: cart.billing.totalBill
+                charges: charges,
+                totalBill: totalBill
             },
             deliveryDetails: deliveryDetails,
         });
@@ -62,11 +121,13 @@ export const createOrder = async (req, res) => {
         if (!order) {
             return res.status(400).json({ message: "unable to create order" });
         }
+        //todo create payment here and new route to handle payment that also clear cart
+
         // clear cart after successful order
-        cart.items = [];
-        cart.billing.charges = [];
-        cart.billing.totalBill = 0;
-        await cart.save();
+        // cart.items = [];
+        // cart.billing.charges = [];
+        // cart.billing.totalBill = 0;
+        // await cart.save();
 
         return res.status(201).json({
             message: 'Order created successfully',
@@ -74,9 +135,8 @@ export const createOrder = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("error create order", error);
         return res.status(500).json({
-            message: 'internal server error'
+            error: 'internal server error'
         });
     }
 };
@@ -86,20 +146,20 @@ export const updateOrderStatus = async (req, res) => {
         const { orderId } = req.params;
         const status = String(req.body.status);
         const cancellationReason = String(req.body.cancellationReason || "");
-        const {deliveryPartner, trackingId} = req.body;
+        const { deliveryPartner, trackingId } = req.body;
 
         //validate order and status
         if (!orderId || !verifyMongoId(orderId)) {
             return res.status(400).json({ message: "invalid order" });
         }
-        if(!status || !([
+        if (!status || !([
             'payment_confirmed',
             'processing',
             'out_for_delivery',
             'delivered',
             'cancelled'
-        ].includes(status.trim()))){
-            return res.status(400).json({message:"invalid status option"})
+        ].includes(status.trim()))) {
+            return res.status(400).json({ message: "invalid status option" })
         }
 
         // Find order
@@ -119,7 +179,7 @@ export const updateOrderStatus = async (req, res) => {
                 message: 'Cancellation reason is required'
             });
         }
-        
+
         // Update status
         order.status = status;
 
@@ -129,7 +189,7 @@ export const updateOrderStatus = async (req, res) => {
         }
 
         // Handle out for delivery
-        if( status === 'out_for_delivery'){
+        if (status === 'out_for_delivery') {
             order.deliveryDetails.deliveryPartner = deliveryPartner || "";
             order.deliveryDetails.trackingId = trackingId || "";
         }
@@ -160,12 +220,12 @@ export const getUserOrders = async (req, res) => {
         const orders = await Order.find({
             user: userId
         }).select('status items billing.totalBill createdAt')
-        .sort({ createdAt: -1 })
-        .populate({
-            path: 'items.product',
-            select: 'name'
-        })
-        .lean();
+            .sort({ createdAt: -1 })
+            .populate({
+                path: 'items.product',
+                select: 'name'
+            })
+            .lean();
 
         return res.status(200).json({
             orders
@@ -188,7 +248,7 @@ export const getOrderDetails = async (req, res) => {
         //fetching order
         const fullOrder = await Order.findOne({
             _id: orderId,
-        }).populate({path:'billing.paymentMode',select:'paymentOption'});
+        }).populate({ path: 'billing.paymentMode', select: 'paymentOption' });
 
         if (!fullOrder) {
             return res.status(404).json({ message: "order does not exist" });
@@ -199,11 +259,11 @@ export const getOrderDetails = async (req, res) => {
         return res.status(500).json({ message: "internal server error" });
     }
 }
-export const getPendingOrders = async (req, res) =>{
+export const getPendingOrders = async (req, res) => {
     try {
         const orders = await Order.find({
             status: { $nin: ['delivered', 'cancelled'] }
-        }).sort({ createdAt: -1 }).populate({path:'billing.paymentMode',select:'paymentOption'});
+        }).sort({ createdAt: -1 }).populate({ path: 'billing.paymentMode', select: 'paymentOption' });
 
         return res.status(200).json(orders);
     } catch (error) {
@@ -213,11 +273,11 @@ export const getPendingOrders = async (req, res) =>{
         });
     }
 }
-export const getCompletedOrders = async (req, res) =>{
+export const getCompletedOrders = async (req, res) => {
     try {
         const orders = await Order.find({
             status: { $eq: 'delivered' }
-        }).sort({ createdAt: -1 }).populate({path:'billing.paymentMode',select:'paymentOption'});
+        }).sort({ createdAt: -1 }).populate({ path: 'billing.paymentMode', select: 'paymentOption' });
 
         return res.status(200).json(orders);
     } catch (error) {
@@ -227,11 +287,11 @@ export const getCompletedOrders = async (req, res) =>{
         });
     }
 }
-export const getCancelledOrders = async (req, res) =>{
+export const getCancelledOrders = async (req, res) => {
     try {
         const orders = await Order.find({
             status: { $eq: 'cancelled' }
-        }).sort({ createdAt: -1 }).populate({path:'billing.paymentMode',select:'paymentOption'});
+        }).sort({ createdAt: -1 }).populate({ path: 'billing.paymentMode', select: 'paymentOption' });
 
         return res.status(200).json(orders);
     } catch (error) {
