@@ -7,7 +7,15 @@ const chargeSchema = new mongoose.Schema({
     },
     chargeAmount: {
         type: Number,
-        required: true
+        required: function(){
+            return !this.chargePercent;
+        }
+    },
+    chargePercent:{
+        type: Number,
+        required: function(){
+            return !this.chargeAmount;
+        }
     },
     fixed: {
         type:Boolean,

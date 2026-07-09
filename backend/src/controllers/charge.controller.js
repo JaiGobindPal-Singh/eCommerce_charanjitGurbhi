@@ -17,9 +17,12 @@ export const getAllCharges = async (req, res) => {
 
 export const createCharge = async (req, res) => {
     try {
-        const { chargeName, chargeAmount, noChargeConditions } = req.body;
+        const { chargeName, chargeAmount, chargePercent, noChargeConditions, fixed } = req.body;
         //validating charge
-        if (!chargeName || !chargeAmount || isNaN(Number(chargeAmount))) {
+        if (chargeAmount && chargePercent) {
+            return res.status(400).json({ error: "only single type of charge is applicable" });
+        }
+        if (!chargeName || (!chargeAmount && !chargePercent) || (isNaN(Number(chargeAmount)) && isNaN(Number(chargePercent)))) {
             return res.status(400).json({ error: "charge name and amount is required" });
         }
         //finding if charge exist
@@ -33,16 +36,19 @@ export const createCharge = async (req, res) => {
         const charge = new Charge({
             chargeName: chargeName,
             chargeAmount: chargeAmount,
-            noChargeConditions: noChargeConditions
+            chargePercent: chargePercent,
+            noChargeConditions: noChargeConditions,
+            fixed: fixed ? true : false
         });
         await charge.save();
         return res.status(201).json({
             charge: {
                 chargeName: charge.chargeName,
                 chargeAmount: charge.chargeAmount,
+                chargePercent: charge.chargePercent,
                 noChargeConditions: charge.noChargeConditions,
+                fixed: charge.fixed,
                 id: charge._id
-
             }
         });
 
@@ -54,9 +60,9 @@ export const createCharge = async (req, res) => {
 export const updateCharge = async (req, res) => {
     try {
         const { chargeId } = req.params;
-        const { chargeName, chargeAmount, noChargeConditions } = req.body;
+        const { chargeName, chargeAmount, noChargeConditions, chargePercent, fixed } = req.body;
         //validating charge
-        if (isNaN(Number(chargeAmount))) {
+        if (isNaN(Number(chargeAmount)) && isNaN(Number(chargePercent))) {
             return res.status(400).json({ error: "charge amount is required and must be a number" });
         }
         //finding if charge exist
@@ -69,14 +75,18 @@ export const updateCharge = async (req, res) => {
         chargeExist.chargeName = chargeName ? chargeName : chargeExist.chargeName;
         chargeExist.chargeAmount = chargeAmount ? chargeAmount : chargeExist.chargeAmount;
         chargeExist.noChargeConditions = noChargeConditions ? noChargeConditions : chargeExist.noChargeConditions;
+        chargeExist.chargePercent = chargePercent ? chargePercent : chargeExist.chargePercent;
+        chargeExist.fixed = fixed ? true : false;
         await chargeExist.save();
 
         return res.status(200).json({
             charge: {
                 chargeName: chargeExist.chargeName,
                 chargeAmount: chargeExist.chargeAmount,
+                chargePercent: chargeExist.chargePercent,
                 noChargeConditions: chargeExist.noChargeConditions,
-                id: chargeExist._id
+                id: chargeExist._id,
+                fixed:chargeExist.fixed
             }
         });
     } catch (e) {
@@ -120,23 +130,30 @@ export const getApplicableCharges = async (req, res) => {
             })
         }
 
+        const calculateChargePercent = (cartTotal, percent) => {
+            return cartTotal * percent / 100;
+        }
         //getting fixed charges
         const fixedCharges = charges
             .filter((ch) => ch.fixed)
-            .map((ch) => ({ [ch.chargeName]: ch.chargeAmount }));
+            .map((ch) => ({ [ch.chargeName]: ch.chargeAmount ?? calculateChargePercent(cartTotal, ch.chargePercent) }));
 
 
         //evaluating optional charges
         const userCity = req.user?.address?.city;
         const optionalCharges = charges
-            .filter((ch) => !ch.fixed)
             .filter((ch) => {
-                const cityExempt = Array.isArray(ch.noChargeConditions?.city) && ch.noChargeConditions.city.includes(userCity);
-                const minAmount = Number(ch.noChargeConditions?.minAmount ?? Infinity);
-                // apply charge only if user city is NOT exempt and cartTotal is less than minAmount
-                return !cityExempt && cartTotal < minAmount;
+                if (ch.fixed) return false;
+
+                const cityExempt =
+                    ch.noChargeConditions?.city.length ?ch.noChargeConditions?.city?.includes(userCity.toLowerCase()) ?? false : true;
+
+                const minAmount = ch.noChargeConditions?.minAmount ?? 0;
+                const amountExempt = minAmount > 0 ? cartTotal >= minAmount : true;
+                
+                return !(cityExempt && amountExempt);
             })
-            .map((ch) => ({ [ch.chargeName]: ch.chargeAmount }));
+            .map((ch) => ({ [ch.chargeName]: ch.chargeAmount ?? calculateChargePercent(cartTotal, ch.chargePercent) }));
 
         return res.status(200).json({
             charges: [...fixedCharges, ...optionalCharges]

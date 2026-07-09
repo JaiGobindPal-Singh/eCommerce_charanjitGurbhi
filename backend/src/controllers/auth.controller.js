@@ -5,7 +5,8 @@ import { generateToken, decryptToken } from "../utils/jwt.js";
 
 export const registerUser = async (req, res) => {
     try {
-        const { name, phone, password, streetAddress = "", city = "", state = "", postalCode = "" } = req.body;
+        const { name, phone, streetAddress = "", city = "", state = "", postalCode = "" } = req.body;
+        const password = String(req.body.password);
         if (!name || !phone || !password) {
             return res.status(400).json({ error: 'Name, phone and password are required' });
         }
@@ -58,7 +59,9 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
     try {
 
-        const { phone, password } = req.body;
+        const { phone } = req.body;
+        const password = String(req.body.password);
+        
         if (!phone || !password) {
             return res.status(400).json({ message: 'Phone and password are required' });
         }
