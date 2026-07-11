@@ -8,9 +8,12 @@ import chargeRoutes from "./routes/charge.routes.js"
 import { isUserLoggedIn } from "./controllers/auth.controller.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import paymentOptionsRoutes from "./routes/paymentOptions.routes.js"
+import { initializePaymentOptions } from "./controllers/paymentOptions.controller.js";
 
 const app = express();
 
+initializePaymentOptions();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -21,6 +24,7 @@ app.use(
     credentials: true,
   }),
 );
+app.use("/api/v0/payment-options",paymentOptionsRoutes);
 app.use("/api/v0/cart", cartRoutes);
 app.use("/api/v0/auth", authRoutes);
 app.use("/api/v0/categories", categoryRoutes);

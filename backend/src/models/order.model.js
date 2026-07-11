@@ -10,7 +10,7 @@ export const chargeSchema = new mongoose.Schema({
         type: Number,
         required: true
     }
-},{_id: false})
+}, { _id: false })
 
 
 const addressSchema = new mongoose.Schema(
@@ -64,15 +64,16 @@ const orderSchema = new mongoose.Schema({
     status: {
         type: String,
         enum: [
-                'order_placed',
-                'processing',
-                'out_for_delivery',
-                'return_requested',
-                'return_approved',
-                'delivered',
-                'cancelled',
-                'returned'
-            ],
+            'awaiting_payment',
+            'order_placed',
+            'processing',
+            'out_for_delivery',
+            'delivered',
+            'cancelled',
+            'return_requested',
+            'return_approved',
+            'returned'
+        ],
         lowercase: true,
         default: 'order_placed',
         trim: true
@@ -80,15 +81,16 @@ const orderSchema = new mongoose.Schema({
     statusHistory: [{
         status: {
             type: String,
-            required:true,
+            required: true,
             enum: [
+                'awaiting_payment',
                 'order_placed',
                 'processing',
                 'out_for_delivery',
-                'return_requested',
-                'return_approved',
                 'delivered',
                 'cancelled',
+                'return_requested',
+                'return_approved',
                 'returned'
             ],
             lowercase: true
@@ -104,9 +106,10 @@ const orderSchema = new mongoose.Schema({
     },
     billing: {
         paymentMode: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "PaymentOptions",
-            required: true
+            type: String,
+            enum: ["cod", "online"],
+            required: true,
+            trim: true
         },
         charges: { type: [chargeSchema], default: [] },
         totalBill: { type: Number, required: true }
@@ -129,18 +132,23 @@ const orderSchema = new mongoose.Schema({
     },
     cancellationReason: {
         type: String,
-        required: function(){
+        required: function () {
             return this.status === "cancelled"
         },
         trim: true,
-        maxlength:150
+        maxlength: 150
     },
-    returnReason:{
+    returnReason: {
         type: String,
         trim: true,
         maxLength: 150
+    },
+    transaction: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Transaction",
+        default: null
     }
-},{
+}, {
     timestamps: true
 });
 

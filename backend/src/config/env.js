@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const requiredEnv = ['MONGO_URI', 'JWT_SECRET', 'ADMIN_PHONE', 'ADMIN_PASSWORD','CLOUDINARY_API', 'CLOUDINARY_SECRET','CLOUDINARY_CLOUD_NAME'];
+const requiredEnv = ['MONGO_URI', 'JWT_SECRET', 'ADMIN_PHONE', 'ADMIN_PASSWORD','CLOUDINARY_API', 'CLOUDINARY_SECRET','CLOUDINARY_CLOUD_NAME', 'RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET'];
 
 for (const key of requiredEnv) {
     if (!process.env[key]) {
@@ -21,4 +21,6 @@ export const env = {
     cloudinaryApi:process.env.CLOUDINARY_API,
     cloudinarySecret:process.env.CLOUDINARY_SECRET,
     cloudinaryCloudName:process.env.CLOUDINARY_CLOUD_NAME,
+    razorpayKey: process.env.RAZORPAY_KEY_ID,
+    razorpaySecret: process.env.RAZORPAY_KEY_SECRET
 };

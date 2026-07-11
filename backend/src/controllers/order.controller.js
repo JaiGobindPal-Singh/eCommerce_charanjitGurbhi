@@ -1,6 +1,11 @@
 import Order from "../models/order.model.js";
 import Cart from "../models/cart.model.js";
+import OrderCondition from "../models/orderCondition.model.js";
+import PaymentOptions from "../models/paymentOptions.model.js";
 import { verifyMongoId } from "../utils/mongo.utils.js"
+import { createRazorpayOrder } from "../config/razorpay.config.js";
+import { env } from "../config/env.js";
+import Transaction from '../models/transactions.model.js'
 
 const findApplicableCharges = async (user, cart) => {
     //getting charges
@@ -36,7 +41,7 @@ const findApplicableCharges = async (user, cart) => {
         .map((ch) => ({ [ch.chargeName]: ch.chargeAmount ?? calculateChargePercent(cartTotal, ch.chargePercent) }));
 
     return [...fixedCharges, ...optionalCharges]
-    
+
 
 
 }
@@ -48,10 +53,10 @@ const calculateTotalPayable = (cart, charges) => {
 
     //calculating charges total
     let totalCharges = 0;
-        charges.forEach((ch)=>{
+    charges.forEach((ch) => {
         totalCharges += Number(Object.values(ch).reduce((sum, current) => sum + current, 0));
     })
-    
+
     //return total payable
     return cartTotal + totalCharges;
 }
@@ -60,15 +65,14 @@ export const createOrder = async (req, res) => {
     try {
         const userId = req.user.id;
         const {
-            deliveryDetails
-            // paymentMode,//* @degraded for manual payment
+            deliveryDetails,
+            paymentMode
         } = req.body;
 
         //validate payment mode
-        //*@degraded manual payment
-        // if (!paymentMode || !verifyMongoId(paymentMode)) {
-        //     return res.status(400).json({ error: "invalid payment option" });
-        // }
+        if (!paymentMode || !(["cod", "online"].includes(paymentMode))) {
+            return res.status(400).json({ error: "invalid payment option" });
+        }
 
         //validate delivery details
         if (!deliveryDetails || !deliveryDetails.deliveryAddress) {
@@ -81,6 +85,20 @@ export const createOrder = async (req, res) => {
             !deliveryDetails.deliveryAddress.state
         ) {
             return res.status(400).json({ error: "all delivery details are required" });
+        }
+
+        //verify cod payment is available or not
+        if (paymentMode.trim() == "cod") {
+            if (!deliveryDetails.deliveryAddress.city) {
+                return res.status(400).json({ error: "delivery address is required" });
+            }
+            const pOp = await PaymentOptions.findOne();
+            if (!(
+                pOp.cod?.enabled &&
+                pOp.cod?.availableCities?.includes((deliveryDetails.deliveryAddress.city).trim())
+            )) {
+                return res.status(400).json({ error: "cod not available at this location" });
+            }
         }
 
         // Get cart
@@ -97,17 +115,73 @@ export const createOrder = async (req, res) => {
                 error: 'Cart is empty'
             });
         }
+
         //getting applicable charges and totalBill
         const charges = await findApplicableCharges(req.user, cart);
         const totalBill = calculateTotalPayable(cart, charges);
 
-        //todo verify total bill meets the orderConditions
-        // Create order
+        //verifying min order amount
+        const minOrderValue = await OrderCondition.findOne().lean();
+        if (minOrderValue && totalBill < minOrderValue.minAmount) {
+            return res.status(400).json({
+                error: `minimum order value must more than or equals ${minOrderValue.minAmount}`
+            })
+        }
+
+        //*verify stock here not needed now
+
+        //payment mode is cod clear cart and return
+        if (paymentMode == "cod") {
+            // Create order
+            const order = await Order.create({
+                user: userId,
+                status: 'order_placed',
+                statusHistory: [{
+                    status: 'order_placed'
+                }],
+                items: cart.items,
+                billing: {
+                    paymentMode,
+                    charges: charges,
+                    totalBill: totalBill
+                },
+                deliveryDetails: deliveryDetails,
+            });
+
+            //verifying if order is created or not
+            if (!order) {
+                return res.status(400).json({ error: "unable to create order" });
+            }
+
+            // clear cart after successful order
+            cart.items = [];
+            cart.billing.charges = [];
+            cart.billing.totalBill = 0;
+            await cart.save();
+            return res.status(201).json({
+                success: true,
+                order: {
+                    id: order._id,
+                    status: order.status,
+                    totalBill
+                }
+            })
+        }
+
+        //online payment initialize
+        const paymentOrder = await createRazorpayOrder(totalBill);
+        if(!paymentOrder){
+            return res.status(502).json({
+                error: "Unable to initialize payment."
+            });
+        }
+
+        // Create order for online
         const order = await Order.create({
             user: userId,
-            status: 'order_placed',
+            status: 'awaiting_payment',
             statusHistory: [{
-                status: 'order_placed'
+                status: 'awaiting_payment'
             }],
             items: cart.items,
             billing: {
@@ -118,20 +192,32 @@ export const createOrder = async (req, res) => {
             deliveryDetails: deliveryDetails,
         });
 
+        //verifying if order is created or not
         if (!order) {
-            return res.status(400).json({ message: "unable to create order" });
+            return res.status(400).json({ error: "unable to create order" });
         }
-        //todo create payment here and new route to handle payment that also clear cart
 
-        // clear cart after successful order
-        // cart.items = [];
-        // cart.billing.charges = [];
-        // cart.billing.totalBill = 0;
-        // await cart.save();
+        //creating payment object
+        const transaction = await Transaction.create({
+            user: userId,
+            order: order._id,
+            razorpayOrderId: paymentOrder.id,
+            amount: totalBill * 100,
+            status: 'initialized'
+        })
+        if (!transaction) {
+            return res.status(400).json({ error: "unable to store payment details" });
+        }
 
         return res.status(201).json({
-            message: 'Order created successfully',
-            order: order._id
+            success: true,
+            order: {
+                id: order._id,
+                status: order.status,
+                totalBill
+            },
+            razorpayOrderId: paymentOrder.id,
+            razorpayKey: env.razorpayKey
         });
 
     } catch (error) {
@@ -140,6 +226,9 @@ export const createOrder = async (req, res) => {
         });
     }
 };
+
+
+
 
 export const updateOrderStatus = async (req, res) => {
     try {
@@ -153,7 +242,6 @@ export const updateOrderStatus = async (req, res) => {
             return res.status(400).json({ message: "invalid order" });
         }
         if (!status || !([
-            'payment_confirmed',
             'processing',
             'out_for_delivery',
             'delivered',
