@@ -226,14 +226,13 @@ export const getCart = async (req, res) => {
         //fetching cart from db and populate product
         const cart = await Cart.findOne({ user: userId })
             .populate("items.product").lean();
-
         // Transform the cart items to include the product ID as 'id' instead of '_id'
         if (cart) {
             cart.items = cart.items.map(item => ({
                 ...item,
                 product: {
                     ...item.product,
-                    id: item.product._id,
+                    id: item.product?._id,
                 },
             }));
 
@@ -253,6 +252,7 @@ export const getCart = async (req, res) => {
             });
         }
 
+        
         return res.status(200).json({
             cart: {
                 id: cart._id,
@@ -261,7 +261,7 @@ export const getCart = async (req, res) => {
             }
         });
     } catch (error) {
-        // console.log("error fetching cart", error);
+        console.log("error fetching cart", error);
         return res.status(500).json({ error: "internal server error" });
     }
 }
@@ -298,7 +298,7 @@ export const createCart = async (req, res) => {
 
             res.status(200).json({ success: true, cart: cartF });
     } catch (error) {
-        // console.log("error in create cart", error);
+        console.log("error in create cart", error);
         res.status(500).json({ error: "internal server error" });
     }
 }

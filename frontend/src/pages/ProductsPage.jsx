@@ -9,6 +9,7 @@ import { useRef } from "react";
 import { useInView } from 'react-intersection-observer';
 import Loader from "../components/Loader.jsx";
 import { generateNotification } from "../utils/notificationUtils.js";
+
 function ProductCard({ product, onClick, isLoading, ref }) {
     const [addedToCartBtn, setaddedToCartBtn] = useState(false);
     const handleButtonUI = ()=>{

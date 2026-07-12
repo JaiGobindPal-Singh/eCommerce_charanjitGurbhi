@@ -81,7 +81,7 @@ export const createOrder = async (req, res) => {
         }
         if (!deliveryDetails.deliveryAddress.fullName ||
             !deliveryDetails.deliveryAddress.phone ||
-            !deliveryDetails.deliveryAddress.fullAddress ||
+            !deliveryDetails.deliveryAddress.streetAddress ||
             !deliveryDetails.deliveryAddress.city ||
             !deliveryDetails.deliveryAddress.state
         ) {

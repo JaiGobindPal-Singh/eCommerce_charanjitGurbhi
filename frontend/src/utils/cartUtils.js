@@ -84,7 +84,7 @@ export const addToCart = async (product, quantity) => {
         saveToLocalStorage("cartItems", JSON.stringify(cartItems));
     } else {
         // storing to backend if user is logged in
-        const response = await api.post('/cart/add', {
+        const response = await api.post('/cart', {
             productId: product.id,
             quantity: quantity,
         });
@@ -121,7 +121,7 @@ export const removeFromCart = async (product) => {
     }
     else {
         //removing from backend if user is logged in
-        const response = await api.delete(`/cart/remove/${productId}`);
+        const response = await api.delete(`/cart/${productId}`);
         const payload = response?.data;
         if (!payload?.success) {
             throw new Error("Failed to remove item from cart");
@@ -147,7 +147,7 @@ export const updateProductQuantity = async (productId, quantity) => {
     }
     else {
         // updating backend if user is logged in
-        const response = await api.put('/cart/update', {
+        const response = await api.patch('/cart', {
             productId,
             quantity,
         });

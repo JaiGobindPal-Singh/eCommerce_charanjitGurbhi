@@ -2,10 +2,10 @@ import api from "../configs/axiosConfig";
 import userStore from "../store/userStore";
 
 export const getUser = async () => {
-        const { name, phone, role, id } = userStore.getState();
+        const { name, phone, role, id, streetAddress, city, state, postalCode } = userStore.getState();
         let user = {};
         if (!name || !phone || !role || !id) {
-            const response = await api.get("/check-user");
+            const response = await api.get("/auth");
             const payload = response?.data;
             const serverUser = payload?.user ;
             if (serverUser) {
@@ -14,13 +14,18 @@ export const getUser = async () => {
                     phone: serverUser?.phone || "",
                     id: serverUser?.id || "",
                     role: serverUser?.role || "",
+                    streetAddress: serverUser?.streetAddress || "",
+                    city: serverUser?.city || "",
+                    state: serverUser?.state || "",
+                    postalCode: serverUser?.postalCode || ""
+
                 };
                 if (user.id) {
                     userStore.getState().setUser({ ...user });
                 }
             }
         } else {
-            user = { name, phone, role, id };
+            user = { name, phone, role, id, streetAddress, city, state, postalCode};
         }
         return user;
 };

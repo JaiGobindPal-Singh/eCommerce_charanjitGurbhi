@@ -6,7 +6,7 @@ export const createProduct = async (req, res) => {
   try {
     const { name, description, category, price, comparePrice, stockAvailable } =
       req.body;
-    if (!name || !description || !price || !comparePrice || !req.file) {
+    if (!name || !description || !price || !req.file) {
       return res
         .status(400)
         .json({ error: "All fields and product image are required" });
@@ -18,10 +18,10 @@ export const createProduct = async (req, res) => {
     const product = new Product({
       name,
       description,
-      category,
+      category: Array.isArray(category)? category: [],
       price,
-      comparePrice,
-      stockAvailable,
+      comparePrice: !isNaN(Number(comparePrice)) ? comparePrice : 0,
+      stockAvailable: stockAvailable ?? 1,
       imageUrl: productImageUrl,
     });
     await product.save();
@@ -94,7 +94,7 @@ export const updateProduct = async (req, res) => {
     //update the product details
     if (name) product.name = name;
     if (description) product.description = description;
-    if (category) product.category = category;
+    if (Array.isArray(category) && category.length) product.category = category;
     if (price) product.price = price;
     if (comparePrice) product.comparePrice = comparePrice;
     if (stockAvailable) product.stockAvailable = stockAvailable;
@@ -137,7 +137,6 @@ export const getAllProducts = async (req, res) => {
     ]);
     const totalPages = Math.ceil(productCount / pageSize);
     return res.status(200).json({
-      message: "fetched all products",
       totalPages,
       currentPage: pageNumber,
       hasNextPage: pageNumber < totalPages,

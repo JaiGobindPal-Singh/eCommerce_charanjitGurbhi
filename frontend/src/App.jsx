@@ -13,6 +13,7 @@ import CartPage from "./pages/CartPage.jsx"
 import { useEffect } from "react"
 import api from "./configs/axiosConfig.js"
 import userStore from "./store/userStore.js"
+import ShippingAddressPage from "./pages/ShippingAddressPage.jsx"
 
 const MainLayout = () => (
   <>
@@ -60,6 +61,7 @@ const App = () => {
         <Route path="/cart" element={<CartPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/pre-checkout" element={<ShippingAddressPage />} />
       </Route>
 
       {/* footer only pages */}

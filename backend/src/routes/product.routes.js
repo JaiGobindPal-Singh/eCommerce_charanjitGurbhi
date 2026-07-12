@@ -8,12 +8,14 @@ import {
   updateProduct,
   getProductById,
 } from "../controllers/product.controller.js";
+import upload from '../middleware/multerMiddleware.js'
 import { authorizeAdmin } from "../middleware/authMiddleware.js";
+
 const router = express.Router();
 
 //admin routes
-router.post("/", authorizeAdmin, createProduct);
-router.delete("/", authorizeAdmin, deleteProduct);
+router.post("/", authorizeAdmin, upload.single('image'), createProduct);
+router.delete("/:productId", authorizeAdmin, deleteProduct);
 router.put("/", authorizeAdmin, updateProduct);
 
 //client routes

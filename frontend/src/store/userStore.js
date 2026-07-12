@@ -5,6 +5,10 @@ const initialState = {
     id: "",
     phone: "",
     role: "",
+    streetAddress: "",
+    city: "",
+    state: "",
+    postalCode: ""
 }
 const userStore = create((set) => ({
     ...initialState,

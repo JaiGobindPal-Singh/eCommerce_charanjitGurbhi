@@ -180,13 +180,12 @@ export default function CartPage() {
 
                         <button
                             type="button"
+                            onClick={() => navigate("/pre-checkout")}
                             className="mt-8 w-full rounded-full bg-light-textcolor px-4 py-3 text-sm font-semibold text-main-background transition hover:opacity-90"
                         >
                             Proceed to checkout
                         </button>
-                        <p className="mt-3 text-center text-xs text-light-textcolor/80">
-                            Secure checkout with free returns.
-                        </p>
+                        
                     </aside>
                 </div>
             </div>
