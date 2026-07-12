@@ -75,7 +75,6 @@ const orderSchema = new mongoose.Schema({
             'returned'
         ],
         lowercase: true,
-        default: 'order_placed',
         trim: true
     },
     statusHistory: [{

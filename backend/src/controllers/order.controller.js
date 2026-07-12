@@ -3,9 +3,10 @@ import Cart from "../models/cart.model.js";
 import OrderCondition from "../models/orderCondition.model.js";
 import PaymentOptions from "../models/paymentOptions.model.js";
 import { verifyMongoId } from "../utils/mongo.utils.js"
-import { createRazorpayOrder } from "../config/razorpay.config.js";
+import { createRazorpayOrder, verifyRazorpayPayment } from "../config/razorpay.config.js";
 import { env } from "../config/env.js";
-import Transaction from '../models/transactions.model.js'
+import Transaction from '../models/transactions.model.js';
+import mongoose from 'mongoose';
 
 const findApplicableCharges = async (user, cart) => {
     //getting charges
@@ -95,7 +96,7 @@ export const createOrder = async (req, res) => {
             const pOp = await PaymentOptions.findOne();
             if (!(
                 pOp.cod?.enabled &&
-                pOp.cod?.availableCities?.includes((deliveryDetails.deliveryAddress.city).trim())
+                pOp.cod?.availableCities?.includes((deliveryDetails.deliveryAddress.city).trim().toLowerCase())
             )) {
                 return res.status(400).json({ error: "cod not available at this location" });
             }
@@ -132,100 +133,210 @@ export const createOrder = async (req, res) => {
 
         //payment mode is cod clear cart and return
         if (paymentMode == "cod") {
-            // Create order
-            const order = await Order.create({
-                user: userId,
-                status: 'order_placed',
-                statusHistory: [{
-                    status: 'order_placed'
-                }],
-                items: cart.items,
-                billing: {
-                    paymentMode,
-                    charges: charges,
-                    totalBill: totalBill
-                },
-                deliveryDetails: deliveryDetails,
-            });
+            const moSe = await mongoose.startSession();  //starting mongo session
+            try {
 
-            //verifying if order is created or not
-            if (!order) {
-                return res.status(400).json({ error: "unable to create order" });
+                moSe.startTransaction();
+                // Create order
+                const [order] = await Order.create(
+                    [{
+                        user: userId,
+                        status: 'order_placed',
+                        statusHistory: [{
+                            status: 'order_placed'
+                        }],
+                        items: cart.items,
+                        billing: {
+                            paymentMode,
+                            charges: charges,
+                            totalBill: totalBill
+                        },
+                        deliveryDetails: deliveryDetails,
+                    }],
+                    { session: moSe });
+
+                // clear cart after successful order
+                cart.items = [];
+                await cart.save({ session: moSe });
+
+                await moSe.commitTransaction();    //ending mongo session
+
+                return res.status(201).json({
+                    success: true,
+                    order: {
+                        id: order._id,
+                        status: order.status,
+                        totalBill
+                    }
+                })
+            } catch (e) {
+                //Rollback all changes if any query fails
+                await moSe.abortTransaction();
+                throw new Error("Server Error Unable to save to db during cod ")
+            } finally {
+                await moSe.endSession();
             }
+        }
 
-            // clear cart after successful order
-            cart.items = [];
-            cart.billing.charges = [];
-            cart.billing.totalBill = 0;
-            await cart.save();
+        //online payment initialize
+        const paymentOrder = await createRazorpayOrder(totalBill);
+        if (!paymentOrder) {
+            return res.status(502).json({
+                error: "Unable to initialize payment."
+            });
+        }
+
+        const dbSession = await mongoose.startSession();
+        try {
+            dbSession.startTransaction();
+
+            // Create order for online
+            const [order] = await Order.create(
+                [{
+                    user: userId,
+                    status: 'awaiting_payment',
+                    statusHistory: [{
+                        status: 'awaiting_payment'
+                    }],
+                    items: cart.items,
+                    billing: {
+                        paymentMode,
+                        charges: charges,
+                        totalBill: totalBill
+                    },
+                    deliveryDetails: deliveryDetails,
+                }],
+                { session: dbSession }
+            );
+
+            //creating payment object
+            const [transaction] = await Transaction.create(
+                [{
+                    user: userId,
+                    order: order._id,
+                    razorpayOrderId: paymentOrder.id,
+                    amount: totalBill * 100,
+                    status: 'initialized'
+                }],
+                { session: dbSession }
+            );
+            await dbSession.commitTransaction(); //ending session
+
             return res.status(201).json({
                 success: true,
                 order: {
                     id: order._id,
                     status: order.status,
                     totalBill
-                }
-            })
-        }
-
-        //online payment initialize
-        const paymentOrder = await createRazorpayOrder(totalBill);
-        if(!paymentOrder){
-            return res.status(502).json({
-                error: "Unable to initialize payment."
+                },
+                razorpayOrderId: paymentOrder.id,
+                razorpayKey: env.razorpayKey
             });
+        } catch (e) {
+            //Rollback all changes if any query fails
+            await dbSession.abortTransaction();
+            throw new Error("error in online db session");
+        } finally {
+            //end the session
+            await dbSession.endSession();
         }
-
-        // Create order for online
-        const order = await Order.create({
-            user: userId,
-            status: 'awaiting_payment',
-            statusHistory: [{
-                status: 'awaiting_payment'
-            }],
-            items: cart.items,
-            billing: {
-                paymentMode,
-                charges: charges,
-                totalBill: totalBill
-            },
-            deliveryDetails: deliveryDetails,
-        });
-
-        //verifying if order is created or not
-        if (!order) {
-            return res.status(400).json({ error: "unable to create order" });
-        }
-
-        //creating payment object
-        const transaction = await Transaction.create({
-            user: userId,
-            order: order._id,
-            razorpayOrderId: paymentOrder.id,
-            amount: totalBill * 100,
-            status: 'initialized'
-        })
-        if (!transaction) {
-            return res.status(400).json({ error: "unable to store payment details" });
-        }
-
-        return res.status(201).json({
-            success: true,
-            order: {
-                id: order._id,
-                status: order.status,
-                totalBill
-            },
-            razorpayOrderId: paymentOrder.id,
-            razorpayKey: env.razorpayKey
-        });
-
     } catch (error) {
+        console.log(error);
         return res.status(500).json({
             error: 'internal server error'
         });
     }
 };
+
+export const verifyOrder = async (req, res) => {
+    try {
+        const { payment_id, order_id, signature } = req.body;
+
+        // Validate the payment details
+        if (!payment_id || !order_id || !signature) {
+            return res.status(400).json({ error: "Invalid payment details" });
+        }
+
+        // Verify the payment signature
+        let isVerified = verifyRazorpayPayment(signature, order_id, payment_id);
+
+        if (!isVerified) {
+            return res.status(400).json({ error: "error verifying payment" });
+        }
+
+        //Start the session
+        const session = await mongoose.startSession();
+        try {
+            session.startTransaction();
+            const transaction = await Transaction.findOneAndUpdate(
+                { razorpayOrderId: order_id },
+                {
+                    $set: {
+                        status: 'success',
+                        razorpayPaymentId: payment_id
+                    }
+                },
+                {
+                    returnDocument: 'after',
+                    session
+                }
+            ).lean();
+
+            if (!transaction) {
+                await session.abortTransaction();
+                await session.endSession();
+                return res.status(404).json({
+                    error: "Transaction not found"
+                });
+            }
+
+            const order = await Order.findByIdAndUpdate(
+                transaction.order,
+                {
+                    $set: {
+                        status: 'order_placed',
+                        transaction: transaction._id
+                    },
+                    $push: {
+                        statusHistory: {
+                            status: 'order_placed'
+                        }
+                    }
+                },
+                { session }
+            );
+
+            if (!order) {
+                await session.abortTransaction();
+                await session.endSession();
+                return res.status(400).json({ error: "Order don't exist" });
+            }
+
+            //clearing cart
+            const cart = await Cart.findOne({
+                user: transaction.user
+            }).session(session);
+            cart.items = [];
+            await cart.save({ session });
+
+            // Commit the changes if everything succeeds
+            await session.commitTransaction();
+            return res.status(200).json({ success: true });
+
+        } catch (e) {
+            //Rollback all changes if any query fails
+            await session.abortTransaction();
+            throw e;
+        } finally {
+            // Always end the session
+            await session.endSession()
+        }
+
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({ error: "internal server error" });
+    }
+}
 
 
 
@@ -239,7 +350,7 @@ export const updateOrderStatus = async (req, res) => {
 
         //validate order and status
         if (!orderId || !verifyMongoId(orderId)) {
-            return res.status(400).json({ message: "invalid order" });
+            return res.status(400).json({ error: "invalid order" });
         }
         if (!status || !([
             'processing',
@@ -247,14 +358,14 @@ export const updateOrderStatus = async (req, res) => {
             'delivered',
             'cancelled'
         ].includes(status.trim()))) {
-            return res.status(400).json({ message: "invalid status option" })
+            return res.status(400).json({ error: "invalid status option" })
         }
 
         // Find order
         const order = await Order.findById(orderId);
         if (!order) {
             return res.status(404).json({
-                message: 'Order not found'
+                error: 'Order not found'
             });
         }
 
@@ -264,7 +375,7 @@ export const updateOrderStatus = async (req, res) => {
             cancellationReason.length < 3
         ) {
             return res.status(400).json({
-                message: 'Cancellation reason is required'
+                error: 'Cancellation reason is required'
             });
         }
 
@@ -288,14 +399,14 @@ export const updateOrderStatus = async (req, res) => {
 
         await order.save();
         return res.status(200).json({
-            message: 'Order updated successfully',
+            success: true,
             order: order._id
         });
 
     } catch (error) {
         console.error("error updating order status", error);
         return res.status(500).json({
-            message: 'internal server error'
+            error: 'internal server error'
         });
     }
 };
@@ -321,7 +432,7 @@ export const getUserOrders = async (req, res) => {
     } catch (error) {
         console.error("getuserorder ", error);
         return res.status(500).json({
-            message: 'internal server error'
+            error: 'internal server error'
         });
     }
 };
@@ -331,7 +442,7 @@ export const getOrderDetails = async (req, res) => {
         const { orderId } = req.params;
         //validating order id
         if (!orderId || !verifyMongoId(orderId)) {
-            return res.status(400).json({ message: "invalid order" });
+            return res.status(400).json({ error: "invalid order" });
         }
         //fetching order
         const fullOrder = await Order.findOne({
@@ -339,25 +450,25 @@ export const getOrderDetails = async (req, res) => {
         }).populate({ path: 'billing.paymentMode', select: 'paymentOption' });
 
         if (!fullOrder) {
-            return res.status(404).json({ message: "order does not exist" });
+            return res.status(404).json({ error: "order does not exist" });
         }
         return res.status(200).json({ order: fullOrder });
     } catch (error) {
         console.log("error getting order details", error);
-        return res.status(500).json({ message: "internal server error" });
+        return res.status(500).json({ error: "internal server error" });
     }
 }
 export const getPendingOrders = async (req, res) => {
     try {
         const orders = await Order.find({
-            status: { $nin: ['delivered', 'cancelled'] }
+            status: { $eq: 'order_placed' }
         }).sort({ createdAt: -1 }).populate({ path: 'billing.paymentMode', select: 'paymentOption' });
 
-        return res.status(200).json(orders);
+        return res.status(200).json({orders});
     } catch (error) {
         console.error('Get pending orders error:', error);
         return res.status(500).json({
-            message: 'Internal server error'
+            error: 'Internal server error'
         });
     }
 }
@@ -367,11 +478,11 @@ export const getCompletedOrders = async (req, res) => {
             status: { $eq: 'delivered' }
         }).sort({ createdAt: -1 }).populate({ path: 'billing.paymentMode', select: 'paymentOption' });
 
-        return res.status(200).json(orders);
+        return res.status(200).json({orders});
     } catch (error) {
         console.error('Get completed order err:', error);
         return res.status(500).json({
-            message: 'Internal server error'
+            error: 'Internal server error'
         });
     }
 }
@@ -381,11 +492,11 @@ export const getCancelledOrders = async (req, res) => {
             status: { $eq: 'cancelled' }
         }).sort({ createdAt: -1 }).populate({ path: 'billing.paymentMode', select: 'paymentOption' });
 
-        return res.status(200).json(orders);
+        return res.status(200).json({orders});
     } catch (error) {
         console.error('Get cancelled order err:', error);
         return res.status(500).json({
-            message: 'Internal server error'
+            error: 'Internal server error'
         });
     }
 }
