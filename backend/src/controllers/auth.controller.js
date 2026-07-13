@@ -44,14 +44,15 @@ export const registerUser = async (req, res) => {
                 name: newUser.name,
                 phone: newUser.phone,
                 role: newUser.role,
-                streetAddress: user.streetAddress,
-                city: user.city,
-                state: user.state,
-                postalCode: user.postalCode,
+                streetAddress: user?.streetAddress,
+                city: user?.city,
+                state: user?.state,
+                postalCode: user?.postalCode,
             }
         });
 
     } catch (error) {
+        console.log(error);
         return res.status(500).json({ error: 'Internal server error' });
     }
 }
@@ -91,14 +92,15 @@ export const loginUser = async (req, res) => {
                 name: user.name,
                 phone: user.phone,
                 role: user.role,
-                streetAddress: user.address.streetAddress,
-                city: user.address.city,
-                state: user.address.state,
-                postalCode: user.address.postalCode,
+                streetAddress: user.address?.streetAddress,
+                city: user.address?.city,
+                state: user.address?.state,
+                postalCode: user.address?.postalCode,
             }
         });
 
     } catch (error) {
+        console.log(error);
         return res.status(500).json({ error: 'internal server error' });
     }
 }
@@ -137,10 +139,10 @@ export const isUserLoggedIn = async (req, res) => {
                 name: user.name,
                 role: user.role,
                 phone: user.phone,
-                streetAddress: user.address.streetAddress,
-                city: user.address.city,
-                state: user.address.state,
-                postalCode: user.address.postalCode,
+                streetAddress: user.address?.streetAddress,
+                city: user.address?.city,
+                state: user.address?.state,
+                postalCode: user.address?.postalCode,
             }
         });
     } catch (error) {

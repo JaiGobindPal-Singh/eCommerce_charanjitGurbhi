@@ -62,11 +62,11 @@ const App = () => {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/pre-checkout" element={<ShippingAddressPage />} />
+        <Route path="/products/:productId" element={<DisplayProductPage />} />
       </Route>
 
       {/* footer only pages */}
       <Route element={<FooterOnlyLayout />}>
-        <Route path="/products/:productId" element={<DisplayProductPage />} />
       </Route>
 
     </Routes>

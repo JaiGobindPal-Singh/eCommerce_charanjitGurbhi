@@ -28,19 +28,6 @@ export default function DisplayProductPage() {
         }, 500);
     }
 
-
-    //?sample data test
-    // const product = {
-    //     name: "Amla Candy",
-    //     description: "Lorem ipsum, dolor sit amet consectetur adipisicing elit. At nobis voluptate qui accusantium voluptates saepe totam numquam modi accusamus! Similique, exercitationem consequuntur natus dolorem architecto laudantium omnis dicta beatae maxime?",
-    //     price: 2500,
-    //     comparePrice:3999,
-    //     stockAvailable: 5,
-    //     imageUrl: "https://img.magnific.com/free-vector/gradient-e-commerce-website-template_23-2149546567.jpg?semt=ais_hybrid&w=740&q=80"
-    // };
-
-
-
     return (
         <div className="page bg-main-background text-dark-textcolor px-4 py-8 flex justify-center">
             <div className="mx-auto max-w-5xl rounded-3xl bg-gradient-to-r from-main-background to-[#EEDEC1] p-6 shadow-lg shadow-slate-200">
@@ -110,7 +97,7 @@ export default function DisplayProductPage() {
                             }
 
                         }
-                            disabled={!product.stockAvailable || isLoading}
+                            disabled={!product.stockAvailable || isLoading || addedToCartBtn}
                         >
                             {product.stockAvailable ? 'Add to Cart' : 'Out of Stock'}
                         </button>

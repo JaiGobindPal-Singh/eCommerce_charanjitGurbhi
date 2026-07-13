@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, IndianRupee, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { generateNotification } from "../utils/notificationUtils";
+import { getUser } from "../utils/userUtils";
 function formatCurrency(value) {
     return new Intl.NumberFormat("en-IN", {
         style: "currency",
@@ -71,7 +72,7 @@ function CartItem({ item, onQuantityChange, onRemove }) {
 export default function CartPage() {
     const navigate = useNavigate();
     const [items, setItems] = useState([]);
-
+    const [user, setUser] = useState({});
 
     useEffect(() => {
         getCart().then((cartItems) => {
@@ -79,6 +80,7 @@ export default function CartPage() {
         }).catch((error) => {
             console.error("Error fetching cart items:", error);
         })
+        getUser().then(u=> setUser(u));
     }, [])
 
     const cartTotal = useMemo(
@@ -180,10 +182,12 @@ export default function CartPage() {
 
                         <button
                             type="button"
-                            onClick={() => navigate("/pre-checkout")}
+                            onClick={() => {
+                                !user.id ? navigate("/register"):
+                                navigate("/pre-checkout")}}
                             className="mt-8 w-full rounded-full bg-light-textcolor px-4 py-3 text-sm font-semibold text-main-background transition hover:opacity-90"
                         >
-                            Proceed to checkout
+                            {!user.id ? 'Register to checkout' : 'Proceed to checkout'}
                         </button>
                         
                     </aside>

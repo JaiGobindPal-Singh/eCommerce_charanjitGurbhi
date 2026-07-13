@@ -1,6 +1,6 @@
 import api from "../configs/axiosConfig";
 import userStore from "../store/userStore";
-
+import { clearCartStore, getCart } from "./cartUtils";
 export const getUser = async () => {
         const { name, phone, role, id, streetAddress, city, state, postalCode } = userStore.getState();
         let user = {};
@@ -53,6 +53,7 @@ export const loginUser = async (phone, password) => {
     }
     
     userStore.getState().setUser({ ...normalizedUser });
+    getCart(true);  //to sync the cart with backend
     return normalizedUser;
 };
 export const registerUser = async(name, phone, password)=>{
@@ -81,10 +82,12 @@ export const registerUser = async(name, phone, password)=>{
     }
     
     userStore.getState().setUser({ ...normalizedUser });
+    getCart(true);  //to sync the cart with backend
     return normalizedUser;
 }
 export const logoutUser = async()=>{
     api.post("/auth/logout").then(()=>{
+        clearCartStore();  //clearing cart on user logout
         userStore.getState().resetUser();
     });
 }

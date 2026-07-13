@@ -43,7 +43,14 @@ export const fetchProducts = async (page) => {
  */
 export const getProduct = async (productId) =>{
     try{
-        //fetching and return product based on id
+        //getting product from store
+        const {products} = useProductStore.getState();
+        if(products && Array.isArray(products) && products.length > 0){
+            products.forEach(prd => {
+                if(prd.id == productId) return prd;
+            });
+        }
+        //fetching and return product based on id if product not in store
         const response = await api.get(`products/${productId}`);
         const payload = response?.data ?? {};
         return payload?.product ?? {};
@@ -51,6 +58,7 @@ export const getProduct = async (productId) =>{
         console.error("error getting product", e.message);
     } 
 }
+
 /**
  * @brief returns boolean that tells more products exists or not true if exists
  * @returns {Boolean} hasNextPage
@@ -63,6 +71,7 @@ export const moreProductsExists = () => {
 export const clearProductStore = () => {
     useProductStore.getState().resetProducts();
 };
+
 /**
  * @brief search products by keyword if no keyword fallback to fetchProduct
  * @param {Number} page pageNumber to load

@@ -11,6 +11,19 @@ export const saveToLocalStorage = (key, value) => {
     }
 }
 
+export const deleteFromLocalStorage = (key)=>{
+    try {
+        if (!key) {
+            throw new Error("key is required");
+        }
+        localStorage.removeItem(String(key));
+        return;
+    } catch (error) {
+        console.error("error deleting from storage", error.message);
+        throw error;
+    }
+}
+
 export const getFromLocalStorage = (key) =>{
     try{
         if(!key){

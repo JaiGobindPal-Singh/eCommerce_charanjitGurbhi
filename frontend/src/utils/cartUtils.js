@@ -1,4 +1,4 @@
-import { getFromLocalStorage, saveToLocalStorage } from "./localStorage";
+import { deleteFromLocalStorage, getFromLocalStorage, saveToLocalStorage } from "./localStorage";
 import { getUser } from "./userUtils"
 import useCartStore from "../store/cartStore";
 import api from "../configs/axiosConfig";
@@ -22,26 +22,35 @@ const normalizeCartItems = (items = []) => {
     });
 };
 
-export const getCart = async () => {
+export const getCart = async (forceRefresh = false) => {
     //getting cart from store if already stored
-    const { cartItems } = useCartStore.getState();
+    const storedCartItems = useCartStore.getState().cartItems;
 
     //returning cart from store if already stored
-    if (cartItems && cartItems.length) {
-        return cartItems;
+    if (!forceRefresh && storedCartItems && storedCartItems.length) {
+        return storedCartItems;
     }
 
     //checking if user is logged in and getting cart from backend if logged in, else getting cart from local storage
     const user = await getUser();
+    const cartItems = JSON.parse(getFromLocalStorage("cartItems")) || [];
     if (!user?.id) {
-        const cartItems = JSON.parse(getFromLocalStorage("cartItems")) || [];
         const normalizedItems = normalizeCartItems(cartItems);
         useCartStore.getState().setCart(normalizedItems);
         return normalizedItems;
     }
+    //storing local storage to backend if products already added in cart before login or register
+    let cart;
+    if (cartItems || Array.isArray(cartItems)) {
+        await api.post("/cart/items", {
+            products: cartItems.map(item => {
+                return { id: item.product.id, quantity: item.quantity || 1 }
+            })
+        });
+        deleteFromLocalStorage("cartItems");
+    }
+    cart = await api.get("/cart");
 
-    //making api request
-    const cart = await api.get("/cart");
     const payload = cart?.data;
     const { items } = payload?.cart || {};
     const normalizedItems = normalizeCartItems(items);
@@ -158,4 +167,10 @@ export const updateProductQuantity = async (productId, quantity) => {
     }
     // update store from backend payload if returned, else optimistically update
     useCartStore.getState().updateQuantity(productId, quantity);
+}
+
+export const clearCartStore = async() =>{
+    const {setCart} = useCartStore.getState();
+    setCart([]);
+
 }

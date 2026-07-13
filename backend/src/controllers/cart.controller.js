@@ -86,6 +86,71 @@ export const addToCart = async (req, res) => {
     }
 };
 
+export const addMultipleProductsToCart = async (req, res) => {
+    try {
+
+        const products = req.body.products;
+        const userId = req.user.id;
+
+        if (!products ||  !Array.isArray(products)) {
+            return res.status(400).json({ error: "products are required" });
+        }
+        const newCartItems = products.map((p) => {
+            return { product: p.id, quantity: p.quantity || 1 }
+        });
+        
+
+        // Find user's cart
+        let cart = await Cart.findOne({ user: userId });
+
+        //cart not found create one
+        if (!cart) {
+            cart = new Cart({
+                user: userId,
+                items: newCartItems
+            });
+            await cart.save();
+
+            //converting cart to object and _id to id
+            const cartF = cart.toObject();
+            cartF.id = cartF._id;
+            delete cartF._id;
+            delete cartF.__v;
+            delete cartF.createdAt;
+            delete cartF.updatedAt;
+
+            return res.status(200).json({ success: true, cart: cartF });
+        }
+
+        //cart is found
+        let newItems = {};
+        Array.from(cart.items).forEach(item => {
+            newItems[item.product] = item.quantity;
+        });
+        products.forEach(p => {
+            newItems[p.id] = newItems[p.id] ? newItems[p.id] + p.quantity : p.quantity
+        });
+
+        //saving cart
+        cart.items = Object.keys(newItems).map((p) => {
+            return { product: p, quantity: newItems[p] }
+        });
+        await cart.save();
+
+        //converting cart to object and _id to id
+        const cartF = cart.toObject();
+        cartF.id = cartF._id;
+        delete cartF._id;
+        delete cartF.__v;
+        delete cartF.createdAt;
+        delete cartF.updatedAt;
+
+        return res.status(200).json({ success: true, cart: cartF });
+
+    } catch (e) {
+
+    }
+};
 export const removeFromCart = async (req, res) => {
     try {
         const { productId } = req.params;
@@ -159,7 +224,7 @@ export const clearCart = async (req, res) => {
 
     } catch (error) {
         // console.log("error clearCart", error);
-        res.status(500).json({error: "internal server error" });
+        res.status(500).json({ error: "internal server error" });
     }
 }
 
@@ -252,7 +317,7 @@ export const getCart = async (req, res) => {
             });
         }
 
-        
+
         return res.status(200).json({
             cart: {
                 id: cart._id,
@@ -270,7 +335,7 @@ export const getCart = async (req, res) => {
 export const createCart = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { items = []} = req.body;
+        const { items = [] } = req.body;
         let cart;
         cart = await Cart.findOneAndUpdate(
             { user: userId },
@@ -289,14 +354,14 @@ export const createCart = async (req, res) => {
             await cart.save();
         }
         //converting cart to object and _id to id
-            const cartF = cart.toObject();
-            cartF.id = cartF._id;
-            delete cartF._id;
-            delete cartF.__v;
-            delete cartF.createdAt;
-            delete cartF.updatedAt;
+        const cartF = cart.toObject();
+        cartF.id = cartF._id;
+        delete cartF._id;
+        delete cartF.__v;
+        delete cartF.createdAt;
+        delete cartF.updatedAt;
 
-            res.status(200).json({ success: true, cart: cartF });
+        res.status(200).json({ success: true, cart: cartF });
     } catch (error) {
         console.log("error in create cart", error);
         res.status(500).json({ error: "internal server error" });
