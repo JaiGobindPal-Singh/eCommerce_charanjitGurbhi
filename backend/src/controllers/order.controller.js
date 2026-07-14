@@ -23,7 +23,7 @@ const findApplicableCharges = async (user, cart) => {
     //getting fixed charges
     const fixedCharges = charges
         .filter((ch) => ch.fixed)
-        .map((ch) => ({ [ch.chargeName]: ch.chargeAmount ?? calculateChargePercent(cartTotal, ch.chargePercent) }));
+        .map((ch) => ({ [ch.chargeName]: ch.chargeAmount || calculateChargePercent(cartTotal, ch.chargePercent) }));
 
     //evaluating optional charges
     const userCity = user?.address?.city;
@@ -39,11 +39,9 @@ const findApplicableCharges = async (user, cart) => {
 
             return !(cityExempt && amountExempt);
         })
-        .map((ch) => ({ [ch.chargeName]: ch.chargeAmount ?? calculateChargePercent(cartTotal, ch.chargePercent) }));
+        .map((ch) => ({ [ch.chargeName]: ch.chargeAmount || calculateChargePercent(cartTotal, ch.chargePercent) }));
 
     return [...fixedCharges, ...optionalCharges]
-
-
 
 }
 const calculateTotalPayable = (cart, charges) => {

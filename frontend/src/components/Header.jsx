@@ -17,9 +17,9 @@ function HamburgerMenu({ menuOpen, toggleHamburger, setIsProfileOpen }) {
                 <div className="links px-5 text-base font-semibold w-full">
                     <div className="h-40 w-full"></div>
 
-                    <p onClick={()=>setIsProfileOpen(true)}
+                    <p onClick={() => setIsProfileOpen(true)}
                         className={menuItemStyle}
-                        ><UserRound /> Profile</p>
+                    ><UserRound /> Profile</p>
 
                     <NavLink to="/"
                         className={menuItemStyle}
@@ -70,57 +70,57 @@ export default function Header() {
     const menuClass = "text-dark-textcolor hover:bg-light-textcolor hover:text-white transition-all duration-200 rounded-xl p-2 md:hidden ";
 
 
-    return (<>
-    
+    return (
+        <>
             <ProfilePopup isProfileOpen={isProfileOpen} setIsProfileOpen={setIsProfileOpen} />
             <HamburgerMenu toggleHamburger={toggleHamburger} menuOpen={menuOpen} setIsProfileOpen={setIsProfileOpen} />
-        <header className="w-full h-38 z-10">
-            <img src={headerDecorator} alt="Header design" className="w-full h-7" />
-            <div className="flex items-center justify-between w-full gap-8 px-8 max-md:gap-4 max-md:px-4">
-                <div className="flex">
-                    <img src={companyLogo} alt="companyLogo" className="h-auto max-w-40 max-lg:max-w-32 max-md:max-w-24" />
-                </div>
-
-                <nav className="flex gap-5 ">
-                    <div className="links flex gap-1 text-lg font-semibold max-lg:text-base">
-                        <NavLink to="/"
-                            className={linkClass}
-                            style={({ isActive }) => ({
-                                backgroundColor: isActive ? "var(--color-light-textcolor)" : "",
-                                color: isActive ? "white" : ""
-                            })}>Home</NavLink>
-
-                        <NavLink to="/products"
-                            className={linkClass}
-                            style={({ isActive }) => ({
-                                backgroundColor: isActive ? "var(--color-light-textcolor)" : "",
-                                color: isActive ? "white" : ""
-                            })}>Products</NavLink>
-
-                        <NavLink to="/categories"
-                            className={linkClass}
-                            style={({ isActive }) => ({
-                                backgroundColor: isActive ? "var(--color-light-textcolor)" : "",
-                                color: isActive ? "white" : ""
-                            })}>Categories</NavLink>
-
-                        <NavLink to="/orders"
-                            className={linkClass}
-                            style={({ isActive }) => ({
-                                backgroundColor: isActive ? "var(--color-light-textcolor)" : "",
-                                color: isActive ? "white" : ""
-                            })}>Orders</NavLink>
-
+                <img src={headerDecorator} alt="Header design" className="w-full h-4" />
+            <header className="w-full h-24 max-md:h-14 z-10 sticky top-0 backdrop-blur-sm bg-main-background/80">
+                <div className="flex items-center justify-between w-full h-full gap-8 px-8 max-md:gap-4 max-md:px-4">
+                    <div className="flex">
+                        <img src={companyLogo} alt="companyLogo" className="h-auto max-w-24 max-lg:max-w-20 max-md:max-w-16" />
                     </div>
-                </nav>
-                <div className="options flex gap-2 items-center">
-                    <button className={btnClass} onClick={()=>navigate('/cart')} ><ShoppingCart /></button>
-                    { location.pathname != '/login' && location.pathname != '/register' &&<button className={btnClass + " max-md:hidden"} onClick={()=>setIsProfileOpen(true)}><UserRound /></button>}
-                    <button className={menuClass} onClick={() => { toggleHamburger(true) }} ><Menu /></button>
+
+                    <nav className="flex gap-5 ">
+                        <div className="links flex gap-1 text-lg font-semibold max-lg:text-base">
+                            <NavLink to="/"
+                                className={linkClass}
+                                style={({ isActive }) => ({
+                                    backgroundColor: isActive ? "var(--color-light-textcolor)" : "",
+                                    color: isActive ? "white" : ""
+                                })}>Home</NavLink>
+
+                            <NavLink to="/products"
+                                className={linkClass}
+                                style={({ isActive }) => ({
+                                    backgroundColor: isActive ? "var(--color-light-textcolor)" : "",
+                                    color: isActive ? "white" : ""
+                                })}>Products</NavLink>
+
+                            <NavLink to="/categories"
+                                className={linkClass}
+                                style={({ isActive }) => ({
+                                    backgroundColor: isActive ? "var(--color-light-textcolor)" : "",
+                                    color: isActive ? "white" : ""
+                                })}>Categories</NavLink>
+
+                            <NavLink to="/orders"
+                                className={linkClass}
+                                style={({ isActive }) => ({
+                                    backgroundColor: isActive ? "var(--color-light-textcolor)" : "",
+                                    color: isActive ? "white" : ""
+                                })}>Orders</NavLink>
+
+                        </div>
+                    </nav>
+                    <div className="options flex gap-2 items-center">
+                        <button className={btnClass} onClick={() => navigate('/cart')} ><ShoppingCart /></button>
+                        {location.pathname != '/login' && location.pathname != '/register' && <button className={btnClass + " max-md:hidden"} onClick={() => setIsProfileOpen(true)}><UserRound /></button>}
+                        <button className={menuClass} onClick={() => { toggleHamburger(true) }} ><Menu /></button>
+                    </div>
                 </div>
-            </div>
-            
-        </header>
+
+            </header>
         </>
     );
 }

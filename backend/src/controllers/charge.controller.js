@@ -86,7 +86,7 @@ export const updateCharge = async (req, res) => {
                 chargePercent: chargeExist.chargePercent,
                 noChargeConditions: chargeExist.noChargeConditions,
                 id: chargeExist._id,
-                fixed:chargeExist.fixed
+                fixed: chargeExist.fixed
             }
         });
     } catch (e) {
@@ -114,51 +114,66 @@ export const deleteCharge = async (req, res) => {
 
 export const getApplicableCharges = async (req, res) => {
     try {
-        //fetching all charges and cart
-        const charges = await Charge.find({}).lean();
+        const findApplicableCharges = async (user, cart) => {
+            //getting charges
+            const charges = await Charge.find({}).lean();
+
+            //no charges exist
+            if (!(Object.keys(charges).length)) {
+                return [];
+            }
+
+            const calculateChargePercent = (cartTotal, percent) => {
+                return cartTotal * percent / 100;
+            }
+            //getting fixed charges
+            const fixedCharges = charges
+                .filter((ch) => ch.fixed)
+                .map((ch) => ({ [ch.chargeName]: ch.chargeAmount || calculateChargePercent(cartTotal, ch.chargePercent) }));
+
+            //evaluating optional charges
+            const userCity = user?.address?.city;
+            const optionalCharges = charges
+                .filter((ch) => {
+                    if (ch.fixed) return false;
+
+                    const cityExempt =
+                        ch.noChargeConditions?.city.length ? ch.noChargeConditions?.city?.includes(userCity.toLowerCase()) ?? false : true;
+
+                    const minAmount = ch.noChargeConditions?.minAmount ?? 0;
+                    const amountExempt = minAmount > 0 ? cartTotal >= minAmount : true;
+
+                    return !(cityExempt && amountExempt);
+                })
+                .map((ch) => ({ [ch.chargeName]: ch.chargeAmount || calculateChargePercent(cartTotal, ch.chargePercent) }));
+
+            return [...fixedCharges, ...optionalCharges]
+
+        }
+
+        //fetching  cart
         const cart = await Cart.findOne({ user: req.user.id })
-            .populate("items.product", "price").lean();
+        .populate("items.product", "price").lean();
+        
         //calculate total cart amount 
         const cartTotal = cart?.items?.reduce((sum, item) => {
             return sum + (item.product?.price || 0) * item.quantity;
         }, 0) || 0;
 
+        const charges = await findApplicableCharges(req.user, cart);
+
         //if no charges exist
-        if (!(Object.keys(charges).length)) {
+        if (!(charges).length) {
             return res.status(200).json({
                 charges: []
             })
         }
 
-        const calculateChargePercent = (cartTotal, percent) => {
-            return cartTotal * percent / 100;
-        }
-        //getting fixed charges
-        const fixedCharges = charges
-            .filter((ch) => ch.fixed)
-            .map((ch) => ({ [ch.chargeName]: ch.chargeAmount ?? calculateChargePercent(cartTotal, ch.chargePercent) }));
-
-
-        //evaluating optional charges
-        const userCity = req.user?.address?.city;
-        const optionalCharges = charges
-            .filter((ch) => {
-                if (ch.fixed) return false;
-
-                const cityExempt =
-                    ch.noChargeConditions?.city.length ?ch.noChargeConditions?.city?.includes(userCity.toLowerCase()) ?? false : true;
-
-                const minAmount = ch.noChargeConditions?.minAmount ?? 0;
-                const amountExempt = minAmount > 0 ? cartTotal >= minAmount : true;
-                
-                return !(cityExempt && amountExempt);
-            })
-            .map((ch) => ({ [ch.chargeName]: ch.chargeAmount ?? calculateChargePercent(cartTotal, ch.chargePercent) }));
-
         return res.status(200).json({
-            charges: [...fixedCharges, ...optionalCharges]
+            charges
         });
     } catch (e) {
+        console.log(e);
         return res.status(500).json({ error: "internal server error" });
     }
 }

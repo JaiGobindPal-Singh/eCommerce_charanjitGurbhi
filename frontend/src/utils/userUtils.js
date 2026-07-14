@@ -1,6 +1,7 @@
 import api from "../configs/axiosConfig";
 import userStore from "../store/userStore";
 import { clearCartStore, getCart } from "./cartUtils";
+import { generateNotification } from "./notificationUtils";
 export const getUser = async () => {
         const { name, phone, role, id, streetAddress, city, state, postalCode } = userStore.getState();
         let user = {};
@@ -90,4 +91,21 @@ export const logoutUser = async()=>{
         clearCartStore();  //clearing cart on user logout
         userStore.getState().resetUser();
     });
+}
+export const setUserAddress = async (streetAddress, city, state, postalCode) => {
+    try{
+        if(!streetAddress || !city || !state){
+            generateNotification('Address Details are required')();    
+        }
+        await api.patch('/auth/set-address', {
+            streetAddress,
+            city,
+            state,
+            postalCode
+        })
+        generateNotification('Address Saved')();
+    }catch(e){
+        console.error(e);
+        generateNotification(e.response?.data?.error || e.message)();
+    }
 }

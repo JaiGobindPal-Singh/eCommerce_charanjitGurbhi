@@ -174,3 +174,8 @@ export const clearCartStore = async() =>{
     setCart([]);
 
 }
+export const getCartTotal = async() =>{
+    const items =await getCart();
+    const total = () => items?.reduce((acc, item) => acc + item.product.price * item.quantity, 0)
+    return total;
+}
