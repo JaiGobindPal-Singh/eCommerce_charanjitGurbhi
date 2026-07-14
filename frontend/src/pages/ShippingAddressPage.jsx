@@ -3,9 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUser, setUserAddress } from "../utils/userUtils.js";
 import { generateNotification } from "../utils/notificationUtils.js";
+import { createOrder } from "../utils/orderUtils.js";
 import { getCharges } from "../utils/chargeUtils.js";
 import { getPaymentOptions } from "../utils/paymentUtils.js";
 import { getCartTotal } from "../utils/cartUtils.js";
+import { initiatePayment } from "../components/Payment.js";
 
 
 function ShippingAddressPage() {
@@ -128,15 +130,37 @@ function ShippingAddressPage() {
         setSavingAddr(false);
         setRerender(!rerender);
     }
-    const handleSubmit = (e) => {
-        e.preventDefault();
+
+    const handleSubmit = async (e) => {
+        e?.preventDefault();
         setIsSubmitting(true);
 
+        try{
+            const res = await createOrder({
+                fullName, 
+                phone,
+                streetAddress,
+                city,
+                state: stateValue,
+                postalCode
+            }, paymentOption);
+
+            //if payment option is cod
+            if(paymentOption === "cod"){
+                navigate(`/order-success/${res.order.id}`);
+                return;
+            }
+            //if payment is online
+            await initiatePayment(res.razorpayKey, res.razorpayOrderId, res.order);
+
+            setIsSubmitting(false);
+
+        }catch(e){
+            generateNotification(e.response?.data?.error || e.message)();
+        }
 
         // if userid save address and goto checkout page and pass shipping address else register user  tehn goto checkout page
         //todo submit handler
-
-        generateNotification("Shipping details saved successfully")();
     };
 
     return (
@@ -270,76 +294,76 @@ function ShippingAddressPage() {
                 </div>
 
                 <div className="space-y-4">
-                    <div className="rounded-3xl border border-gray-200 bg-white p-5">
-                        <p className="mb-3 text-sm font-semibold text-dark-textcolor">Payment Method</p>
-                        <div className="space-y-3">
-                            <label className="flex items-center cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="paymentMethod"
-                                    value="online"
-                                    checked={paymentOption === "online"}
-                                    onChange={(e) => setPaymentOption(e.target.value)}
-                                    className="mr-3"
-                                />
-                                <span className="text-sm text-dark-textcolor">Online Payment</span>
-                            </label>
-                            <label className="flex items-center cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="paymentMethod"
-                                    value="cod"
-                                    disabled={!(availablePaymentOptions.cod?.enabled && availablePaymentOptions.cod?.availableCities.includes(city.trim()))}
-                                    checked={paymentOption === "cod"}
-                                    onChange={(e) => setPaymentOption(e.target.value)}
-                                    className="mr-3"
-                                />
-                                <span className="text-sm text-dark-textcolor">{availablePaymentOptions.cod?.enabled && availablePaymentOptions.cod?.availableCities.includes(city.trim()) ?'Cash on Delivery': "Cash on Delivery (Coming soon)"}</span>
-                            </label>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="rounded-3xl border border-gray-200 bg-white p-5">
+                            <p className="mb-3 text-sm font-semibold text-dark-textcolor">Payment Method</p>
+                            <div className="space-y-3">
+                                <label className="flex items-center cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="paymentMethod"
+                                        value="online"
+                                        checked={paymentOption === "online"}
+                                        onChange={(e) => setPaymentOption(e.target.value)}
+                                        className="mr-3"
+                                    />
+                                    <span className="text-sm text-dark-textcolor">Online Payment</span>
+                                </label>
+                                <label className="flex items-center cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="paymentMethod"
+                                        value="cod"
+                                        disabled={!(availablePaymentOptions.cod?.enabled && (!(availablePaymentOptions.cod?.availableCities.length) || availablePaymentOptions.cod?.availableCities.includes(city.trim())))}
+                                        checked={paymentOption === "cod"}
+                                        onChange={(e) => setPaymentOption(e.target.value)}
+                                        className="mr-3"
+                                    />
+                                    <span className="text-sm text-dark-textcolor">{(availablePaymentOptions.cod?.enabled && (!(availablePaymentOptions.cod?.availableCities.length) || availablePaymentOptions.cod?.availableCities.includes(city.trim()))) ? 'Cash on Delivery' : "Cash on Delivery (Coming soon)"}</span>
+                                </label>
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="flex items-center justify-between rounded-3xl border border-gray-200 bg-white px-5 py-4">
-                        <span className="text-sm text-dark-textcolor/80">Cart total</span>
-                        <span className="text-sm font-semibold text-dark-textcolor">₹ {cartTotal}</span>
-                    </div>
-
-                    <div className="rounded-3xl border border-gray-200 bg-white px-5 py-4" >
-                        <div className="flex items-center justify-between ">
-                            <span className=" flex items-center gap-1 text-sm text-dark-textcolor/80">Charges </span>
-                            <span className="text-sm font-semibold text-dark-textcolor">₹ {applicableCharges.reduce((acc, item) => acc + Object.values(item)[0], 0)}</span>
-
+                        <div className="flex items-center justify-between rounded-3xl border border-gray-200 bg-white px-5 py-4">
+                            <span className="text-sm text-dark-textcolor/80">Cart total</span>
+                            <span className="text-sm font-semibold text-dark-textcolor">₹ {cartTotal}</span>
                         </div>
-                        <div className=" pt-5">
-                            {
-                                applicableCharges.map((charge) => {
-                                    return <div className="flex gap-5">
-                                        <span className="text-sm font-medium w-20 text-dark-textcolor/80">{Object.keys(charge)[0]}: </span>
-                                        <span className="text-xs  text-dark-textcolor">₹ {Object.values(charge)[0]}</span>
-                                    </div>
-                                })
-                            }
+
+                        <div className="rounded-3xl border border-gray-200 bg-white px-5 py-4" >
+                            <div className="flex items-center justify-between ">
+                                <span className=" flex items-center gap-1 text-sm text-dark-textcolor/80">Charges </span>
+                                <span className="text-sm font-semibold text-dark-textcolor">₹ {applicableCharges.reduce((acc, item) => acc + Object.values(item)[0], 0)}</span>
+
+                            </div>
+                            <div className=" pt-5">
+                                {
+                                    applicableCharges.map((charge) => {
+                                        return <div key={Object.keys(charge)[0]} className="flex gap-5">
+                                            <span className="text-sm font-medium w-20 text-dark-textcolor/80">{Object.keys(charge)[0]}: </span>
+                                            <span className="text-xs  text-dark-textcolor">₹ {Object.values(charge)[0]}</span>
+                                        </div>
+                                    })
+                                }
+                            </div>
                         </div>
-                    </div>
 
+                        <div className="mt-6 rounded-[2rem] bg-[#f8f3ea] p-6">
+                            <div className="flex items-center justify-between text-sm text-dark-textcolor/80">
+                                <span>Total bill</span>
+                                <span className="text-lg font-semibold text-dark-textcolor">₹ {applicableCharges.reduce((acc, item) => acc + Object.values(item)[0], 0) + cartTotal}</span>
+                            </div>
 
-                </div>
-
-                <div className="mt-6 rounded-[2rem] bg-[#f8f3ea] p-6">
-                    <div className="flex items-center justify-between text-sm text-dark-textcolor/80">
-                        <span>Total bill</span>
-                        <span className="text-lg font-semibold text-dark-textcolor">₹ {applicableCharges.reduce((acc, item) => acc + Object.values(item)[0], 0) + cartTotal}</span>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => navigate("/checkout")}
-                        className="mt-6 w-full rounded-full bg-light-textcolor px-6 py-3 text-sm font-semibold text-white transition hover:opacity-95"
-                    >
-                        Proceed to checkout
-                    </button>
+                            <button
+                                type="button"
+                                onClick={() => handleSubmit()}
+                                disabled={isSubmitting}
+                                className={`mt-6 w-full rounded-full ${isSubmitting? 'bg-gray-100 text-light-textcolor cursor-not-allowed':'bg-light-textcolor text-white'} px-6 py-3 text-sm font-semibold  transition hover:opacity-95`}>Proceed to checkout
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 

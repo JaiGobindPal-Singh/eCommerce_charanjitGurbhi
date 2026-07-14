@@ -6,6 +6,7 @@ import { verifyMongoId } from "../utils/mongo.utils.js"
 import { createRazorpayOrder, verifyRazorpayPayment } from "../config/razorpay.config.js";
 import { env } from "../config/env.js";
 import Transaction from '../models/transactions.model.js';
+import Charge from "../models/charge.model.js";
 import mongoose from 'mongoose';
 
 const findApplicableCharges = async (user, cart) => {
@@ -68,8 +69,9 @@ export const createOrder = async (req, res) => {
             paymentMode
         } = req.body;
 
+        
         //validate payment mode
-        if (!paymentMode || !(["cod", "online"].includes(paymentMode))) {
+        if (!paymentMode || !(["cod", "online"].includes(paymentMode.trim()))) {
             return res.status(400).json({ error: "invalid payment option" });
         }
 
@@ -92,10 +94,17 @@ export const createOrder = async (req, res) => {
                 return res.status(400).json({ error: "delivery address is required" });
             }
             const pOp = await PaymentOptions.findOne();
-            if (!(
-                pOp.cod?.enabled &&
-                pOp.cod?.availableCities?.includes((deliveryDetails.deliveryAddress.city).trim().toLowerCase())
-            )) {
+            // 1. If COD is completely disabled, reject it immediately.
+            if (!pOp.cod?.enabled) {
+                return res.status(400).json({ error: "cod not available" });
+            }
+
+            // 2. If it's enabled, check the city restrictions.
+            const cityList = pOp.cod.availableCities || [];
+            const userCity = (deliveryDetails?.deliveryAddress?.city || "").trim().toLowerCase();
+
+            // If cityList has items AND the user's city isn't in it, reject it.
+            if (cityList.length > 0 && !cityList.includes(userCity)) {
                 return res.status(400).json({ error: "cod not available at this location" });
             }
         }
@@ -462,7 +471,7 @@ export const getPendingOrders = async (req, res) => {
             status: { $eq: 'order_placed' }
         }).sort({ createdAt: -1 }).populate({ path: 'billing.paymentMode', select: 'paymentOption' });
 
-        return res.status(200).json({orders});
+        return res.status(200).json({ orders });
     } catch (error) {
         console.error('Get pending orders error:', error);
         return res.status(500).json({
@@ -476,7 +485,7 @@ export const getCompletedOrders = async (req, res) => {
             status: { $eq: 'delivered' }
         }).sort({ createdAt: -1 }).populate({ path: 'billing.paymentMode', select: 'paymentOption' });
 
-        return res.status(200).json({orders});
+        return res.status(200).json({ orders });
     } catch (error) {
         console.error('Get completed order err:', error);
         return res.status(500).json({
@@ -490,7 +499,7 @@ export const getCancelledOrders = async (req, res) => {
             status: { $eq: 'cancelled' }
         }).sort({ createdAt: -1 }).populate({ path: 'billing.paymentMode', select: 'paymentOption' });
 
-        return res.status(200).json({orders});
+        return res.status(200).json({ orders });
     } catch (error) {
         console.error('Get cancelled order err:', error);
         return res.status(500).json({
