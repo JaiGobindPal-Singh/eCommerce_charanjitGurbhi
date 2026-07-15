@@ -9,7 +9,7 @@ import Transaction from '../models/transactions.model.js';
 import Charge from "../models/charge.model.js";
 import mongoose from 'mongoose';
 
-const findApplicableCharges = async (user, cart) => {
+const findApplicableCharges = async (user, cartTotal) => {
     //getting charges
     const charges = await Charge.find({}).lean();
 
@@ -45,15 +45,10 @@ const findApplicableCharges = async (user, cart) => {
     return [...fixedCharges, ...optionalCharges]
 
 }
-const calculateTotalPayable = (cart, charges) => {
-    //calculating cart total
-    const cartTotal = cart?.items?.reduce((sum, item) => {
-        return sum + (item.product?.price || 0) * item.quantity;
-    }, 0) || 0;
-
+const calculateTotalPayable = (cartTotal, charges) => {
     //calculating charges total
     let totalCharges = 0;
-    charges.forEach((ch) => {
+    charges?.forEach((ch) => {
         totalCharges += Number(Object.values(ch).reduce((sum, current) => sum + current, 0));
     })
 
@@ -69,7 +64,7 @@ export const createOrder = async (req, res) => {
             paymentMode
         } = req.body;
 
-        
+
         //validate payment mode
         if (!paymentMode || !(["cod", "online"].includes(paymentMode.trim()))) {
             return res.status(400).json({ error: "invalid payment option" });
@@ -110,7 +105,7 @@ export const createOrder = async (req, res) => {
         }
 
         // Get cart
-        const cart = await Cart.findOne({ user: userId });
+        const cart = await Cart.findOne({ user: userId }).populate('items.product');
 
         if (!cart) {
             return res.status(404).json({
@@ -124,10 +119,22 @@ export const createOrder = async (req, res) => {
             });
         }
 
-        //getting applicable charges and totalBill
-        const charges = await findApplicableCharges(req.user, cart);
-        const totalBill = calculateTotalPayable(cart, charges);
+        //calculating cart total
+        const cartTotal = cart?.items?.reduce((sum, item) => {
+            return sum + (item.product?.price || 0) * item.quantity;
+        }, 0) || 0;
 
+        //getting applicable charges and totalBill
+        const charges = await findApplicableCharges(req.user, cartTotal);
+        const totalBill = calculateTotalPayable(cartTotal, charges);
+
+        const chargesFormatted = charges.map((ch) =>{
+            const key = Object.keys(ch)[0];
+            const value = ch[key];
+            return {
+                chargeName: key, chargeAmount: value
+            }
+        })
         //verifying min order amount
         const minOrderValue = await OrderCondition.findOne().lean();
         if (minOrderValue && totalBill < minOrderValue.minAmount) {
@@ -155,7 +162,7 @@ export const createOrder = async (req, res) => {
                         items: cart.items,
                         billing: {
                             paymentMode,
-                            charges: charges,
+                            charges: chargesFormatted,
                             totalBill: totalBill
                         },
                         deliveryDetails: deliveryDetails,
@@ -208,7 +215,7 @@ export const createOrder = async (req, res) => {
                     items: cart.items,
                     billing: {
                         paymentMode,
-                        charges: charges,
+                        charges: chargesFormatted,
                         totalBill: totalBill
                     },
                     deliveryDetails: deliveryDetails,
@@ -222,7 +229,7 @@ export const createOrder = async (req, res) => {
                     user: userId,
                     order: order._id,
                     razorpayOrderId: paymentOrder.id,
-                    amount: totalBill * 100,
+                    amount: totalBill,
                     status: 'initialized'
                 }],
                 { session: dbSession }
@@ -248,7 +255,6 @@ export const createOrder = async (req, res) => {
             await dbSession.endSession();
         }
     } catch (error) {
-        console.log(error);
         return res.status(500).json({
             error: 'internal server error'
         });

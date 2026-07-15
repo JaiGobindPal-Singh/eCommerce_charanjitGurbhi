@@ -7,7 +7,7 @@ import { createOrder } from "../utils/orderUtils.js";
 import { getCharges } from "../utils/chargeUtils.js";
 import { getPaymentOptions } from "../utils/paymentUtils.js";
 import { getCartTotal } from "../utils/cartUtils.js";
-import { initiatePayment } from "../components/Payment.js";
+import { initiatePayment } from "../utils/payment.js";
 
 
 function ShippingAddressPage() {
@@ -35,6 +35,7 @@ function ShippingAddressPage() {
     const postalCodeRef = useRef(null);
     const saveButtonRef = useRef(null);
     const [cartTotal, setCartTotal] = useState(0);
+    const [disableSaveAddrBtn, setDisableSaveAddrBtn] = useState(true);
 
     const handleEnterFocusNext = (e, nextRef) => {
         if (e.key === "Enter") {
@@ -102,6 +103,14 @@ function ShippingAddressPage() {
         fetchData();
     }, [rerender]);
 
+    const isMounted = useRef(false);
+    useEffect(() => {
+        if (!isMounted.current) {
+            isMounted.current = true; // Set flag to true for subsequent renders
+            return; // Exit early to skip execution
+        }
+        setDisableSaveAddrBtn(false);
+    }, [city])
 
     const validateForm = () => {
         const nextErrors = {};
@@ -129,15 +138,16 @@ function ShippingAddressPage() {
         await setUserAddress(streetAddress, city, stateValue, postalCode);
         setSavingAddr(false);
         setRerender(!rerender);
+        setDisableSaveAddrBtn(true);
     }
 
     const handleSubmit = async (e) => {
         e?.preventDefault();
         setIsSubmitting(true);
 
-        try{
+        try {
             const res = await createOrder({
-                fullName, 
+                fullName,
                 phone,
                 streetAddress,
                 city,
@@ -145,17 +155,21 @@ function ShippingAddressPage() {
                 postalCode
             }, paymentOption);
 
+            //todo addOrder in store
             //if payment option is cod
-            if(paymentOption === "cod"){
-                navigate(`/order-success/${res.order.id}`);
+            if (paymentOption === "cod") {
+                navigate(`/orders`);
                 return;
             }
             //if payment is online
             await initiatePayment(res.razorpayKey, res.razorpayOrderId, res.order);
+            //todo add order in store
+            navigate('/orders');
 
             setIsSubmitting(false);
 
-        }catch(e){
+        } catch (e) {
+            setIsSubmitting(false);
             generateNotification(e.response?.data?.error || e.message)();
         }
 
@@ -270,8 +284,8 @@ function ShippingAddressPage() {
                         <button
                             ref={saveButtonRef}
                             type="submit"
-                            disabled={savingAddr}
-                            className={` w-full rounded-full ${!savingAddr ? 'bg-light-textcolor text-white' : 'bg-gray-300 text-white'} px-6 py-3 text-sm font-semibold  transition hover:opacity-95 sm:w-auto `}
+                            disabled={savingAddr || disableSaveAddrBtn}
+                            className={` w-full rounded-full ${!savingAddr && !disableSaveAddrBtn ? 'bg-light-textcolor text-white' : 'bg-gray-300 text-white'} px-6 py-3 text-sm font-semibold  transition hover:opacity-95 sm:w-auto `}
                             onClick={handleSaveAddress}
                         >
                             Save Address
@@ -357,7 +371,7 @@ function ShippingAddressPage() {
                                 type="button"
                                 onClick={() => handleSubmit()}
                                 disabled={isSubmitting}
-                                className={`mt-6 w-full rounded-full ${isSubmitting? 'bg-gray-100 text-light-textcolor cursor-not-allowed':'bg-light-textcolor text-white'} px-6 py-3 text-sm font-semibold  transition hover:opacity-95`}>Proceed to checkout
+                                className={`mt-6 w-full rounded-full ${isSubmitting ? 'bg-gray-100 text-light-textcolor cursor-not-allowed' : 'bg-light-textcolor text-white'} px-6 py-3 text-sm font-semibold  transition hover:opacity-95`}>Proceed to checkout
                             </button>
                         </div>
                     </form>
