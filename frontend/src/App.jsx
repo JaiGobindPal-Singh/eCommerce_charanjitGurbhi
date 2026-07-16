@@ -13,7 +13,7 @@ import CartPage from "./pages/CartPage.jsx"
 import { useEffect } from "react"
 import api from "./configs/axiosConfig.js"
 import userStore from "./store/userStore.js"
-import ShippingAddressPage from "./pages/ShippingAddressPage.jsx"
+import CheckoutPage from "./pages/CheckoutPage.jsx"
 
 const MainLayout = () => (
   <>
@@ -31,6 +31,7 @@ const FooterOnlyLayout = () => (
 
 const App = () => {
 
+  
   // get the userData when user visits the site
   useEffect(() => {
     api.get("/check-user").then((response) => {
@@ -39,7 +40,7 @@ const App = () => {
       const normalizedUser = {
         name: serverUser?.name || "",
         phone: serverUser?.phone || "",
-        id:  serverUser?.id || "",
+        id: serverUser?.id || "",
         role: serverUser?.role || "",
       };
       if (normalizedUser.id) {
@@ -61,7 +62,7 @@ const App = () => {
         <Route path="/cart" element={<CartPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/pre-checkout" element={<ShippingAddressPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/products/:productId" element={<DisplayProductPage />} />
       </Route>
 

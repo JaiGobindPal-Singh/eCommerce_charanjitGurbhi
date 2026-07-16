@@ -8,13 +8,14 @@ import { getCharges } from "../utils/chargeUtils.js";
 import { getPaymentOptions } from "../utils/paymentUtils.js";
 import { getCartTotal } from "../utils/cartUtils.js";
 import { initiatePayment } from "../utils/payment.js";
-
+import OrderSuccess from "../components/OrderSuccess.jsx";
 
 function ShippingAddressPage() {
     const navigate = useNavigate();
     const [fullName, setFullName] = useState("");
     const [userId, setUserId] = useState("");
     const [phone, setPhone] = useState("");
+    const[orderSucceeded, setOrderSucceeded] = useState(false);
     const [streetAddress, setStreetAddress] = useState("");
     const [city, setCity] = useState("");
     const [stateValue, setStateValue] = useState("");
@@ -44,13 +45,28 @@ function ShippingAddressPage() {
         }
     };
 
+    // prompt on refresh
     useEffect(() => {
+        const handleBeforeUnload = (event) => {
+            event.preventDefault();
+            // Modern browsers require returnValue to be set
+            event.returnValue = 'dsfds';
+        };
 
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, []);
+    useEffect(() => {
         const fetchData = async () => {
             try {
                 const user = await getUser();
                 if (user?.id) {
                     setUserId(user.id);
+                }else{
+                    navigate('/products');
                 }
                 if (user?.name) {
                     setFullName(user.name);
@@ -73,14 +89,16 @@ function ShippingAddressPage() {
                 const ct = await getCartTotal();
                 setCartTotal(ct);
             } catch {
-                // ignore if user is not logged in
+                // navigate to home if user is not logged in
+                navigate('/');
             }
         }
         fetchData();
-    }, []);
+    }, [navigate]);
 
     useEffect(() => {
         const fetchData = async () => {
+            if (!userId) return;
             try {
                 const opt = await getPaymentOptions();
                 setAvailablePaymentOptions(opt);
@@ -89,11 +107,12 @@ function ShippingAddressPage() {
             }
         };
         fetchData();
-    }, []);
+    }, [userId]);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
+                if (!userId) return;
                 const charges = await getCharges();
                 setApplicableCharges(charges);
             } catch (e) {
@@ -101,7 +120,7 @@ function ShippingAddressPage() {
             }
         };
         fetchData();
-    }, [rerender]);
+    }, [rerender, userId]);
 
     const isMounted = useRef(false);
     useEffect(() => {
@@ -135,7 +154,11 @@ function ShippingAddressPage() {
             return;
         }
         setSavingAddr(true);
-        await setUserAddress(streetAddress, city, stateValue, postalCode);
+        try {
+            await setUserAddress(streetAddress, city, stateValue, postalCode);
+        } catch (e) {
+            console.error(e);
+        }
         setSavingAddr(false);
         setRerender(!rerender);
         setDisableSaveAddrBtn(true);
@@ -158,14 +181,11 @@ function ShippingAddressPage() {
             //todo addOrder in store
             //if payment option is cod
             if (paymentOption === "cod") {
-                navigate(`/orders`);
+                setOrderSucceeded(true);
                 return;
             }
             //if payment is online
             await initiatePayment(res.razorpayKey, res.razorpayOrderId, res.order);
-            //todo add order in store
-            navigate('/orders');
-
             setIsSubmitting(false);
 
         } catch (e) {
@@ -179,6 +199,7 @@ function ShippingAddressPage() {
 
     return (
         <div className="min-h-full bg-main-background px-4  text-dark-textcolor sm:px-6 lg:px-8 flex  flex-wrap shrink-0 justify-center gap-3 w-full">
+            {orderSucceeded && <OrderSuccess />}
             <div className=" max-w-3xl rounded-[2rem] border border-[#EBD8C0] bg-white/90 p-8 shadow-sm backdrop-blur sm:p-10">
                 <div className="mb-8 text-center">
                     <p className="text-lg font-bold uppercase tracking-[0.3em] text-light-textcolor">Shipping details</p>
@@ -328,12 +349,12 @@ function ShippingAddressPage() {
                                         type="radio"
                                         name="paymentMethod"
                                         value="cod"
-                                        disabled={!(availablePaymentOptions.cod?.enabled && (!(availablePaymentOptions.cod?.availableCities.length) || availablePaymentOptions.cod?.availableCities.includes(city.trim())))}
+                                        disabled={!(availablePaymentOptions?.cod?.enabled && (!(availablePaymentOptions?.cod?.availableCities.length) || availablePaymentOptions?.cod?.availableCities.includes(city.trim())))}
                                         checked={paymentOption === "cod"}
                                         onChange={(e) => setPaymentOption(e.target.value)}
                                         className="mr-3"
                                     />
-                                    <span className="text-sm text-dark-textcolor">{(availablePaymentOptions.cod?.enabled && (!(availablePaymentOptions.cod?.availableCities.length) || availablePaymentOptions.cod?.availableCities.includes(city.trim()))) ? 'Cash on Delivery' : "Cash on Delivery (Coming soon)"}</span>
+                                    <span className="text-sm text-dark-textcolor">{(availablePaymentOptions?.cod?.enabled && (!(availablePaymentOptions?.cod?.availableCities.length) || availablePaymentOptions?.cod?.availableCities.includes(city.trim()))) ? 'Cash on Delivery' : "Cash on Delivery (Coming soon)"}</span>
                                 </label>
                             </div>
                         </div>
@@ -346,15 +367,15 @@ function ShippingAddressPage() {
                         <div className="rounded-3xl border border-gray-200 bg-white px-5 py-4" >
                             <div className="flex items-center justify-between ">
                                 <span className=" flex items-center gap-1 text-sm text-dark-textcolor/80">Charges </span>
-                                <span className="text-sm font-semibold text-dark-textcolor">₹ {applicableCharges.reduce((acc, item) => acc + Object.values(item)[0], 0)}</span>
+                                <span className="text-sm font-semibold text-dark-textcolor">₹ {applicableCharges?.reduce((acc, item) => acc + Object.values(item)[0], 0) || 0}</span>
 
                             </div>
                             <div className=" pt-5">
                                 {
-                                    applicableCharges.map((charge) => {
-                                        return <div key={Object.keys(charge)[0]} className="flex gap-5">
+                                    applicableCharges?.map((charge) => {
+                                        return <div key={Object.keys(charge)[0]} className="flex gap-20 flex-nowrap text-nowrap">
                                             <span className="text-sm font-medium w-20 text-dark-textcolor/80">{Object.keys(charge)[0]}: </span>
-                                            <span className="text-xs  text-dark-textcolor">₹ {Object.values(charge)[0]}</span>
+                                            <span className="text-xs  text-dark-textcolor">₹ {Object.values(charge)[0] }</span>
                                         </div>
                                     })
                                 }
@@ -364,7 +385,7 @@ function ShippingAddressPage() {
                         <div className="mt-6 rounded-[2rem] bg-[#f8f3ea] p-6">
                             <div className="flex items-center justify-between text-sm text-dark-textcolor/80">
                                 <span>Total bill</span>
-                                <span className="text-lg font-semibold text-dark-textcolor">₹ {applicableCharges.reduce((acc, item) => acc + Object.values(item)[0], 0) + cartTotal}</span>
+                                <span className="text-lg font-semibold text-dark-textcolor">₹ {applicableCharges?.reduce((acc, item) => acc + Object.values(item)[0], 0) + cartTotal}</span>
                             </div>
 
                             <button

@@ -5,7 +5,15 @@
 * {
   box-sizing: border-box;
 }
+/* Removes blue highlight for standard browsers */
+::selection {
+  background: transparent;
+}
 
+/* Removes blue highlight for older Firefox versions */
+::-moz-selection {
+  background: transparent;
+}
 html {
   scroll-behavior: smooth;
 }

@@ -184,7 +184,7 @@ export default function CartPage() {
                             type="button"
                             onClick={() => {
                                 !user.id ? navigate("/register"):
-                                navigate("/pre-checkout")}}
+                                navigate("/checkout")}}
                             className="mt-8 w-full rounded-full bg-light-textcolor px-4 py-3 text-sm font-semibold text-main-background transition hover:opacity-90"
                         >
                             {!user.id ? 'Register to checkout' : 'Proceed to checkout'}

@@ -3,7 +3,7 @@ import Cart from "../models/cart.model.js";
 import OrderCondition from "../models/orderCondition.model.js";
 import PaymentOptions from "../models/paymentOptions.model.js";
 import { verifyMongoId } from "../utils/mongo.utils.js"
-import { createRazorpayOrder, verifyRazorpayPayment } from "../config/razorpay.config.js";
+import { createRazorpayOrder, verifyRazorpaySignature } from "../services/razorpay.service.js";
 import { env } from "../config/env.js";
 import Transaction from '../models/transactions.model.js';
 import Charge from "../models/charge.model.js";
@@ -261,97 +261,6 @@ export const createOrder = async (req, res) => {
     }
 };
 
-export const verifyOrder = async (req, res) => {
-    try {
-        const { payment_id, order_id, signature } = req.body;
-
-        // Validate the payment details
-        if (!payment_id || !order_id || !signature) {
-            return res.status(400).json({ error: "Invalid payment details" });
-        }
-
-        // Verify the payment signature
-        let isVerified = verifyRazorpayPayment(signature, order_id, payment_id);
-
-        if (!isVerified) {
-            return res.status(400).json({ error: "error verifying payment" });
-        }
-
-        //Start the session
-        const session = await mongoose.startSession();
-        try {
-            session.startTransaction();
-            const transaction = await Transaction.findOneAndUpdate(
-                { razorpayOrderId: order_id },
-                {
-                    $set: {
-                        status: 'success',
-                        razorpayPaymentId: payment_id
-                    }
-                },
-                {
-                    returnDocument: 'after',
-                    session
-                }
-            ).lean();
-
-            if (!transaction) {
-                await session.abortTransaction();
-                await session.endSession();
-                return res.status(404).json({
-                    error: "Transaction not found"
-                });
-            }
-
-            const order = await Order.findByIdAndUpdate(
-                transaction.order,
-                {
-                    $set: {
-                        status: 'order_placed',
-                        transaction: transaction._id
-                    },
-                    $push: {
-                        statusHistory: {
-                            status: 'order_placed'
-                        }
-                    }
-                },
-                { session }
-            );
-
-            if (!order) {
-                await session.abortTransaction();
-                await session.endSession();
-                return res.status(400).json({ error: "Order don't exist" });
-            }
-
-            //clearing cart
-            const cart = await Cart.findOne({
-                user: transaction.user
-            }).session(session);
-            cart.items = [];
-            await cart.save({ session });
-
-            // Commit the changes if everything succeeds
-            await session.commitTransaction();
-            return res.status(200).json({ success: true });
-
-        } catch (e) {
-            //Rollback all changes if any query fails
-            await session.abortTransaction();
-            throw e;
-        } finally {
-            // Always end the session
-            await session.endSession()
-        }
-
-    } catch (e) {
-        console.log(e);
-        res.status(500).json({ error: "internal server error" });
-    }
-}
-
-
 
 
 export const updateOrderStatus = async (req, res) => {
@@ -428,24 +337,43 @@ export const getUserOrders = async (req, res) => {
     try {
         const userId = req.user.id;
 
-        //fetching orders from db
-        const orders = await Order.find({
-            user: userId
-        }).select('status items billing.totalBill createdAt')
-            .sort({ createdAt: -1 })
-            .populate({
-                path: 'items.product',
-                select: 'name'
-            })
-            .lean();
+        // Pagination
+        const pageNumber = Math.max(parseInt(req.query.pn) || 1, 1);
+        const pageSize = Math.max(parseInt(req.query.ps) || 10, 1);
+
+        const skip = (pageNumber - 1) * pageSize;
+
+        // Fetch orders and total count in parallel
+        const [orders, totalOrders] = await Promise.all([
+            Order.find({ user: userId })
+                .select('status items billing.totalBill createdAt')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(pageSize)
+                .populate({
+                    path: 'items.product',
+                    select: 'name'
+                })
+                .lean(),
+
+            Order.countDocuments({ user: userId })
+        ]);
 
         return res.status(200).json({
-            orders
+            orders,
+            pagination: {
+                pageNumber,
+                pageSize,
+                totalOrders,
+                totalPages: Math.ceil(totalOrders / pageSize),
+                hasNextPage: pageNumber * pageSize < totalOrders,
+                hasPreviousPage: pageNumber > 1
+            }
         });
     } catch (error) {
-        console.error("getuserorder ", error);
+        console.error("getUserOrders ", error);
         return res.status(500).json({
-            error: 'internal server error'
+            error: "Internal server error"
         });
     }
 };

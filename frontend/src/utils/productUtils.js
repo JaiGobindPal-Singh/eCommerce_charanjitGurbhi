@@ -80,23 +80,12 @@ export const clearProductStore = () => {
  */
 export const fetchProductsByKey = async (page, key) => {
     try {
-        const { currentPage, hasNextPage, products } = useProductStore.getState();
-
         if (!key || key.trim().length < 3) {
             return await fetchProducts(page);
         }
 
-        //checking if next page exist or page is current page
-        if (currentPage == page || !hasNextPage) {
-            return products;
-        }
-
-        // load stored products if needed
-        if (page <= currentPage) {
-            if (products && products.length > 0) return products;
-        }
-
-        const response = await api.get(`products/keyword?productSearchKey=${key}&pn=${page}&ps=10`);
+        // Always fetch for keyword searches to avoid stale/partial results
+        const response = await api.get(`products/keyword?productSearchKey=${encodeURIComponent(key)}&pn=${page}&ps=10`);
         const payload = response?.data ?? {};
 
         useProductStore.getState().setProducts({

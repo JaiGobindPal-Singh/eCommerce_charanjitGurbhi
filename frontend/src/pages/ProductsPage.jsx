@@ -69,8 +69,8 @@ export default function ProductsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [products, setProducts] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [searchParams] = useSearchParams();
-    const search = searchParams.get("search");
+    const [searchParams, setSearchParam] = useSearchParams();
+    let search = searchParams.get("search");
     const [hasNextPage, setHasNextPage] = useState(true);
     const [searchValue, setSearchValue] = useState(search || "");
     const [delayedSearchValue, setDelayedSearchValue] = useState(search || "");
@@ -90,75 +90,68 @@ export default function ProductsPage() {
             if (inView) incCurrentPage();
         }
     })
-    //searchHandler
+    // searchHandler with debounce
     const timeoutRef = useRef(null);
 
     const searchHandler = (e) => {
         const value = e.target.value;
-
-        setSearchValue(value);
-        if (searchValue && searchValue.length >= 2) {
-            setIsLoading(true);
-            clearProductStore();
-            setProducts([]);
-            setHasNextPage(true);
-            clearTimeout(timeoutRef.current);
-
-            timeoutRef.current = setTimeout(() => {
-                setCurrentPage(1);
-                setDelayedSearchValue(value);
-            }, 300);
-        } else if (value.length === 0) {
-            clearTimeout(timeoutRef.current);
-            setCurrentPage(1);
-            setDelayedSearchValue("");
+        if(value){
+            setSearchParam({search: value})
+        }else{ 
+            setSearchParam({});
         }
+        
+        setSearchValue(value);
+
+        clearTimeout(timeoutRef.current);
+        // always reset products and pagination on new query
+        setIsLoading(true);
+        clearProductStore();
+        setProducts([]);
+        setHasNextPage(true);
+
+        timeoutRef.current = setTimeout(() => {
+            setCurrentPage(1);
+            setDelayedSearchValue(value.trim());
+        }, 300);
     };
     useEffect(() => {
         let isMounted = true;
-        fetchProductsByKey(currentPage, delayedSearchValue)
-            .then((ps) => {
+
+        const load = async () => {
+            try {
+                const key = delayedSearchValue || "";
+                const ps = await fetchProductsByKey(currentPage, key);
                 if (!isMounted) return;
 
                 const nextProducts = Array.isArray(ps) ? ps : [];
                 setProducts((prevProducts) => {
-                    const existingIds = new Set(
-                        prevProducts
-                            .map((product) => product?.id)
-                            .filter(Boolean)
-                    );
-
+                    const existingIds = new Set(prevProducts.map((p) => p?.id).filter(Boolean));
                     const uniqueNextProducts = nextProducts.filter((product) => {
-                        const key = product?.id;
-                        if (!key) return true;
-                        if (existingIds.has(key)) return false;
-                        existingIds.add(key);
+                        const id = product?.id;
+                        if (!id) return true;
+                        if (existingIds.has(id)) return false;
+                        existingIds.add(id);
                         return true;
                     });
                     return [...prevProducts, ...uniqueNextProducts];
                 });
+
                 setHasNextPage(moreProductsExists());
-                setIsLoading(false);
-            })
-            .catch(() => {
-                if (isMounted) {
-                    setIsLoading(false);
-                }
-            });
+            } catch (e) {
+                console.error('search load error', e);
+            } finally {
+                if (isMounted) setIsLoading(false);
+            }
+        };
+
+        load();
 
         return () => {
             isMounted = false;
         };
     }, [currentPage, delayedSearchValue]);
-
-    //?sample data
-    // const product = {
-    //     id: "hellod",
-    //     name: "amla candy",
-    //     price: 1200,
-    //     comparePrice: 2300,
-    //     imageUrl: ""
-    // }
+    
     return (
         <>
             <div className=" page productPage w-full bg-gradient-to-r from-main-background to-[#EEDEC1] pb-20  ">
@@ -179,7 +172,7 @@ export default function ProductsPage() {
                     </div>
 
                     <form onSubmit={(e) => { e.preventDefault(); }} className=" bg-gradient-to-r from-main-background to-[#F5EFCC] w-1/2 h-10 rounded-3xl flex items-center justify-between px-5 drop-shadow-md shadow-black">
-                        <input type="text" value={searchValue} onChange={searchHandler} className="w-3/4 h-8 px-2 bg-transparent border-none focus:outline-none" placeholder={`Search by "Keyword", "Category", "name" `} />
+                        <input type="text" value={searchValue} onChange={searchHandler} className="selection:bg-light-textcolor selection:text-white w-3/4 h-8 px-2 bg-transparent border-none focus:outline-none" placeholder={`Search by "Keyword", "Category", "name" `} />
                         <Search />
                     </form>
 

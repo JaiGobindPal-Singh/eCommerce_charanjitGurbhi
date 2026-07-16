@@ -27,8 +27,8 @@ export function initiatePayment(razorpayKey, razorpayOrderId, order) {
     image: companyLogo,
     order_id: razorpayOrderId,
 
-    handler: function (response) {
-      verifyOrderPayment(response);
+    handler: function () {
+      clearCartStore();
     },
 
     prefill: {

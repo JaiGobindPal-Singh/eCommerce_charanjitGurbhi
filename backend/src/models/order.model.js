@@ -64,6 +64,7 @@ const orderSchema = new mongoose.Schema({
     status: {
         type: String,
         enum: [
+            'payment_failed',
             'awaiting_payment',
             'order_placed',
             'processing',
@@ -82,6 +83,7 @@ const orderSchema = new mongoose.Schema({
             type: String,
             required: true,
             enum: [
+                'payment_failed',
                 'awaiting_payment',
                 'order_placed',
                 'processing',
