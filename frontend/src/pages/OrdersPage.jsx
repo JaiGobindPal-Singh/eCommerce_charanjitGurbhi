@@ -1,9 +1,14 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getAllOrders } from "../utils/orderUtils";
+import Loader from "../components/Loader";
 function OrdersPage() {
     //sample orders
     const [orders, setOrders] = useState([]);
+    const [hasNextPage,setHasNextPage] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [loading, setLoading] = useState(true)
     const navigate = useNavigate();
 
     const getStatusClasses = (status) => {
@@ -12,13 +17,40 @@ function OrdersPage() {
                 return "bg-green-100 text-green-700";
             case "cancelled":
                 return "bg-red-100 text-red-700";
-            case "pending":
+            case "processing":
+                return "bg-amber-100 text-amber-700";
+            case "order_placed":
+                return "bg-amber-100 text-amber-700";
+            case "out_for_delivery":
+                return "bg-amber-100 text-amber-700";
+            case "awaiting_payment":
                 return "bg-amber-100 text-amber-700";
             default:
                 return "bg-[#f7e3cf] text-light-textcolor";
         }
     };
+    const goToPrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage((page) => page - 1);
+        }
+    };
 
+    const goToNextPage = () => {
+        if (hasNextPage) {
+            setCurrentPage((page) => page + 1);
+        }
+    };
+
+    useEffect(() => {
+        getAllOrders(currentPage, 10).then((odrs)=>{
+            setOrders(odrs.orders);
+            setHasNextPage(odrs.pagination.hasNextPage);
+        })
+        .catch(e=>console.error(e))
+        .finally(() => setLoading(false));
+    }, [currentPage])
+    
+    if (loading) return <Loader />
     return (
         <div className="page min-h-screen bg-main-background shadow-xl shadow-orange-950 px-4 py-8 text-dark-textcolor sm:px-6 lg:px-8">
             <div className="mx-auto max-w-6xl">
@@ -48,76 +80,100 @@ function OrdersPage() {
                         </p>
                     </div>
                 ) : (
-                    <div className="space-y-4">
+                    <>
+                        <div className="space-y-4">
+                            {orders?.map((order) => (
+                                <article
+                                    onClick={() => navigate(`/orders/${order.id}`)}
+                                    key={order.id}
+                                    className="rounded-2xl border border-[#f2dcc4] bg-section-background p-5 shadow-sm transition-all duration-150 hover:shadow-lg"
+                                >
+                                    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                                        <div className="flex-1 space-y-3">
+                                            <div>
+                                                <p className="text-sm font-semibold uppercase tracking-[0.1em] text-light-textcolor">
+                                                    Order ID
+                                                </p>
+                                                <p className="break-all text-base font-medium text-dark-textcolor">
+                                                    {order.id}
+                                                </p>
+                                            </div>
 
-                        {orders.map((order) => (
-                            <article
-                                onClick={() => navigate(`/orders/${order._id}`)}
-                                key={order._id}
-                                className="rounded-2xl border border-[#f2dcc4] bg-section-background p-5 shadow-sm transition-all duration-150 hover:shadow-lg"
+                                            <div>
+                                                <p className="text-sm font-semibold uppercase tracking-[0.1em] text-light-textcolor">
+                                                    Items
+                                                </p>
+                                                <ul className="mt-2 space-y-2">
+                                                    {order.items.slice(0, 1)?.map((item, index) => (
+                                                        <li
+                                                            key={`${order.id}-${index}`}
+                                                            className="rounded-lg bg-white/70 px-3 py-2"
+                                                        >
+                                                            <div className="flex items-center justify-between gap-3">
+                                                                <span className="text-sm font-medium capitalize  text-dark-textcolor">
+                                                                    {item.product.name}
+                                                                </span>
+                                                                <span className="text-sm text-light-textcolor">
+                                                                    Qty: {item.quantity}
+                                                                </span>
+                                                            </div>
+                                                        </li>
+                                                    ))}
+                                                    {order.items.length > 2 && (
+                                                        <li
+                                                            key={"truncate ..."}
+                                                            className="rounded-lg bg-gradient-to-r from-white/70 to-main-background px-3 py-2"
+                                                        >
+                                                            <div className="flex items-center justify-between gap-3">
+                                                                {"+" + (order.items.length - 1 + " More")}
+                                                            </div>
+                                                        </li>
+                                                    )}
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col items-start gap-3 md:min-w-[180px] md:items-end">
+                                            <span className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold capitalize ${getStatusClasses(order.status)}`}>
+                                                {order.status}
+                                            </span>
+
+                                            <div className="text-left md:text-right">
+                                                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-light-textcolor">
+                                                    Total Bill
+                                                </p>
+                                                <p className="text-xl font-semibold text-dark-textcolor">
+                                                    ₹{order.billing.totalBill}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
+
+                        <div className="mt-8 flex flex-col gap-3 items-center justify-between rounded-2xl border border-[#f2dcc4] bg-section-background p-4 shadow-sm sm:flex-row">
+                            <button
+                                type="button"
+                                onClick={goToPrevPage}
+                                disabled={currentPage === 1}
+                                className="rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-200 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 bg-light-textcolor text-white hover:bg-dark-textcolor"
                             >
-                                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                                    <div className="flex-1 space-y-3">
-                                        <div>
-                                            <p className="text-sm font-semibold uppercase tracking-[0.1em] text-light-textcolor">
-                                                Order ID
-                                            </p>
-                                            <p className="break-all text-base font-medium text-dark-textcolor">
-                                                {order._id}
-                                            </p>
-                                        </div>
-
-                                        <div>
-                                            <p className="text-sm font-semibold uppercase tracking-[0.1em] text-light-textcolor">
-                                                Items
-                                            </p>
-                                            <ul className="mt-2 space-y-2">
-                                                {order.items.slice(0, 1).map((item, index) => (
-                                                    <li
-                                                        key={`${order._id}-${index}`}
-                                                        className="rounded-lg bg-white/70 px-3 py-2"
-                                                    >
-                                                        <div className="flex items-center justify-between gap-3">
-                                                            <span className="text-sm font-medium capitalize  text-dark-textcolor">
-                                                                {item.product.name}
-                                                            </span>
-                                                            <span className="text-sm text-light-textcolor">
-                                                                Qty: {item.quantity}
-                                                            </span>
-                                                        </div>
-                                                    </li>
-                                                ))}
-                                                {order.items.length > 2 && <li
-                                                    key={"truncate ..."}
-                                                    className="rounded-lg bg-gradient-to-r from-white/70 to-main-background px-3 py-2">
-                                                    <div className="flex items-center justify-between gap-3">
-                                                        {"+" + (order.items.length - 1 + " More")}
-                                                    </div>
-                                                </li>}
-                                            </ul>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex flex-col items-start gap-3 md:min-w-[180px] md:items-end">
-                                        <span className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold capitalize ${getStatusClasses(order.status)}`}>
-                                            {order.status}
-                                        </span>
-
-                                        <div className="text-left md:text-right">
-                                            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-light-textcolor">
-                                                Total Bill
-                                            </p>
-                                            <p className="text-xl font-semibold text-dark-textcolor">
-                                                ₹{order.billing.totalBill}
-                                            </p>
-                                        </div>
-
-
-                                    </div>
-                                </div>
-                            </article>
-                        ))}
-                    </div>
+                                Previous
+                            </button>
+                            <div className="text-sm font-medium text-dark-textcolor">
+                                Page {currentPage}
+                            </div>
+                            <button
+                                type="button"
+                                onClick={goToNextPage}
+                                disabled={!hasNextPage}
+                                className="rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-200 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 bg-light-textcolor text-white hover:bg-dark-textcolor"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </>
                 )}
             </div>
         </div>

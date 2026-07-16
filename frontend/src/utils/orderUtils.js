@@ -31,3 +31,19 @@ export const createOrder = async (deliveryDetails, paymentOption) => {
         throw e;
     }
 }
+
+export const getAllOrders = async (pn, ps) =>{
+    const url = `/orders?pn=${pn || 1}&ps=${ps || 10}`;
+    const res = await api.get(url);
+    const orders = res.data;
+    return orders;
+}
+export const getOrderdetails = async(orderId)=>{
+    if(!orderId){
+        return;
+    }
+    const url = `/orders/${orderId?.trim()}`
+    const res = await api.get(url);
+    const order = res.data;
+    return order;
+}

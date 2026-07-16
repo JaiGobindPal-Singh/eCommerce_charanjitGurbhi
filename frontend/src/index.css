@@ -7,13 +7,14 @@
 }
 /* Removes blue highlight for standard browsers */
 ::selection {
-  background: transparent;
+  background: var( --color-light-textcolor);
+  color: white
 }
 
 /* Removes blue highlight for older Firefox versions */
 ::-moz-selection {
-  background: transparent;
-}
+background: var( --color-light-textcolor);
+  color: white}
 html {
   scroll-behavior: smooth;
 }

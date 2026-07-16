@@ -128,7 +128,7 @@ export const createOrder = async (req, res) => {
         const charges = await findApplicableCharges(req.user, cartTotal);
         const totalBill = calculateTotalPayable(cartTotal, charges);
 
-        const chargesFormatted = charges.map((ch) =>{
+        const chargesFormatted = charges.map((ch) => {
             const key = Object.keys(ch)[0];
             const value = ch[key];
             return {
@@ -358,7 +358,13 @@ export const getUserOrders = async (req, res) => {
 
             Order.countDocuments({ user: userId })
         ]);
-
+        orders?.forEach((ord) => {
+            ord.id = ord._id;
+            delete ord._id;
+            ord.items.forEach((itm) => {
+                delete itm.product._id;
+            })
+        })
         return res.status(200).json({
             orders,
             pagination: {
@@ -386,13 +392,25 @@ export const getOrderDetails = async (req, res) => {
             return res.status(400).json({ error: "invalid order" });
         }
         //fetching order
-        const fullOrder = await Order.findOne({
-            _id: orderId,
-        }).populate({ path: 'billing.paymentMode', select: 'paymentOption' });
-
+        const fullOrder = await Order.findOne({ _id: orderId })
+            .populate({
+                path: 'billing.paymentMode',
+                select: 'paymentOption'
+            })
+            .populate({
+                path: 'items.product',
+                select: 'name price' // This only retrieves the name and price fields of the product
+            }).lean();
         if (!fullOrder) {
             return res.status(404).json({ error: "order does not exist" });
         }
+
+        fullOrder.id = fullOrder._id;
+        delete fullOrder._id;
+        fullOrder.statusHistory?.forEach(sh=> delete sh?._id);
+        fullOrder.items?.forEach(it=> delete it.product._id);
+        delete fullOrder.__v;
+        
         return res.status(200).json({ order: fullOrder });
     } catch (error) {
         console.log("error getting order details", error);

@@ -1,83 +1,19 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { getOrderdetails } from "../utils/orderUtils";
 
 function OrderDisplayPage() {
     const { orderId } = useParams();
     const navigate = useNavigate();
 
-    const [order, setOrder] = useState({
-        billing: {
-            paymentMode: {
-                _id: "6a3b99b3f984bc9440e821f2",
-                paymentOption: "upi"
-            },
-            "charges": [{
-                chargeName: "delivery",
-                chargeAmount: "1234"
-            },
-            {
-                chargeName: "delivery",
-                chargeAmount: "1234"
-            },
-            ],
-            "totalBill": 149
-        },
-        "deliveryDetails": {
-            "deliveryAddress": {
-                "fullName": "jgps",
-                "phone": "123456789",
-                "fullAddress": "1A Sant Nagar, near Bhagtanwala gate",
-                "city": "amritsar",
-                "state": "punjab",
-                "postalCode": "143001",
-                "country": "India"
-            },
-            "deliveryPartner": "dhl",
-            "trackingId": "1234"
-        },
-        "_id": "6a3cd7f94a313fb2fdf8255f",
-        "user": "6a311599562e9ee0673ae558",
-        "status": "cancelled",
-        "statusHistory": [
-            {
-                "status": "order_placed",
-                "_id": "6a3cd7f94a313fb2fdf82560",
-                "updatedAt": "2026-06-25T07:25:45.266Z"
-            },
-            {
-                "status": "out_for_delivery",
-                "_id": "6a3ce2a83b831442f4163ba3",
-                "updatedAt": "2026-06-25T08:11:20.161Z"
-            },
-            {
-                "status": "out_for_delivery",
-                "_id": "6a3ce2f51743907029dc2bf4",
-                "updatedAt": "2026-06-25T08:12:37.424Z"
-            },
-            {
-                "status": "out_for_delivery",
-                "_id": "6a3ce3101743907029dc2bf8",
-                "updatedAt": "2026-06-25T08:13:04.778Z"
-            }
-        ],
-        "items": [
-            {
-                "product": "6a365f6207f9c322e4ff0060",
-                "quantity": 1,
-                "priceAtAddition": 149
-            }
-        ],
-        "createdAt": "2026-06-25T07:25:45.268Z",
-        "updatedAt": "2026-06-25T08:13:04.780Z",
-        "__v": 3
-    }
-    );
+    const [order, setOrder] = useState(null);
+    useEffect(() => {
+        getOrderdetails(orderId).then(odr => {
+            setOrder(odr.order);
+        })
+    }, [orderId])
 
-    // useEffect(() => {
-    //     const payload = location.state?.order ?? location.state?.data ?? null;
-    //     const resolvedOrder = payload?.order ? payload.order : payload;
-    //     setOrder(resolvedOrder ?? null);
-    // }, [location.state, orderId]);
+
 
     const getStatusClasses = (status = "") => {
         switch (status.toLowerCase()) {
@@ -108,7 +44,7 @@ function OrderDisplayPage() {
 
     const address = order?.deliveryDetails?.deliveryAddress;
     const billing = order?.billing;
-    const paymentMode = billing?.paymentMode?.paymentOption || "-";
+    const paymentMode = billing?.paymentMode || "-";
     const statusHistory = order?.statusHistory || [];
     console.log(billing);
     if (!order) {
@@ -161,7 +97,7 @@ function OrderDisplayPage() {
                             <h2 className="text-lg font-semibold">Items</h2>
                             <div className="mt-4 space-y-3">
                                 {(order.items || []).map((item, index) => (
-                                    <div key={`${item.product || item._id || index}-${index}`} className="rounded-xl border border-[#f7e3cf] bg-white/70 p-4">
+                                    <div key={`${item.product?.id + index}-${index}`} className="rounded-xl border border-[#f7e3cf] bg-white/70 p-4">
                                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                             <div>
                                                 <p className="font-medium text-dark-textcolor">
@@ -170,7 +106,7 @@ function OrderDisplayPage() {
                                                 <p className="text-sm text-light-textcolor">Qty: {item.quantity}</p>
                                             </div>
                                             <p className="text-sm font-semibold text-dark-textcolor">
-                                                ₹{(item.priceAtAddition || 0) * (item.quantity || 0)}
+                                                ₹{(item.product.price || 0) * (item.quantity || 0)}
                                             </p>
                                         </div>
                                     </div>
@@ -184,7 +120,7 @@ function OrderDisplayPage() {
                                 <p>
                                     <span className="font-semibold text-dark-textcolor">Address:</span>{" "}
                                     {address
-                                        ? `${address.fullName}, ${address.fullAddress}, ${address.city}, ${address.state} - ${address.postalCode}, ${address.country}`
+                                        ? `${address.fullName}, ${address.streetAddress}, ${address.city}, ${address.state} - ${address.postalCode}, ${address.country}`
                                         : "Not available"}
                                 </p>
                                 <p>
@@ -228,7 +164,12 @@ function OrderDisplayPage() {
                             <div className="mt-4 space-y-3 text-sm">
                                 <div className="flex items-center justify-between text-light-textcolor">
                                     <span>Subtotal</span>
-                                    <span>₹{billing?.subtotal || 0}</span>
+                                    <span>₹{order.items.reduce((total, item) => {
+                                        // Safe check in case product wasn't populated or is missing
+                                        const price = item.product?.price || 0;
+                                        return total + (price * item.quantity);
+                                    }, 0)
+                                    }</span>
                                 </div>
                                 {
 
@@ -257,6 +198,12 @@ function OrderDisplayPage() {
                                     <span className="font-semibold text-dark-textcolor">Mode:</span>{" "}
                                     {paymentMode}
                                 </p>
+                                {paymentMode === "online" &&
+                                    <p>
+                                        <span className="font-semibold text-dark-textcolor">Transaction Id:</span>{" "}
+                                        {order.transaction || "none"}
+                                    </p>
+                                }
 
                             </div>
                         </div>

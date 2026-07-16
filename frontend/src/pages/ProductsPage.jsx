@@ -172,7 +172,7 @@ export default function ProductsPage() {
                     </div>
 
                     <form onSubmit={(e) => { e.preventDefault(); }} className=" bg-gradient-to-r from-main-background to-[#F5EFCC] w-1/2 h-10 rounded-3xl flex items-center justify-between px-5 drop-shadow-md shadow-black">
-                        <input type="text" value={searchValue} onChange={searchHandler} className="selection:bg-light-textcolor selection:text-white w-3/4 h-8 px-2 bg-transparent border-none focus:outline-none" placeholder={`Search by "Keyword", "Category", "name" `} />
+                        <input type="text" value={searchValue} onChange={searchHandler} className="w-3/4 h-8 px-2 bg-transparent border-none focus:outline-none" placeholder={`Search by "Keyword", "Category", "name" `} />
                         <Search />
                     </form>
 
