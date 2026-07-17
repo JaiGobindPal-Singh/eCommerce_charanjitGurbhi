@@ -6,7 +6,7 @@ function CategoryCard({ title, image, onClick, isLoading }) {
 
     return (
         <div
-            className="page flex flex-col w-60 hover:scale-110  transition-all duration-150 rounded-lg items-center py-5 gap-2 flex-shrink-0 cursor-pointer pb-10"
+            className="page flex flex-col w-60 z-0 hover:scale-105  transition-all duration-250 rounded-lg items-center py-5 gap-2 flex-shrink-0 cursor-pointer pb-10"
             onClick={onClick}
         >
             <div className="rounded-full bg-white w-40 h-40  border-dark-textcolor overflow-hidden lg:w-60 lg:h-60 max-md:w-32 max-md:h-32 ">

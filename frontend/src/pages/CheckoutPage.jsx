@@ -148,7 +148,7 @@ function ShippingAddressPage() {
     };
 
     const handleSaveAddress = async (e) => {
-        e.preventDefault();
+        e?.preventDefault();
         if (!streetAddress || !city || !stateValue || !postalCode || postalCode.length !== 6) {
             validateForm();
             return;
@@ -158,10 +158,11 @@ function ShippingAddressPage() {
             await setUserAddress(streetAddress, city, stateValue, postalCode);
         } catch (e) {
             console.error(e);
+        }finally{
+            setSavingAddr(false);
+            setRerender(!rerender);
+            setDisableSaveAddrBtn(true);
         }
-        setSavingAddr(false);
-        setRerender(!rerender);
-        setDisableSaveAddrBtn(true);
     }
 
     const handleSubmit = async (e) => {
@@ -169,6 +170,10 @@ function ShippingAddressPage() {
         setIsSubmitting(true);
 
         try {
+            //if address is not saved
+            if(!disableSaveAddrBtn){
+                await handleSaveAddress(e);
+            }
             const res = await createOrder({
                 fullName,
                 phone,
@@ -178,7 +183,6 @@ function ShippingAddressPage() {
                 postalCode
             }, paymentOption);
 
-            //todo addOrder in store
             //if payment option is cod
             if (paymentOption === "cod") {
                 setOrderSucceeded(true);
@@ -192,9 +196,6 @@ function ShippingAddressPage() {
             setIsSubmitting(false);
             generateNotification(e.response?.data?.error || e.message)();
         }
-
-        // if userid save address and goto checkout page and pass shipping address else register user  tehn goto checkout page
-        //todo submit handler
     };
 
     return (
@@ -305,8 +306,8 @@ function ShippingAddressPage() {
                         <button
                             ref={saveButtonRef}
                             type="submit"
-                            disabled={savingAddr || disableSaveAddrBtn}
-                            className={` w-full rounded-full ${!savingAddr && !disableSaveAddrBtn ? 'bg-light-textcolor text-white' : 'bg-gray-300 text-white'} px-6 py-3 text-sm font-semibold  transition hover:opacity-95 sm:w-auto `}
+                            disabled={savingAddr}
+                            className={` w-full rounded-full ${!savingAddr  ? 'bg-light-textcolor text-white' : 'bg-gray-300 text-white'} px-6 py-3 text-sm font-semibold  transition hover:opacity-95 sm:w-auto `}
                             onClick={handleSaveAddress}
                         >
                             Save Address

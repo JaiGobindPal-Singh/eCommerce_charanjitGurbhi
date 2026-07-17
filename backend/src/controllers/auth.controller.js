@@ -165,8 +165,10 @@ export const setUserAddress = async (req, res) => {
         const user = await User.findByIdAndUpdate(req.user?.id, {
             $set: { address: addressObj }
         });
+        console.log(user);
         return res.status(200).json({
-            success: true
+            success: true,
+            user
         })
     } catch (e) {
         console.log(e);

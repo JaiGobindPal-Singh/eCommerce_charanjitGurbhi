@@ -14,7 +14,7 @@ import { useEffect } from "react"
 import api from "./configs/axiosConfig.js"
 import userStore from "./store/userStore.js"
 import CheckoutPage from "./pages/CheckoutPage.jsx"
-
+import ProfilePage from "./pages/ProfilePage.jsx"
 const MainLayout = () => (
   <>
     <Header />
@@ -63,6 +63,7 @@ const App = () => {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/products/:productId" element={<DisplayProductPage />} />
       </Route>
 

@@ -143,7 +143,7 @@ function OrderDisplayPage() {
                             <div className="mt-4 space-y-3">
                                 {statusHistory.length > 0 ? (
                                     statusHistory.map((entry) => (
-                                        <div key={entry._id} className="flex items-start gap-3 rounded-xl border border-[#f7e3cf] bg-white/70 p-3">
+                                        <div key={entry.id} className="flex items-start gap-3 rounded-xl border border-[#f7e3cf] bg-white/70 p-3">
                                             <div className="mt-1 h-2.5 w-2.5 rounded-full bg-light-textcolor" />
                                             <div>
                                                 <p className="text-sm font-semibold capitalize text-dark-textcolor">{entry.status.replace(/_/g, " ")}</p>

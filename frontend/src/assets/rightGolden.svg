@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="1.5 5.1 71.7 14.399999999999999" style="max-height: 500px" width="71.7" height="14.399999999999999">
+  <defs>
+    
+    <linearGradient y2="0%" x2="100%" y1="0%" x1="0%" id="theme-royal-gold-right">
+      <stop stop-color="#805A15" offset="0%"/>
+      <stop stop-color="#C59B27" offset="15%"/>
+      <stop stop-color="#E5C060" offset="50%"/>
+      <stop stop-opacity="0" stop-color="#C59B27" offset="100%"/>
+    </linearGradient>
+  </defs>
+
+  
+  <circle fill="#805A15" r="1.5" cy="12" cx="5"/>
+
+  
+  <path stroke-linecap="round" stroke-width="1.5" stroke="url(#theme-royal-gold-right)" d="M40 12 C32 12, 28 7, 24 10 C20 13, 16 10, 10 12"/>
+
+  
+  <path stroke-linecap="round" stroke-width="1.2" stroke="#C59B27" d="M70 12 C64 6, 58 6, 54 12 C50 18, 44 18, 40 12"/>
+  <path stroke-opacity="0.8" stroke-width="1" stroke="#805A15" d="M58 12 C55 9, 51 9, 48 12 C45 15, 41 15, 38 12"/>
+
+  
+  <path fill="#E5C060" d="M54 12 L52 10 L50 12 L52 14 Z"/>
+  <path fill="#805A15" d="M20 11 L18 9 L16 11 L18 13 Z"/>
+
+  
+  <path stroke-width="1.2" stroke="url(#theme-royal-gold-right)" d="M300 12 H70"/>
+</svg>

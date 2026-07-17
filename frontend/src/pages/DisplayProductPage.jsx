@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { addToCart } from "../utils/cartUtils";
-import { IndianRupee, ChevronLeft } from "lucide-react";
+import { IndianRupee, ChevronLeft, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getProduct } from "../utils/productUtils";
 import SkeletonLoading from "../components/SkeletonLoading";
@@ -12,6 +12,7 @@ export default function DisplayProductPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [product, setProduct] = useState({});
     const [addedToCartBtn, setaddedToCartBtn] = useState(false);
+    const [showDescriptionModal, setShowDescriptionModal] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -27,6 +28,12 @@ export default function DisplayProductPage() {
             setaddedToCartBtn(false);
         }, 500);
     }
+
+    const DESCRIPTION_MAX_LENGTH = 160;
+    const hasLongDescription = product.description && product.description.length > DESCRIPTION_MAX_LENGTH;
+    const descriptionPreview = hasLongDescription
+        ? `${product.description.slice(0, DESCRIPTION_MAX_LENGTH)}...`
+        : product.description || "Product description not available.";
 
     return (
         <div className="page bg-main-background text-dark-textcolor px-4 py-8 flex justify-center">
@@ -52,7 +59,19 @@ export default function DisplayProductPage() {
                             !isLoading ?
                                 <div className="space-y-3">
                                     <h1 className="text-4xl font-semibold leading-tight text-dark-textcolor">{product.name || "Product Name"}</h1>
-                                    <p className="text-base leading-7 text-dark-textcolor/80">{product.description || "This is a beautiful product with elegant design and premium features. Perfect for your everyday needs and style."}</p>
+                                    <p
+                                        className="text-base leading-7 text-dark-textcolor/80 cursor-pointer"
+                                        onClick={() => {
+                                            if (hasLongDescription) setShowDescriptionModal(true);
+                                        }}
+                                    >
+                                        {descriptionPreview}
+                                        {hasLongDescription && (
+                                            <span className="ml-1 text-sm font-semibold text-dark-textcolor underline">
+                                                Read more
+                                            </span>
+                                        )}
+                                    </p>
                                 </div> : <SkeletonLoading className={"h-8"} />
                         }
                         {
@@ -94,9 +113,7 @@ export default function DisplayProductPage() {
                                 product.stockAvailable && addToCart(product, quantity)
                                 handleButtonUI();
                                 generateNotification("Added to cart")();
-                            }
-
-                        }
+                            }}
                             disabled={!product.stockAvailable || isLoading || addedToCartBtn}
                         >
                             {product.stockAvailable ? 'Add to Cart' : 'Out of Stock'}
@@ -104,6 +121,31 @@ export default function DisplayProductPage() {
                     </div>
                 </div>
             </div>
+            {showDescriptionModal && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-6"
+                    onClick={() => setShowDescriptionModal(false)}
+                >
+                    <div
+                        className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl"
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <button
+                            type="button"
+                            className="absolute right-4 top-4 rounded-full bg-slate-100 p-2 text-dark-textcolor transition hover:bg-slate-200"
+                            onClick={() => setShowDescriptionModal(false)}
+                        >
+                            <X className="h-5 w-5" />
+                        </button>
+                        <h2 className="text-2xl font-semibold text-dark-textcolor">Description</h2>
+                        <p className="mt-4 whitespace-pre-line text-base leading-7 text-dark-textcolor/80">
+                            {product.description || "Product description not available."}
+                        </p>
+                    </div>
+                </div>
+            )}
+        
+                    
         </div>
-    )
+    );
 }

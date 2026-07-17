@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 function ProductCard({ product, onClick, isLoading }) {
     return (
         <div
-            className="flex flex-col w-40 hover:scale-110  transition-all duration-200 rounded-lg py-2  flex-shrink-0 cursor-pointer   max-md:w-32"
+            className="flex flex-col w-40 z-0 hover:scale-105  transition-all duration-250 rounded-lg py-2  flex-shrink-0 cursor-pointer   max-md:w-32"
             onClick={onClick}
         >
             <div className="rounded-lg w-40 h-40  border-dark-textcolor overflow-hidden lg:w-60 lg:h-60 max-md:w-32 max-md:h-32 object-cover">

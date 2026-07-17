@@ -4,6 +4,7 @@ import { ArrowLeft, IndianRupee, Minus, Plus, ShoppingBag, Trash2 } from "lucide
 import { useNavigate } from "react-router-dom";
 import { generateNotification } from "../utils/notificationUtils";
 import { getUser } from "../utils/userUtils";
+import { useRef } from "react";
 function formatCurrency(value) {
     return new Intl.NumberFormat("en-IN", {
         style: "currency",
@@ -13,6 +14,14 @@ function formatCurrency(value) {
 }
 
 function CartItem({ item, onQuantityChange, onRemove }) {
+    const [quantity, setQuantity] = useState(item.quantity);
+
+    const handleQuantityChange = (newQuantity) => {
+        if (newQuantity < 1) return;
+        setQuantity(newQuantity);
+        onQuantityChange(item.product.id, newQuantity);
+    };
+
     return (
         <div className="flex flex-col gap-4 rounded-3xl border border-[#EBD8C0] bg-section-background p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
@@ -34,18 +43,18 @@ function CartItem({ item, onQuantityChange, onRemove }) {
                 <div className="flex items-center rounded-full border border-[#EBD8C0] bg-main-background p-1">
                     <button
                         type="button"
-                        onClick={() => onQuantityChange(item.product.id, item.quantity - 1)}
+                        onClick={() => handleQuantityChange(quantity - 1)}
                         className="rounded-full p-2 text-light-textcolor transition hover:bg-[#f6e3c4]"
-                        disabled={item.quantity === 1}
+                        disabled={quantity <= 1}
                     >
                         <Minus className="h-4 w-4" />
                     </button>
                     <span className="min-w-8 text-center text-sm font-semibold text-dark-textcolor">
-                        {item.quantity}
+                        {quantity}
                     </span>
                     <button
                         type="button"
-                        onClick={() => onQuantityChange(item.product.id, item.quantity + 1)}
+                        onClick={() => handleQuantityChange(quantity + 1)}
                         className="rounded-full p-2 text-light-textcolor transition hover:bg-[#f6e3c4]"
                     >
                         <Plus className="h-4 w-4" />
@@ -54,7 +63,7 @@ function CartItem({ item, onQuantityChange, onRemove }) {
 
                 <div className="flex items-center gap-3">
                     <p className="text-base font-semibold text-dark-textcolor">
-                        {formatCurrency(item.product.price * item.quantity)}
+                        {formatCurrency(item.product.price * quantity)}
                     </p>
                     <button
                         type="button"
@@ -73,6 +82,7 @@ export default function CartPage() {
     const navigate = useNavigate();
     const [items, setItems] = useState([]);
     const [user, setUser] = useState({});
+    const updateQuantityRef = useRef({});
 
     useEffect(() => {
         getCart().then((cartItems) => {
@@ -92,18 +102,28 @@ export default function CartPage() {
         if (!quantity || quantity < 1) {
             return;
         }
-        updateProductQuantity(itemId, quantity).then(() => {
-            setItems((currentItems) =>
-                currentItems.map((currentItem) =>
-                    (currentItem.product?.id ?? currentItem.id) === itemId
-                        ? { ...currentItem, quantity }
-                        : currentItem
-                )
-            );
-        }).catch((error) => {
-            generateNotification("unable to update quantity")();
-            console.error(error);
-        });
+
+        setItems((currentItems) =>
+            currentItems.map((currentItem) =>
+                (currentItem.product?.id ?? currentItem.id) === itemId
+                    ? { ...currentItem, quantity }
+                    : currentItem
+            )
+        );
+
+        const existingTimeout = updateQuantityRef.current[itemId];
+        if (existingTimeout) {
+            clearTimeout(existingTimeout);
+        }
+
+        updateQuantityRef.current[itemId] = setTimeout(() => {
+            updateProductQuantity(itemId, quantity).then(() => {
+                delete updateQuantityRef.current[itemId];
+            }).catch((error) => {
+                generateNotification("unable to update quantity")();
+                console.error(error);
+            });
+        }, 500);
     };
 
     const removeItem = (item) => {

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="228.3 5.1 70.8 14.399999999999999" style="max-height: 500px" width="70.8" height="14.399999999999999">
+  <defs>
+    
+    <linearGradient y2="0%" x2="100%" y1="0%" x1="0%" id="theme-royal-gold">
+      <stop stop-opacity="0" stop-color="#C59B27" offset="0%"/>
+      <stop stop-color="#E5C060" offset="50%"/>
+      <stop stop-color="#C59B27" offset="85%"/>
+      <stop stop-color="#805A15" offset="100%"/>
+    </linearGradient>
+  </defs>
+  
+  <path stroke-width="1.2" stroke="url(#theme-royal-gold)" d="M0 12 H230"/>
+  
+  
+  <path stroke-linecap="round" stroke-width="1.2" stroke="#C59B27" d="M230 12 C236 6, 242 6, 246 12 C250 18, 256 18, 260 12"/>
+  <path stroke-opacity="0.8" stroke-width="1" stroke="#805A15" d="M242 12 C245 9, 249 9, 252 12 C255 15, 259 15, 262 12"/>
+  
+  
+  <path stroke-linecap="round" stroke-width="1.5" stroke="url(#theme-royal-gold)" d="M260 12 C268 12, 272 7, 276 10 C280 13, 284 10, 290 12"/>
+  
+  
+  <path fill="#E5C060" d="M246 12 L248 10 L250 12 L248 14 Z"/>
+  <path fill="#805A15" d="M280 11 L282 9 L284 11 L282 13 Z"/>
+  <circle fill="#805A15" r="1.5" cy="12" cx="295"/>
+</svg>

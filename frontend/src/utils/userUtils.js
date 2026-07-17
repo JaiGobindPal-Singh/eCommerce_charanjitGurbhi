@@ -92,16 +92,23 @@ export const logoutUser = async()=>{
         userStore.getState().resetUser();
     });
 }
-export const setUserAddress = async (streetAddress, city, state, postalCode) => {
+export const setUserAddress = async (streetAddressP, cityP, stateP, postalCodeP) => {
     try{
-        if(!streetAddress || !city || !state){
-            generateNotification('Address Details are required')();    
+        
+        if(!streetAddressP || !cityP || !stateP || !postalCodeP ){
+            generateNotification('Address Details are required')();  
+            return;  
+        }
+        
+        const {  streetAddress, city, state, postalCode } = userStore.getState();
+        if(streetAddress === streetAddressP && city === cityP && state === stateP && postalCode === postalCodeP){
+            return; // No changes, no need to update
         }
         await api.patch('/auth/set-address', {
-            streetAddress,
-            city,
-            state,
-            postalCode
+            streetAddress: streetAddressP,
+            city: cityP,
+            state: stateP,
+            postalCode: postalCodeP
         })
         generateNotification('Address Saved')();
     }catch(e){
