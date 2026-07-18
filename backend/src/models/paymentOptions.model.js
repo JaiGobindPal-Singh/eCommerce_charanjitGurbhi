@@ -18,12 +18,16 @@ const paymentOptionsSchema = new mongoose.Schema({
             default: false,
             required: true
         },
-        availableCities: {
+        allowedPostalCodes: {
             type: [{
                 type: String,
-                lowercase: true,
-                trim: true
+                trim: true,
+                match: [/^[1-9][0-9]{5}$/, 'Please provide a valid 6-digit Indian postal code'],
+                minlength: [6, 'Postal code must be exactly 6 digits'],
+                maxlength: [6, 'Postal code must be exactly 6 digits'],
+                required: true 
             }],
+            default: [] // if empty, COD is allowed for all postal codes
         }
     }
 })

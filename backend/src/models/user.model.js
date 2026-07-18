@@ -7,28 +7,31 @@ const userSchema = new mongoose.Schema(
             required: true,
             trim: true,
         },
-        address:{
-            streetAddress:{
+        address: {
+            streetAddress: {
                 type: String,
                 trim: true,
                 lowercase: true,
                 default: ""
             },
-            city:{
+            city: {
                 type: String,
                 trim: true,
                 lowercase: true,
                 default: ""
             },
-            state:{
+            state: {
                 type: String,
                 trim: true,
                 lowercase: true,
                 default: ""
             },
-            postalCode:{
-                type:String,
+            postalCode: {
+                type: String,
                 trim: true,
+                match: [/^[1-9][0-9]{5}$/, 'Please provide a valid 6-digit Indian postal code'],
+                minlength: [6, 'Postal code must be exactly 6 digits'],
+                maxlength: [6, 'Postal code must be exactly 6 digits'],
                 default: ""
             }
         },
@@ -36,6 +39,7 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
             trim: true,
+            unique: true,
         },
         password: {
             type: String,

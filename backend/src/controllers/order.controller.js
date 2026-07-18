@@ -208,9 +208,9 @@ export const createOrder = async (req, res) => {
             const [order] = await Order.create(
                 [{
                     user: userId,
-                    status: 'awaiting_payment',
+                    status: 'payment_pending',
                     statusHistory: [{
-                        status: 'awaiting_payment'
+                        status: 'payment_pending'
                     }],
                     items: cart.items,
                     billing: {

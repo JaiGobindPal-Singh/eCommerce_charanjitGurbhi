@@ -1,5 +1,19 @@
 import mongoose from 'mongoose';
 
+// subDocument schema for pricing tiers
+const tierPricingSchema = new mongoose.Schema({
+  minQuantity: {
+    type: Number,
+    required: true,
+    min: 1
+  },
+  price: {
+    type: Number,
+    required: true,
+    min: 0
+  }
+}, { _id: false });
+
 const productSchema = new mongoose.Schema(
   {
     name: {
@@ -13,8 +27,13 @@ const productSchema = new mongoose.Schema(
       trim: true,
     },
     imageUrl: {
-      type: String,
-      default: '',
+      type: [
+        {
+          type: String,
+          trim: true,
+        }
+      ],
+      maxLength: [5, 'You can upload a maximum of 5 images'],
     },
     category: {
       type: [String],
@@ -36,6 +55,14 @@ const productSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
+    pricingTiers: {
+      type: [tierPricingSchema],
+      default: []
+    },
+    variants: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product'
+    }]
   },
   {
     timestamps: true,

@@ -44,9 +44,12 @@ const addressSchema = new mongoose.Schema(
         },
         postalCode: {
             type: String,
-            trim: true
+            trim: true,
+            required: true,
+            match: [/^[1-9][0-9]{5}$/, 'Please provide a valid 6-digit Indian postal code'],
+            minlength: [6, 'Postal code must be exactly 6 digits'],
+            maxlength: [6, 'Postal code must be exactly 6 digits']
         },
-
         country: {
             type: String,
             trim: true,
@@ -65,9 +68,11 @@ const orderSchema = new mongoose.Schema({
         type: String,
         enum: [
             'payment_failed',
-            'awaiting_payment',
+            'payment_pending',
+            'abandoned',
             'order_placed',
             'processing',
+            'hold',
             'out_for_delivery',
             'delivered',
             'cancelled',
@@ -76,7 +81,9 @@ const orderSchema = new mongoose.Schema({
             'returned'
         ],
         lowercase: true,
-        trim: true
+        trim: true,
+        required: true,
+        default: 'payment_pending'
     },
     statusHistory: [{
         status: {
@@ -84,9 +91,11 @@ const orderSchema = new mongoose.Schema({
             required: true,
             enum: [
                 'payment_failed',
-                'awaiting_payment',
+                'payment_pending',
+                'abandoned',
                 'order_placed',
                 'processing',
+                'hold',
                 'out_for_delivery',
                 'delivered',
                 'cancelled',
@@ -133,9 +142,6 @@ const orderSchema = new mongoose.Schema({
     },
     cancellationReason: {
         type: String,
-        required: function () {
-            return this.status === "cancelled"
-        },
         trim: true,
         maxlength: 150
     },

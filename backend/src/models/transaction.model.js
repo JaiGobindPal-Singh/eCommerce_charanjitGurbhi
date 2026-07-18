@@ -30,11 +30,10 @@ const transactionSchema = new mongoose.Schema(
             default: null,
         },
 
-        // Amount in smallest currency unit (paise)
         amount: {
             type: Number,
             required: true,
-            min: 0,
+            min: 1
         },
         status: {
             type: String,
@@ -47,14 +46,12 @@ const transactionSchema = new mongoose.Schema(
             default: "initialized",
         },
 
-        refundId: {
+        razorpayRefundId: {
             type: String,
-            default: null,
         },
 
         refundedAmount: {
             type: Number,
-            default: 0,
         },
     },
     {

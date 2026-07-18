@@ -22,14 +22,23 @@ const chargeSchema = new mongoose.Schema({
         default: false
     },
     noChargeConditions:{
-        city:{
-            type: [String],
-            trim: true,
-            lowercase: true
+        postalCodes:{
+            type: [{
+                type: String,
+                trim: true,
+                match: [/^[1-9][0-9]{5}$/, 'Please provide a valid 6-digit Indian postal code'],
+                minlength: [6, 'Postal code must be exactly 6 digits'],
+                maxlength: [6, 'Postal code must be exactly 6 digits'],
+                required: true 
+            }],
         },
         minAmount:{
             type: Number,
             default:0
+        },
+        paymentOption:{
+            type: String,
+            enum: ['cod',  'online']
         }
     }
 });
