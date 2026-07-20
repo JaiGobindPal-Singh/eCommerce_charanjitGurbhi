@@ -28,6 +28,10 @@ const paymentOptionsSchema = new mongoose.Schema({
                 required: true 
             }],
             default: [] // if empty, COD is allowed for all postal codes
+        },
+        strict:{
+            type: Boolean,
+            default: false
         }
     }
 })

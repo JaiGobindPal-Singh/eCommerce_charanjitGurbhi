@@ -59,4 +59,14 @@ const transactionSchema = new mongoose.Schema(
     }
 );
 
+// Inside your Transaction schema file
+transactionSchema.index(
+    { status: 1, createdAt: -1 },
+    {
+        partialFilterExpression: {
+            status: 'initialized'
+        }
+    }
+);
+
 export default mongoose.model('Transaction', transactionSchema);

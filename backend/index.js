@@ -8,6 +8,10 @@ const PORT = env.port;
 const startServer = async () => {
     await connectDb();
     await seedAdminUser();
+
+    // Register cron jobs
+    await import('./src/jobs/expireOrders.js');
+
     app.listen(PORT, () => {
         console.log(`Backend server running on port ${PORT}`);
     });
