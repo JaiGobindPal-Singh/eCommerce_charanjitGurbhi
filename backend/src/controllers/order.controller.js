@@ -27,13 +27,13 @@ const findApplicableCharges = async (user, cartTotal) => {
         .map((ch) => ({ [ch.chargeName]: ch.chargeAmount || calculateChargePercent(cartTotal, ch.chargePercent) }));
 
     //evaluating optional charges
-    const userCity = user?.address?.city;
+    const userCity = user?.address?.postalCode || "";
     const optionalCharges = charges
         .filter((ch) => {
             if (ch.fixed) return false;
 
             const cityExempt =
-                ch.noChargeConditions?.city.length ? ch.noChargeConditions?.city?.includes(userCity.toLowerCase()) ?? false : true;
+                ch.noChargeConditions?.postalCodes?.length ? ch.noChargeConditions?.postalCodes?.includes(userCity) ?? false : true;
 
             const minAmount = ch.noChargeConditions?.minAmount ?? 0;
             const amountExempt = minAmount > 0 ? cartTotal >= minAmount : true;
@@ -78,16 +78,14 @@ export const createOrder = async (req, res) => {
             !deliveryDetails.deliveryAddress.phone ||
             !deliveryDetails.deliveryAddress.streetAddress ||
             !deliveryDetails.deliveryAddress.city ||
-            !deliveryDetails.deliveryAddress.state
+            !deliveryDetails.deliveryAddress.state ||
+            !deliveryDetails.deliveryAddress.postalCode
         ) {
             return res.status(400).json({ error: "all delivery details are required" });
         }
 
         //verify cod payment is available or not
         if (paymentMode.trim() == "cod") {
-            if (!deliveryDetails.deliveryAddress.city) {
-                return res.status(400).json({ error: "delivery address is required" });
-            }
             const pOp = await PaymentOptions.findOne();
             // 1. If COD is completely disabled, reject it immediately.
             if (!pOp.cod?.enabled) {
@@ -95,8 +93,8 @@ export const createOrder = async (req, res) => {
             }
 
             // 2. If it's enabled, check the city restrictions.
-            const cityList = pOp.cod.availableCities || [];
-            const userCity = (deliveryDetails?.deliveryAddress?.city || "").trim().toLowerCase();
+            const cityList = pOp.cod.allowedPostalCodes || [];
+            const userCity = (deliveryDetails?.deliveryAddress?.postalCode || "").trim();
 
             // If cityList has items AND the user's city isn't in it, reject it.
             if (cityList.length > 0 && !cityList.includes(userCity)) {
@@ -255,6 +253,7 @@ export const createOrder = async (req, res) => {
             await dbSession.endSession();
         }
     } catch (error) {
+        console.log(error)
         return res.status(500).json({
             error: 'internal server error'
         });

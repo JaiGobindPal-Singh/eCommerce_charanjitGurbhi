@@ -86,6 +86,25 @@ export default function DisplayProductPage() {
                                         <span className="text-base font-medium flex items-center text-dark-textcolor line-through">{product.comparePrice ? `${product.comparePrice}` : "--"}</span>
                                     </div>
                                 </div> : <SkeletonLoading className={"h-8"} />
+                                
+                        }
+                        {
+                            !isLoading && product.pricingTiers?.length &&
+                                <div className="flex flex-col gap-4 rounded-3xl bg-white p-5 shadow-sm shadow-slate-200">
+                                    <div className="flex justify-between flex-col gap-2">
+                                        <span className="text-sm uppercase tracking-[0.2em] text-light-textcolor">Special Offers</span>
+                                        <div className="ml-8">
+
+                                        {product.pricingTiers?.map(pt=>{
+                                            return <p>
+                                                Get <span  className="font-semibold">{pt.minQuantity + " " + product.name}  </span> or more @<span className="font-semibold">{pt.price}</span>
+                                            </p>
+                                        })}
+                                        </div>
+                                    </div>
+                                
+                                </div>
+                                
                         }
 
                         <div className="flex items-center gap-4 rounded-3xl bg-white p-5 shadow-sm shadow-slate-200">
@@ -96,7 +115,7 @@ export default function DisplayProductPage() {
                                     className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-200 text-dark-textcolor font-semibold transition hover:bg-slate-300 disabled:opacity-50"
                                     disabled={quantity <= 1}
                                 >
-                                    −
+                                    − 
                                 </button>
                                 <input className="w-8 text-center text-lg font-semibold text-dark-textcolor" value={quantity} onChange={(e) => setQuantity(e.target.value)}></input>
                                 <button

@@ -30,6 +30,17 @@ export function initiatePayment(razorpayKey, razorpayOrderId, order) {
     handler: function () {
       clearCartStore();
     },
+    modal:{
+      ondismiss: async function(){
+        try{
+          console.log("pipudjflkdsjaf")
+          await api.post(`/razorpay/dismiss-payment/${razorpayOrderId}`);
+        }catch(e){
+          console.log(e);
+          //ignore erorrs
+        }
+      }
+    },
 
     prefill: {
       name: user.name || "",

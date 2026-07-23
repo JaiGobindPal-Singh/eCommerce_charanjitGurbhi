@@ -4,7 +4,7 @@ import Product from "../models/product.model.js";
 //only admin access
 export const createProduct = async (req, res) => {
   try {
-    const { name, description, category, price, comparePrice, stockAvailable } =
+    const { name, description, category, price, comparePrice, stockAvailable, priceTiers = [],  } =
       req.body;
     if (!name || !description || !price || !req.file) {
       return res
@@ -23,6 +23,7 @@ export const createProduct = async (req, res) => {
       comparePrice: !isNaN(Number(comparePrice)) ? comparePrice : 0,
       stockAvailable: stockAvailable ?? 1,
       imageUrl: productImageUrl,
+      priceTiers
     });
     await product.save();
 
@@ -39,7 +40,8 @@ export const createProduct = async (req, res) => {
           price: product.price,
           comparePrice: product.comparePrice,
           stockAvailable: product.stockAvailable,
-          imageUrl: product.imageUrl
+          imageUrl: product.imageUrl,
+          priceTiers:product.priceTiers
         }
       });
   } catch (error) {
@@ -74,6 +76,7 @@ export const updateProduct = async (req, res) => {
       price,
       comparePrice,
       stockAvailable,
+      priceTiers,
     } = req.body;
     if (!productId) {
       return res.status(400).json({ error: "Product ID is required" });
@@ -96,6 +99,7 @@ export const updateProduct = async (req, res) => {
     if (description) product.description = description;
     if (Array.isArray(category) && category.length) product.category = category;
     if (price) product.price = price;
+    if (priceTiers && priceTiers.length) product.priceTiers = priceTiers;
     if (comparePrice) product.comparePrice = comparePrice;
     if (stockAvailable) product.stockAvailable = stockAvailable;
 

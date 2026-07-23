@@ -9,13 +9,14 @@ const normalizeCartItems = (items = []) => {
             return item;
         }
 
-        const { id, name, price, imageUrl, quantity } = item;
+        const { id, name, price, imageUrl, quantity, pricingTiers } = item;
         return {
             product: {
                 id,
                 name,
                 price,
                 imageUrl,
+                pricingTiers
             },
             quantity,
         };
@@ -174,8 +175,17 @@ export const clearCartStore = async() =>{
     setCart([]);
 
 }
+  const getFinalPrice = (item, quantity)=>{
+        let finalPrice = item.product.price;
+        item.product.pricingTiers?.forEach((pt)=>{
+            if(quantity >= pt.minQuantity){
+                finalPrice = pt.price;
+            }
+        })
+        return finalPrice;
+    }
 export const getCartTotal = async() =>{
     const items =await getCart();
-    const total = () => items?.reduce((acc, item) => acc + item.product.price * item.quantity, 0)
+    const total = () => items?.reduce((acc, item) => acc + getFinalPrice(item, item.quantity)*item.quantity, 0);
     return total;
 }

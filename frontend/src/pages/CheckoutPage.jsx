@@ -15,7 +15,7 @@ function ShippingAddressPage() {
     const [fullName, setFullName] = useState("");
     const [userId, setUserId] = useState("");
     const [phone, setPhone] = useState("");
-    const[orderSucceeded, setOrderSucceeded] = useState(false);
+    const [orderSucceeded, setOrderSucceeded] = useState(false);
     const [streetAddress, setStreetAddress] = useState("");
     const [city, setCity] = useState("");
     const [stateValue, setStateValue] = useState("");
@@ -37,6 +37,7 @@ function ShippingAddressPage() {
     const saveButtonRef = useRef(null);
     const [cartTotal, setCartTotal] = useState(0);
     const [disableSaveAddrBtn, setDisableSaveAddrBtn] = useState(true);
+    
 
     const handleEnterFocusNext = (e, nextRef) => {
         if (e.key === "Enter") {
@@ -52,20 +53,19 @@ function ShippingAddressPage() {
             // Modern browsers require returnValue to be set
             event.returnValue = 'dsfds';
         };
-
         window.addEventListener('beforeunload', handleBeforeUnload);
-
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
         };
     }, []);
+
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const user = await getUser();
                 if (user?.id) {
                     setUserId(user.id);
-                }else{
+                } else {
                     navigate('/products');
                 }
                 if (user?.name) {
@@ -109,18 +109,26 @@ function ShippingAddressPage() {
         fetchData();
     }, [userId]);
 
+    const av = postalCode.trim().length == 6 && 
+    availablePaymentOptions?.cod?.enabled && (
+        !(availablePaymentOptions?.cod?.allowedPostalCodes?.length) ||
+        availablePaymentOptions?.cod?.allowedPostalCodes.includes(postalCode.trim())
+    );
+    const isCodAvailable = av;
+
+
     useEffect(() => {
         const fetchData = async () => {
             try {
                 if (!userId) return;
-                const charges = await getCharges();
+                const charges = await getCharges(cartTotal);
                 setApplicableCharges(charges);
             } catch (e) {
                 console.error(e);
             }
         };
         fetchData();
-    }, [rerender, userId]);
+    }, [rerender, userId, cartTotal]);
 
     const isMounted = useRef(false);
     useEffect(() => {
@@ -158,7 +166,7 @@ function ShippingAddressPage() {
             await setUserAddress(streetAddress, city, stateValue, postalCode);
         } catch (e) {
             console.error(e);
-        }finally{
+        } finally {
             setSavingAddr(false);
             setRerender(!rerender);
             setDisableSaveAddrBtn(true);
@@ -171,7 +179,7 @@ function ShippingAddressPage() {
 
         try {
             //if address is not saved
-            if(!disableSaveAddrBtn){
+            if (!disableSaveAddrBtn) {
                 await handleSaveAddress(e);
             }
             const res = await createOrder({
@@ -303,15 +311,15 @@ function ShippingAddressPage() {
                     </div>
 
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <button
+                        {/* <button
                             ref={saveButtonRef}
                             type="submit"
                             disabled={savingAddr}
-                            className={` w-full rounded-full ${!savingAddr  ? 'bg-light-textcolor text-white' : 'bg-gray-300 text-white'} px-6 py-3 text-sm font-semibold  transition hover:opacity-95 sm:w-auto `}
+                            className={` w-full rounded-full ${!savingAddr ? 'bg-light-textcolor text-white' : 'bg-gray-300 text-white'} px-6 py-3 text-sm font-semibold  transition hover:opacity-95 sm:w-auto `}
                             onClick={handleSaveAddress}
                         >
                             Save Address
-                        </button>
+                        </button> */}
                         <button
                             type="button"
                             onClick={() => navigate("/cart")}
@@ -350,12 +358,12 @@ function ShippingAddressPage() {
                                         type="radio"
                                         name="paymentMethod"
                                         value="cod"
-                                        disabled={!(availablePaymentOptions?.cod?.enabled && (!(availablePaymentOptions?.cod?.availableCities.length) || availablePaymentOptions?.cod?.availableCities.includes(city.trim())))}
+                                        disabled={!isCodAvailable}
                                         checked={paymentOption === "cod"}
                                         onChange={(e) => setPaymentOption(e.target.value)}
                                         className="mr-3"
                                     />
-                                    <span className="text-sm text-dark-textcolor">{(availablePaymentOptions?.cod?.enabled && (!(availablePaymentOptions?.cod?.availableCities.length) || availablePaymentOptions?.cod?.availableCities.includes(city.trim()))) ? 'Cash on Delivery' : "Cash on Delivery (Coming soon)"}</span>
+                                    <span className="text-sm text-dark-textcolor">{isCodAvailable ? 'Cash on Delivery' : "Cash on Delivery (Coming soon)"}</span>
                                 </label>
                             </div>
                         </div>
@@ -374,9 +382,9 @@ function ShippingAddressPage() {
                             <div className=" pt-5">
                                 {
                                     applicableCharges?.map((charge) => {
-                                        return <div key={Object.keys(charge)[0]} className="flex gap-20 flex-nowrap text-nowrap">
+                                        return <div key={Object.keys(charge)[0]} className="flex gap-20 max-md:gap-10 flex-nowrap text-nowrap">
                                             <span className="text-sm font-medium w-20 text-dark-textcolor/80">{Object.keys(charge)[0]}: </span>
-                                            <span className="text-xs  text-dark-textcolor">₹ {Object.values(charge)[0] }</span>
+                                            <span className="text-xs  text-dark-textcolor">₹ {Object.values(charge)[0]}</span>
                                         </div>
                                     })
                                 }

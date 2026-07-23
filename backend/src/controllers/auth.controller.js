@@ -152,8 +152,8 @@ export const isUserLoggedIn = async (req, res) => {
 export const setUserAddress = async (req, res) => {
     try {
 
-        const { streetAddress, city, state, postalCode = "" } = req.body;
-        if (!streetAddress || !city || !state) {
+        const { streetAddress, city, state, postalCode } = req.body;
+        if (!streetAddress || !city || !state || !postalCode) {
             return res.status(400).json({ error: "address details are required" });
         }
         if (!req.user?.id) {
@@ -165,7 +165,6 @@ export const setUserAddress = async (req, res) => {
         const user = await User.findByIdAndUpdate(req.user?.id, {
             $set: { address: addressObj }
         });
-        console.log(user);
         return res.status(200).json({
             success: true,
             user

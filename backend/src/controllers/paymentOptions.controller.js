@@ -33,7 +33,7 @@ export const getPaymentMethods = async (req, res) => {
 }
 export const updatePaymentMethod = async (req, res) => {
     try {
-        const {online, cod, availableCities = []} = req.body;
+        const {online, cod, allowedPostalCodes = []} = req.body;
         const updatedDoc = {};
         
         if(online != undefined && online != null){
@@ -42,8 +42,8 @@ export const updatePaymentMethod = async (req, res) => {
         if(cod != undefined && cod != null){
             updatedDoc['cod.enabled'] = cod
         }
-        if(cod && availableCities && availableCities.length){
-            updatedDoc['cod.availableCities'] = availableCities;
+        if(cod && allowedPostalCodes && allowedPostalCodes.length){
+            updatedDoc['cod.allowedPostalCodes'] = allowedPostalCodes;
         }
         
         //updating db

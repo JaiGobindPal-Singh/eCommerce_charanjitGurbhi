@@ -132,13 +132,13 @@ export const getApplicableCharges = async (req, res) => {
                 .map((ch) => ({ [ch.chargeName]: ch.chargeAmount || calculateChargePercent(cartTotal, ch.chargePercent) }));
 
             //evaluating optional charges
-            const userCity = user?.address?.city;
+            const userCity = user?.address?.postalCode;
             const optionalCharges = charges
                 .filter((ch) => {
                     if (ch.fixed) return false;
 
                     const cityExempt =
-                        ch.noChargeConditions?.city.length ? ch.noChargeConditions?.city?.includes(userCity.toLowerCase()) ?? false : true;
+                        ch.noChargeConditions?.postalCodes?.length ? ch.noChargeConditions?.postalCodes?.includes(userCity) ?? false : true;
 
                     const minAmount = ch.noChargeConditions?.minAmount ?? 0;
                     const amountExempt = minAmount > 0 ? cartTotal >= minAmount : true;

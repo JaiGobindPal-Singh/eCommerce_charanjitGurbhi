@@ -13,6 +13,16 @@ function formatCurrency(value) {
     }).format(value);
 }
 
+    const getFinalPrice = (item, quantity)=>{
+        let finalPrice = item.product.price;
+        item.product.pricingTiers?.forEach((pt)=>{
+            if(quantity >= pt.minQuantity){
+                finalPrice = pt.price;
+            }
+        })
+        return finalPrice;
+    }
+
 function CartItem({ item, onQuantityChange, onRemove }) {
     const [quantity, setQuantity] = useState(item.quantity);
 
@@ -21,7 +31,6 @@ function CartItem({ item, onQuantityChange, onRemove }) {
         setQuantity(newQuantity);
         onQuantityChange(item.product.id, newQuantity);
     };
-
     return (
         <div className="flex flex-col gap-4 rounded-3xl border border-[#EBD8C0] bg-section-background p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
@@ -34,7 +43,9 @@ function CartItem({ item, onQuantityChange, onRemove }) {
                     <h3 className="text-lg font-semibold text-dark-textcolor">{item.product.name}</h3>
                     <p className="mt-1 flex items-center gap-1 text-sm text-light-textcolor">
                         <IndianRupee className="h-4 w-4" />
-                        {item.product.price}
+                        {  
+                        getFinalPrice(item, quantity)
+                        }
                     </p>
                 </div>
             </div>
@@ -63,7 +74,7 @@ function CartItem({ item, onQuantityChange, onRemove }) {
 
                 <div className="flex items-center gap-3">
                     <p className="text-base font-semibold text-dark-textcolor">
-                        {formatCurrency(item.product.price * quantity)}
+                        {formatCurrency(getFinalPrice(item, quantity) * quantity)}
                     </p>
                     <button
                         type="button"
@@ -94,7 +105,7 @@ export default function CartPage() {
     }, [])
 
     const cartTotal = useMemo(
-        () => items?.reduce((acc, item) => acc + item.product.price * item.quantity, 0),
+        () => items?.reduce((acc, item) => acc + getFinalPrice(item, item.quantity) * item.quantity, 0),
         [items]
     );
 
