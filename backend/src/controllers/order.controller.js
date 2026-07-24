@@ -55,6 +55,46 @@ const calculateTotalPayable = (cartTotal, charges) => {
     //return total payable
     return cartTotal + totalCharges;
 }
+const calculateCartTotal = (cart) => {
+    const total = cart?.items?.reduce((sum, item) => {
+        if (item?.product?.pricingTiers?.length < 1) {
+            return sum + (item.product?.price || 0) * item.quantity;
+        }
+
+        let applicableItemPrice = item.product?.price || 0;
+        item?.product?.pricingTiers?.forEach(pt => {
+            if (item.quantity >= pt.minQuantity) applicableItemPrice = pt.price;
+        })
+        return sum + (applicableItemPrice) * item.quantity;
+    }, 0) || 0;
+    return total;
+}
+
+const updateInventory = async (cartItems, session) => {
+    const bulkOperations = cartItems.map(item => {
+        return {
+            updateOne: {
+                filter: {
+                    _id: item.product._id,
+                    stockAvailable: { $gte: item.quantity } // Check stock for this item
+                },
+                update: {
+                    $inc: { stockAvailable: -item.quantity } // Deduct requested quantity
+                }
+            }
+        };
+    });
+
+    const result = await mongoose.model('Product').bulkWrite(bulkOperations, {
+        session,        // Ensures rollback if anything fails
+        ordered: true   // Executes one after the other to prevent deadlocks
+    });
+    if (result.modifiedCount !== cartItems.length) {
+        // If a product is out of stock, MongoDB won't update it.
+        // The counts won't match, throwing this error and rolling back the transaction.
+        throw new Error('One or more items in your cart are out of stock!');
+    }
+}
 
 export const createOrder = async (req, res) => {
     try {
@@ -102,26 +142,20 @@ export const createOrder = async (req, res) => {
             }
         }
 
-        // Get cart
+        // Get cart and validate
         const cart = await Cart.findOne({ user: userId }).populate('items.product');
 
-        if (!cart) {
-            return res.status(404).json({
-                error: 'Cart not found'
-            });
-        }
-        // Check cart is empty
-        if (!cart.items?.length) {
+        if (!cart || !(cart.items?.length)) {
             return res.status(400).json({
                 error: 'Cart is empty'
             });
         }
 
         //calculating cart total
-        const cartTotal = cart?.items?.reduce((sum, item) => {
-            return sum + (item.product?.price || 0) * item.quantity;
-        }, 0) || 0;
+        calculateCartTotal(cart);
+        const cartTotal = calculateCartTotal(cart);
 
+        
         //getting applicable charges and totalBill
         const charges = await findApplicableCharges(req.user, cartTotal);
         const totalBill = calculateTotalPayable(cartTotal, charges);
@@ -147,24 +181,26 @@ export const createOrder = async (req, res) => {
         if (paymentMode == "cod") {
             const moSe = await mongoose.startSession();  //starting mongo session
             try {
-
                 moSe.startTransaction();
+
+                //update inventory
+                await updateInventory(cart.items, moSe);
+
                 // Create order
-                const [order] = await Order.create(
-                    [{
-                        user: userId,
-                        status: 'order_placed',
-                        statusHistory: [{
-                            status: 'order_placed'
-                        }],
-                        items: cart.items,
-                        billing: {
-                            paymentMode,
-                            charges: chargesFormatted,
-                            totalBill: totalBill
-                        },
-                        deliveryDetails: deliveryDetails,
+                const [order] = await Order.create([{
+                    user: userId,
+                    status: 'order_placed',
+                    statusHistory: [{
+                        status: 'order_placed'
                     }],
+                    items: cart.items,
+                    billing: {
+                        paymentMode,
+                        charges: chargesFormatted,
+                        totalBill: totalBill
+                    },
+                    deliveryDetails: deliveryDetails,
+                }],
                     { session: moSe });
 
                 // clear cart after successful order
@@ -184,7 +220,8 @@ export const createOrder = async (req, res) => {
             } catch (e) {
                 //Rollback all changes if any query fails
                 await moSe.abortTransaction();
-                throw new Error("Server Error Unable to save to db during cod ")
+                console.log(e)
+                return res.status(400).json({ success: false, error: "unable to place order" });
             } finally {
                 await moSe.endSession();
             }
@@ -201,6 +238,9 @@ export const createOrder = async (req, res) => {
         const dbSession = await mongoose.startSession();
         try {
             dbSession.startTransaction();
+
+            //update inventory
+                await updateInventory(cart.items, dbSession);
 
             // Create order for online
             const [order] = await Order.create(
@@ -247,7 +287,11 @@ export const createOrder = async (req, res) => {
         } catch (e) {
             //Rollback all changes if any query fails
             await dbSession.abortTransaction();
-            throw new Error("error in online db session");
+            console.log(e)
+            return res.status(400).json({
+                success: false,
+                error: "unable to place order"
+            });
         } finally {
             //end the session
             await dbSession.endSession();
@@ -259,8 +303,6 @@ export const createOrder = async (req, res) => {
         });
     }
 };
-
-
 
 export const updateOrderStatus = async (req, res) => {
     try {
@@ -406,10 +448,10 @@ export const getOrderDetails = async (req, res) => {
 
         fullOrder.id = fullOrder._id;
         delete fullOrder._id;
-        fullOrder.statusHistory?.forEach(sh=> delete sh?._id);
-        fullOrder.items?.forEach(it=> delete it.product._id);
+        fullOrder.statusHistory?.forEach(sh => delete sh?._id);
+        fullOrder.items?.forEach(it => delete it.product._id);
         delete fullOrder.__v;
-        
+
         return res.status(200).json({ order: fullOrder });
     } catch (error) {
         console.log("error getting order details", error);

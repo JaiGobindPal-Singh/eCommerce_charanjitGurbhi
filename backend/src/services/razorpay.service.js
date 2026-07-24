@@ -22,7 +22,7 @@ const setPaymentStatus = async (order_id, payment_id, status, t_status) => {
         await transaction.save({ session: dbSession });
 
         //updating order 
-        await Order.findByIdAndUpdate(
+        const order = await Order.findByIdAndUpdate(
             transaction.order,
             {
                 $set: {
@@ -34,6 +34,42 @@ const setPaymentStatus = async (order_id, payment_id, status, t_status) => {
             session: dbSession,
         }
         ).lean();
+        //update stock if payment succeeded
+        if (status === "order_placed" && order.status !== "payment_pending") {
+            const bulkOperations = order.items.map(item => {
+                return {
+                    updateOne: {
+                        filter: {
+                            _id: item.product._id,
+                            stockAvailable: { $gte: item.quantity } // Check stock for this item
+                        },
+                        update: {
+                            $inc: { stockAvailable: -item.quantity } // Deduct requested quantity
+                        }
+                    }
+                };
+            });
+            await mongoose.model('Product').bulkWrite(bulkOperations, {
+                ordered: true,
+                session:dbSession
+            });
+        }
+        //restock if payment failed or abandoned
+        if (status === "payment_pending" || status === "payment_failed" || status === "abandoned") {
+            const bulkOperations = order.items.map(item => {
+                return {
+                    updateOne: {
+                        filter: { _id: item.product },
+                        // Use positive $inc to add the quantity back
+                        update: { $inc: { stockAvailable: item.quantity } }
+                    }
+                };
+            });
+            await mongoose.model('Product').bulkWrite(bulkOperations, {
+                ordered: true,
+                session: dbSession
+            });
+        }
 
         await dbSession.commitTransaction();
         return { success: true };
@@ -52,7 +88,7 @@ const setPaymentStatus = async (order_id, payment_id, status, t_status) => {
 export const createRazorpayOrder = async (amount) => {
     try {
         const options = {
-            amount: amount * 100, // Amount in paise
+            amount: Math.round(amount * 100), // Amount in paise
             currency: 'INR',
             receipt: `receipt_${Date.now()}`, // Unique receipt identifier
         };
@@ -60,7 +96,8 @@ export const createRazorpayOrder = async (amount) => {
         return order;
 
     } catch (error) {
-        throw new Error('Failed to create Razorpay order');
+        console.log(error);
+        throw new Error('Failed to create Razorpay order' + error);
     }
 }
 
@@ -107,7 +144,7 @@ export const handlePaymentCaptured = async (payment) => {
         await transaction.save({ session });
 
         //updating order
-        await Order.findByIdAndUpdate(
+        const order = await Order.findByIdAndUpdate(
             transaction.order,
             {
                 status: "order_placed",
@@ -121,6 +158,26 @@ export const handlePaymentCaptured = async (payment) => {
             { session }
         );
 
+        //update stock if payment succeeded only success after fail or stuck
+        if (order.status !== "payment_pending") {
+            const bulkOperations = order.items.map(item => {
+                return {
+                    updateOne: {
+                        filter: {
+                            _id: item.product._id,
+                            stockAvailable: { $gte: item.quantity } // Check stock for this item
+                        },
+                        update: {
+                            $inc: { stockAvailable: -item.quantity } // Deduct requested quantity
+                        }
+                    }
+                };
+            });
+            await mongoose.model('Product').bulkWrite(bulkOperations, {
+                ordered: true,
+                session
+            });
+        }
         //clearing cart
         await Cart.findOneAndUpdate(
             { user: transaction.user },
@@ -158,7 +215,7 @@ export const handlePaymentFailed = async (payment) => {
 
 
     //updating order
-    await Order.findByIdAndUpdate(
+    const order = await Order.findByIdAndUpdate(
         transaction.order,
         {
             status: "payment_failed",
@@ -169,6 +226,19 @@ export const handlePaymentFailed = async (payment) => {
             }
         }
     );
+    const bulkOperations = order.items.map(item => {
+        return {
+            updateOne: {
+                filter: { _id: item.product },
+                // Use positive $inc to add the quantity back
+                update: { $inc: { stockAvailable: item.quantity } }
+            }
+        };
+    });
+    await mongoose.model('Product').bulkWrite(bulkOperations, {
+        ordered: true
+    });
+
 };
 
 // manages and updates transaction and orders on payment dismiss or uncertain close or server crash
@@ -185,7 +255,6 @@ export const handleDismissedPayment = async (orderId) => {
     //if order is already paid
     if (rzpOrder.status === "paid") {
         return await setPaymentStatus(orderId, payment?.id || '', "order_placed", "success");
-
     }
 
     //  If no payments exist, the user definitely closed it without typing details

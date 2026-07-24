@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+/* Removes blue highlight for standard browsers */
+::selection {
+  background: var(--color-text-secondary);
+  color: white;
+}
+
+/* Removes blue highlight for older Firefox versions */
+::-moz-selection {
+  background: var(--color-text-secondary);
+  color: white;
+}
+html {
+  scroll-behavior: smooth;
+}
+html,
+body {
+  height: 100%;
+  width: 100%;
+}
+
+/* defining colors */
+:root {
+  --color-bg-main: #F8F9FA;         /* Smooth off-white background */
+  --color-bg-surface: #FFFFFF;      /* Clean white for cards/panels */
+  --color-border-subtle: #E9ECEF;   /* Soft gray for borders/dividers */
+  --color-text-primary: #212529;    /* Dark charcoal for main text */
+  --color-text-secondary: #6C757D;  /* Medium gray for secondary text */
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--color-bg-main);
+  color: var(--color-text-primary);
+}
+.page {
+  animation: pageTransition 0.7s ease;
+}
+
+@keyframes pageTransition {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
