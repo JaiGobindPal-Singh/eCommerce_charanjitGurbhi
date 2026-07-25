@@ -63,6 +63,6 @@ export const loginUser = async (phone, password) => {
 
 export const logoutUser = async()=>{
     api.post("/auth/logout").then(()=>{
-        userStore.getState().resetUser();
+        
     });
 }

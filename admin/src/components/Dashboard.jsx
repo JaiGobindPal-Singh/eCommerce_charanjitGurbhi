@@ -1,9 +1,83 @@
+import { useEffect, useState } from "react";
+import { getUser } from "../utils/userUtils";
+import { useNavigate } from "react-router-dom";
+import { IndianRupee } from "lucide-react";
+import { formatNumber } from "../helpers/formatters";
+import OrderListItem from "./OrderListItem";
+function ContentBox({ children }) {
+  return (
+    <div className="p-4 m-4  flex flex-col justify-center  bg-slate-900/50 border border-slate-800 rounded-xl shadow-sm transition-all duration-200 hover:border-slate-700 hover:bg-slate-900/80">
+      {children}
+    </div>
+  )
+}
 
 function Dashboard() {
+  const [orders, setOrders] = useState([
+      {
+            "totalBill": 5238.4,
+            "id": "6a61d84838e1abb3fe01944e",
+            "status": "order_placed"
+        }
+  ]);
+  const navigate = useNavigate();
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await getUser();
+        if (!user?.id || user?.role?.trim() !== "admin") {
+          navigate('/login');
+        }
+      } catch {
+        navigate('/login');
+      }
+    }
+    fetchUser();
+  }, [navigate]);
+
+
   return (
-    <div>
-        dashboard
-    </div>
+   <div className="w-full h-full bg-color-medium flex flex-col items-center">
+  <div className="bg-color-heavy w-[95%] mt-2 rounded-xl grid grid-cols-[repeat(auto-fit,_minmax(240px,_1fr))] gap-6 mb-2 px-6 overflow-hidden">
+    
+    {/* Card 1: Today's Sale Amount */}
+    <ContentBox >
+      <h2 className="text-xs font-semibold tracking-wider uppercase text-primary-color/70 mb-3">
+        Today's Sale Amount
+      </h2>
+      <div className="text-primary-color text-3xl font-bold tracking-tight flex items-baseline gap-1">
+        <IndianRupee size={28} className="self-center opacity-90" />
+        <span>{formatNumber(50000)}</span>
+      </div>
+    </ContentBox>
+
+    {/* Card 2: New Orders */}
+    <ContentBox >
+      <h2 className="text-xs font-semibold tracking-wider uppercase text-primary-color/70 mb-3">
+        New Orders
+      </h2>
+      <div className="text-primary-color text-3xl font-bold tracking-tight">
+        {formatNumber(5000)}
+      </div>
+    </ContentBox>
+
+    {/* Card 3: Alternative Metric (Fixed Duplicate Title) */}
+    <ContentBox >
+      <h2 className="text-xs font-semibold tracking-wider uppercase text-primary-color/70 mb-3">
+        Total Customers
+      </h2>
+      <div className="text-primary-color text-3xl font-bold tracking-tight flex items-baseline gap-1">
+        <span>{formatNumber(10)}</span>
+      </div>
+    </ContentBox>
+
+  </div>
+  <div className="w-[95%] bg-color-heavy rounded-xl min-h-80 p-4">
+    <h2 className="text-primary-color text-2xl font-bold tracking-tight ">Recent Orders</h2>
+    <div className="w-full border-1 border border-primary-color/50 flex my-2"></div>
+    {orders.map(ord=><OrderListItem orderId={"ORD-"+ ord.id} status={ord.status} totalBill={ord.totalBill}/>)}
+  </div>
+</div>
   )
 }
 

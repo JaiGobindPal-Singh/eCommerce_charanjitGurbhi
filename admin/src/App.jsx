@@ -7,7 +7,7 @@ const MainLayout = () => (
   <>
     <div className="flex">
     <Sidebar />
-    <div className="w-full">
+    <div className="w-full ">
     <Header/>
     <Outlet />
     </div>
