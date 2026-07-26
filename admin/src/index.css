@@ -24,6 +24,25 @@ body {
   height: 100%;
   width: 100%;
 }
+/* Universal scrollbar rules */
+:root {
+  scrollbar-color: #6C757D #374151;
+}
+/* Webkit fallback rules for Chrome, Safari, and Edge */
+::-webkit-scrollbar {
+  width: 12px;               /* Width of the vertical scrollbar */
+  height: 12px;              /* Height of the horizontal scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: #374151;       /* Track color matching your root variable */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #6C757D; /* Thumb color matching your root variable */
+  border-radius: 6px;        /* Smooths the edges of the thumb */
+  border: 3px solid #374151; /* Optional: Creates a padded gap around thumb */
+}
 
 /* defining colors */
 :root {

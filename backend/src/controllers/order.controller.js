@@ -460,11 +460,56 @@ export const getOrderDetails = async (req, res) => {
 }
 export const getPendingOrders = async (req, res) => {
     try {
-        const orders = await Order.find({
-            status: { $eq: 'order_placed' }
-        }).sort({ createdAt: -1 }).populate({ path: 'billing.paymentMode', select: 'paymentOption' });
+        const pn = Math.max(1, parseInt(req.query.pn) || 1);
+        const ps = Math.max(1, Math.min(100, parseInt(req.query.ps) || 10));
+        const skip = (pn - 1) * ps;
 
-        return res.status(200).json({ orders });
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        const endOfToday = new Date();
+        endOfToday.setHours(23, 59, 59, 999);
+
+        const [orders, total, todaysRevenueResult] = await Promise.all([
+            Order.find({ status: { $eq: 'order_placed' } })
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(ps)
+                .select('billing.totalBill status'),
+            Order.countDocuments({ status: { $eq: 'order_placed' } }),
+            Order.aggregate([
+                {
+                    $match: {
+                        createdAt: { $gte: startOfToday, $lte: endOfToday },
+                        status: { $ne: 'cancelled' }
+                    }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalRevenue: { $sum: '$billing.totalBill' }
+                    }
+                }
+            ])
+        ]);
+        const todaysRevenue = todaysRevenueResult[0]?.totalRevenue || 0;
+        const ordersF = orders.map(ord=>{
+            return {
+                totalBill: ord.billing.totalBill,
+                id: ord._id,
+                status: ord.status
+            }
+        })
+        return res.status(200).json({
+            orders:ordersF,
+            todaysRevenue,
+            pagination: {
+                page: pn,
+                pageSize: ps,
+                total,
+                hasNextPage: pn * ps < total,
+                hasPreviousPage: pn > 1
+            }
+        });
     } catch (error) {
         console.error('Get pending orders error:', error);
         return res.status(500).json({
@@ -474,11 +519,31 @@ export const getPendingOrders = async (req, res) => {
 }
 export const getCompletedOrders = async (req, res) => {
     try {
-        const orders = await Order.find({
-            status: { $eq: 'delivered' }
-        }).sort({ createdAt: -1 }).populate({ path: 'billing.paymentMode', select: 'paymentOption' });
+        const pn = Math.max(1, parseInt(req.query.pn) || 1);
+        const ps = Math.max(1, Math.min(100, parseInt(req.query.ps) || 10));
+        const skip = (pn - 1) * ps;
 
-        return res.status(200).json({ orders });
+        const [orders, total] = await Promise.all([
+            Order.find({
+                status: { $eq: 'delivered' }
+            }).sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(ps)
+                .populate({ path: 'billing.paymentMode', select: 'paymentOption' }),
+            Order.countDocuments({ status: { $eq: 'delivered' } })
+        ]);
+
+        return res.status(200).json({
+            orders,
+            pagination: {
+                page: pn,
+                pageSize: ps,
+                total,
+                totalPages: Math.ceil(total / ps),
+                hasNextPage: pn * ps < total,
+                hasPreviousPage: pn > 1
+            }
+        });
     } catch (error) {
         console.error('Get completed order err:', error);
         return res.status(500).json({
@@ -488,11 +553,31 @@ export const getCompletedOrders = async (req, res) => {
 }
 export const getCancelledOrders = async (req, res) => {
     try {
-        const orders = await Order.find({
-            status: { $eq: 'cancelled' }
-        }).sort({ createdAt: -1 }).populate({ path: 'billing.paymentMode', select: 'paymentOption' });
+        const pn = Math.max(1, parseInt(req.query.pn) || 1);
+        const ps = Math.max(1, Math.min(100, parseInt(req.query.ps) || 10));
+        const skip = (pn - 1) * ps;
 
-        return res.status(200).json({ orders });
+        const [orders, total] = await Promise.all([
+            Order.find({
+                status: { $eq: 'cancelled' }
+            }).sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(ps)
+                .populate({ path: 'billing.paymentMode', select: 'paymentOption' }),
+            Order.countDocuments({ status: { $eq: 'cancelled' } })
+        ]);
+
+        return res.status(200).json({
+            orders,
+            pagination: {
+                page: pn,
+                pageSize: ps,
+                total,
+                totalPages: Math.ceil(total / ps),
+                hasNextPage: pn * ps < total,
+                hasPreviousPage: pn > 1
+            }
+        });
     } catch (error) {
         console.error('Get cancelled order err:', error);
         return res.status(500).json({

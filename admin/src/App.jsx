@@ -1,8 +1,10 @@
 import { Routes, Route, Outlet } from "react-router-dom"
 import LoginPage from "./pages/LoginPage.jsx";
-import Header from "./components/Header.jsx";
-import Sidebar from "./components/Sidebar.jsx"
-import Dashboard from "./components/Dashboard.jsx"
+import Header from "./components/common/Header.jsx";
+import Sidebar from "./components/common/Sidebar.jsx"
+import Dashboard from "./components/dashboard/Dashboard.jsx"
+import Products from "./components/products/Products.jsx";
+import Categories from "./components/categories/Categories.jsx";
 const MainLayout = () => (
   <>
     <div className="flex">
@@ -24,6 +26,8 @@ const App = () => {
       {/* pages that NEED the Header and Footer together */}
       <Route element={<MainLayout />}>
       <Route  path="/" element={<Dashboard/>} />
+      <Route  path="/products" element={<Products/>} />
+      <Route  path="/categories" element={<Categories/>} />
         {/* <Route path="/" element={<Homepage />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
