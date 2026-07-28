@@ -20,7 +20,22 @@ function Dashboard() {
       "totalBill": 5238.4,
       "id": "6a61d84838e1abb3fe01944e",
       "status": "order_placed"
-    }
+    },
+    {
+      "totalBill": 5238.4,
+      "id": "6a61d84838e1abb3fe01944e",
+      "status": "order_placed"
+    },
+    {
+      "totalBill": 5238.4,
+      "id": "6a61d84838e1abb3fe01944e",
+      "status": "order_placed"
+    },
+    {
+      "totalBill": 5238.4,
+      "id": "6a61d84838e1abb3fe01944e",
+      "status": "order_placed"
+    },
   ]);
   const [users, setUsers] = useState([
     {
@@ -84,7 +99,7 @@ function Dashboard() {
       <div className="w-[95%] bg-color-heavy rounded-xl min-h-80 p-4 mb-2">
         <h2 className="text-primary-color text-2xl font-bold tracking-tight max-md:text-xl ">Recent Orders</h2>
         <div className="w-full border-1 border border-primary-color/50 flex my-2"></div>
-        {orders.map(ord => <OrderListItem key={ord.id}
+        {orders.slice(0,3).map(ord => <OrderListItem key={ord.id}
         orderId={"ORD-" + ord.id} status={ord.status} totalBill={ord.totalBill} />)}
       </div>
 
@@ -92,7 +107,7 @@ function Dashboard() {
         <div className="w-[50%] bg-color-heavy rounded-xl h-72 overflow-auto p-4 max-md:p-2 max-md:w-full">
           <h2 className="text-primary-color text-2xl font-bold tracking-tight max-md:text-xl">Recent Users</h2>
           <div className="w-full border-1 border border-primary-color/50 flex my-2"></div>
-          {users.map(ord => <UserListItem key={ord.id+ ord.phone} id={ord.id} name={ord.name} phone={ord.phone} />)}
+          {users.slice(0,3).map(ord => <UserListItem key={ord.id+ ord.phone} id={ord.id} name={ord.name} phone={ord.phone} />)}
         </div>
         <div className="w-[50%] bg-color-heavy rounded-xl h-72 overflow-auto p-4 max-md:p-2 max-md:w-full">
           <h2 className="text-primary-color text-2xl font-bold tracking-tight max-md:text-xl">Todo Tasks</h2>

@@ -1,70 +1,55 @@
 import { Plus, PackageOpen, Pencil, Trash2, IndianRupee, Search } from "lucide-react";
 import Pagination from "../utilents/Pagination";
+import { useEffect, useRef, useState } from "react";
+import { fetchProductsByKey } from "../../utils/productUtils";
 export default function Products() {
-    // Replace this with your state/API/localStorage later
-    // const products = [
-    //     {
-    //         id: 1,
-    //         name: "Wireless Mouse",
-    //         description: "Ergonomic wireless mouse with silent clicks.",
-    //         price: 24.99,
-    //         image: "https://placehold.co/300x300?text=Mouse",
-    //     },
-    //     {
-    //         id: 2,
-    //         name: "Mechanical Keyboard",
-    //         description: "RGB mechanical keyboard with blue switches.",
-    //         price: 69.99,
-    //         image: "https://placehold.co/300x300?text=Keyboard",
-    //     },
-    //     {
-    //         id: 3,
-    //         name: "USB-C Hub",
-    //         description: "7-in-1 Type-C hub with HDMI and USB 3.0.",
-    //         price: 39.99,
-    //         image: "https://placehold.co/300x300?text=Hub",
-    //     },
-    //     {
-    //         id: 3,
-    //         name: "USB-C Hub",
-    //         description: "7-in-1 Type-C hub with HDMI and USB 3.0.",
-    //         price: 39.99,
-    //         image: "https://placehold.co/300x300?text=Hub",
-    //     },
-    //     {
-    //         id: 3,
-    //         name: "USB-C Hub",
-    //         description: "7-in-1 Type-C hub with HDMI and USB 3.0.",
-    //         price: 39.99,
-    //         image: "https://placehold.co/300x300?text=Hub",
-    //     },
-    //     {
-    //         id: 3,
-    //         name: "USB-C Hub",
-    //         description: "7-in-1 Type-C hub with HDMI and USB 3.0.",
-    //         price: 39.99,
-    //         image: "https://placehold.co/300x300?text=Hub",
-    //     },
-    //     {
-    //         id: 3,
-    //         name: "USB-C Hub",
-    //         description: "7-in-1 Type-C hub with HDMI and USB 3.0.",
-    //         price: 39.99,
-    //         image: "https://placehold.co/300x300?text=Hub",
-    //     },
-    // ];
-    const products = []
+
+    const [products, setProducts] = useState([]);
+    const [searchKey, setSearchKey] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [defferedSearch, setDefferedSearch] = useState('')
+    const [hasNextPage, setHasNextPage] = useState(false);
+    const searchRef = useRef(null);
+    useEffect(() => {
+
+        fetchProductsByKey(currentPage, defferedSearch).then((newProducts) => {
+            setProducts(newProducts.products);
+            setHasNextPage(newProducts.hasNextPage);
+        });
+    }, [defferedSearch, currentPage]);
+
+    useEffect(() => {
+
+        clearTimeout(searchRef.current);
+        searchRef.current = setTimeout(() => {
+            setDefferedSearch(searchKey);
+            setCurrentPage(1);
+        }, 250);
+        return () => {
+            clearTimeout(searchRef.current);
+        }
+    }, [searchKey]);
+
+
     return (
         <div className="min-h-screen bg-color-medium p-4 ">
             <div className="w-full flex flex-col items-center bg-color-heavy p-4 rounded-xl">
                 {/* Header */}
-                <div className="pb-4 flex gap-4  items-center justify-between w-full">
+                <div className="pb-2 flex gap-4  items-center justify-between w-full">
 
                     <div className="flex justify-between max-md:hidden">
                         <h1 className="text-4xl text-primary-color font-bold">Products</h1>
                     </div>
                     <div className="search flex gap-2 bg-slate-900/90 px-4 py-2 min-w-4 text-white rounded-full justify-between ">
-                        <input type="text" className="bg-transparent outline-none min-w-2" placeholder="Search Product" />
+                        <input
+                            type="text"
+                            className="bg-transparent outline-none min-w-2"
+                            placeholder="Search Product"
+                            value={searchKey}
+                            onChange={(e) => {
+                                e.preventDefault();
+                                setSearchKey(e.target.value);
+                            }} />
                         <Search size={24} />
                     </div>
                     <button
@@ -76,7 +61,7 @@ export default function Products() {
                         </span>
                     </button>
                 </div>
-                <div className="w-full border-1 border border-primary-color/50 flex my-2"></div>
+                <div className="w-full border-1 border border-primary-color/50 flex my-2 mb-6"></div>
                 {/* Products */}
                 {products.length === 0 ? (<div className="flex min-h-[450px] flex-col items-center justify-center rounded-3xl border border-slate-800 bg-gradient-to-b from-slate-900 to-slate-950 p-8 text-center">
                     <div className="flex h-24 w-24 items-center justify-center rounded-2xl border border-slate-700 bg-slate-800/60">
@@ -107,7 +92,7 @@ export default function Products() {
                                 {/* Image */}
                                 <div className="h-52 overflow-hidden bg-color-heavy">
                                     <img
-                                        src={product.image}
+                                        src={product.imageUrl}
                                         alt={product.name}
                                         className="h-full w-full object-cover transition duration-300 hover:scale-105"
                                     />
@@ -151,7 +136,7 @@ export default function Products() {
                         ))}
                     </div>
                 )}
-                <Pagination />//todo
+                <Pagination currentPage={currentPage} onPageChange={setCurrentPage} hasNextPage={hasNextPage} />
             </div>
         </div>
     );

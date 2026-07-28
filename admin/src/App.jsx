@@ -5,6 +5,7 @@ import Sidebar from "./components/common/Sidebar.jsx"
 import Dashboard from "./components/dashboard/Dashboard.jsx"
 import Products from "./components/products/Products.jsx";
 import Categories from "./components/categories/Categories.jsx";
+import Orders from "./components/orders/Orders.jsx"
 const MainLayout = () => (
   <>
     <div className="flex">
@@ -28,10 +29,10 @@ const App = () => {
       <Route  path="/" element={<Dashboard/>} />
       <Route  path="/products" element={<Products/>} />
       <Route  path="/categories" element={<Categories/>} />
+      <Route path="/orders" element={<Orders />} />
         {/* <Route path="/" element={<Homepage />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
-        <Route path="/orders" element={<OrdersPage />} />
         <Route path="/orders/:orderId" element={<OrderDisplayPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/register" element={<RegisterPage />} />

@@ -1,22 +1,29 @@
-import { Plus, PackageOpen, Pencil, Trash2, IndianRupee, Search } from "lucide-react";
+import { Plus, PackageOpen, Pencil, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
 import Pagination from "../utilents/Pagination";
+import { fetchCategories } from "../../utils/categoryUtils";
 export default function Categories() {
     // Replace this with your state/API/localStorage later
-    const categories = [];
+    const [categories, setCategories] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [hasNextPage, setHasNextPage] = useState(false);
 
+    useEffect(() => {
+        fetchCategories(currentPage).then((newCats) => {
+            setCategories(newCats.categories);
+            setHasNextPage(newCats.hasNextPage);
+        });
+    }, [currentPage]);
     return (
         <div className="min-h-screen bg-color-medium p-4 ">
             <div className="w-full flex flex-col items-center bg-color-heavy p-4 rounded-xl">
                 {/* Header */}
-                <div className="pb-4 flex gap-4  items-center justify-between w-full">
+                <div className="pb-2 flex gap-4  items-center justify-between w-full">
 
-                    <div className="flex justify-between max-md:hidden">
-                        <h1 className="text-4xl text-primary-color font-bold">Categories</h1>
+                    <div className="flex justify-between ">
+                        <h1 className="text-4xl max-md:text-2xl text-primary-color font-bold">Categories</h1>
                     </div>
-                    <div className="search flex gap-2 bg-slate-900/90 px-4 py-2 min-w-4 text-white rounded-full justify-between ">
-                        <input type="text" className="bg-transparent outline-none min-w-2" placeholder="Search Category" />
-                        <Search size={24} />
-                    </div>
+                    
                     <button
                         className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-900/90 text-sm px-5 py-3 font-medium text-white transition hover:bg-slate-900 active:scale-95 "
                     >
@@ -26,7 +33,7 @@ export default function Categories() {
                         </span>
                     </button>
                 </div>
-                <div className="w-full border-1 border border-primary-color/50 flex my-2"></div>
+                <div className="w-full border-1 border border-primary-color/50 flex mb-6 my-2"></div>
                 {/* categories */}
                 {categories.length === 0 ? (<div className="flex min-h-[450px] flex-col items-center justify-center rounded-3xl border border-slate-800 bg-gradient-to-b from-slate-900 to-slate-950 p-8 text-center">
                     <div className="flex h-24 w-24 items-center justify-center rounded-2xl border border-slate-700 bg-slate-800/60">
@@ -48,60 +55,50 @@ export default function Categories() {
                     </button>
                 </div>
                 ) : (
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 bg-color-heavy p-4 rounded-xl w-full">
-                    {categories.map((category) => (
-                        <div
-                            key={category.id}
-                            className="overflow-hidden rounded-2xl border border-color-light bg-slate-900 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
-                        >
-                            {/* Image */}
-                            <div className="h-52 overflow-hidden bg-color-heavy">
-                                <img
-                                    src={category.image}
-                                    alt={category.name}
-                                    className="h-full w-full object-cover transition duration-300 hover:scale-105"
-                                />
-                            </div>
-
-                            {/* Content */}
-                            <div className="space-y-3 p-5">
-                                <div>
-                                    <h2 className="text-lg font-semibold text-primary-color">
-                                        {category.name}
-                                    </h2>
-
-                                    <p className="mt-2 line-clamp-2 text-sm text-color-medium">
-                                        {category.description}
-                                    </p>
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 bg-color-heavy p-4 rounded-xl w-full">
+                        {categories.map((category) => (
+                            <div
+                                key={category.id}
+                                className="overflow-hidden rounded-2xl border border-color-light bg-slate-900 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+                            >
+                                {/* Image */}
+                                <div className="h-52 overflow-hidden bg-white">
+                                    <img
+                                        src={category.iconUrl}
+                                        alt={category.name}
+                                        className="h-full w-full object-cover transition duration-300 hover:scale-105"
+                                    />
                                 </div>
 
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xl font-bold text-primary-color">
+                                {/* Content */}
+                                <div className="py-5 px-2 ">
+                                    <div className="flex items-center justify-between flex-wrap gap-2">
+                                        <div>
+                                        <h2 className="text-lg font-semibold text-primary-color">
+                                            {category.name}
+                                        </h2>
+                                    </div>
 
-                                        <IndianRupee className="inline-flex" size={18} />
-                                        {category.price}
-                                    </span>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                className="rounded-lg bg-blue-50 p-2 text-blue-600 transition hover:bg-blue-100"
+                                            >
+                                                <Pencil size={18} />
+                                            </button>
 
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            className="rounded-lg bg-blue-50 p-2 text-blue-600 transition hover:bg-blue-100"
-                                        >
-                                            <Pencil size={18} />
-                                        </button>
-
-                                        <button
-                                            className="rounded-lg bg-red-50 p-2 text-red-600 transition hover:bg-red-100"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
+                                            <button
+                                                className="rounded-lg bg-red-50 p-2 text-red-600 transition hover:bg-red-100"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
                 )}
-                <Pagination />//todo
+                <Pagination currentPage={currentPage} onPageChange={setCurrentPage} hasNextPage={hasNextPage} />
             </div>
         </div>
     );

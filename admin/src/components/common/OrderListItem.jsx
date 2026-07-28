@@ -41,7 +41,7 @@ export default function OrderListItem({ orderId, totalBill, status }) {
     const statusStyles = getStatusStyles(status);
 
     return (
-        <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between p-3 md:p-4 gap-3 md:gap-0 bg-slate-900/90 border border-slate-800 rounded-xl shadow-sm transition-all duration-200 hover:border-slate-700 hover:bg-slate-900/80">
+        <div className="w-full mb-1 flex flex-col md:flex-row md:items-center md:justify-between p-3 md:p-4 gap-3 md:gap-0 bg-slate-900/90 border border-slate-800 rounded-xl shadow-sm transition-all duration-200 hover:border-slate-700 hover:bg-slate-900/80">
 
             {/* Left Side: Order Identity */}
             <div className="flex flex-col gap-1">
