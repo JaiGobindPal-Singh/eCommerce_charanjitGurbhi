@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { getUser } from "../../utils/userUtils";
-import { useNavigate } from "react-router-dom";
 import { IndianRupee } from "lucide-react";
 import { formatNumber } from "../../helpers/formatters";
 import OrderListItem from "../common/OrderListItem";
-import UserListItem from "../common/UserListItem";
-import Todo from "../todo/Todo";
+import PaymentOptionMenu from "../common/PaymentOptionMenu";
+import ChargesMenu from "../common/ChargesMenu";
+import { fetchOrders } from "../../utils/orderUtils";
 function ContentBox({ children }) {
   return (
     <div className="p-4 m-4  flex flex-col justify-center  bg-slate-900/50 border border-slate-800 rounded-xl shadow-sm transition-all duration-200 hover:border-slate-700 hover:bg-slate-900/80">
@@ -15,54 +14,25 @@ function ContentBox({ children }) {
 }
 
 function Dashboard() {
-  const [orders, setOrders] = useState([
-    {
-      "totalBill": 5238.4,
-      "id": "6a61d84838e1abb3fe01944e",
-      "status": "order_placed"
-    },
-    {
-      "totalBill": 5238.4,
-      "id": "6a61d84838e1abb3fe01944e",
-      "status": "order_placed"
-    },
-    {
-      "totalBill": 5238.4,
-      "id": "6a61d84838e1abb3fe01944e",
-      "status": "order_placed"
-    },
-    {
-      "totalBill": 5238.4,
-      "id": "6a61d84838e1abb3fe01944e",
-      "status": "order_placed"
-    },
-  ]);
-  const [users, setUsers] = useState([
-    {
-      "id": "6a61d84838e1abb3fe01944e",
-      "phone": 8871717473,
-      name: "jai gobind pal singh"
-    }
-  ]);
-  const navigate = useNavigate();
+  const [orders, setOrders] = useState([]);
+  // const [newOrders, setNewOrders] = useState(0);
+  const getOrdersTotalAmount = () => {
+    let total = 0;
+    orders.forEach(o => total += o.totalBill)
+    return total;
+  }
+
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const user = await getUser();
-        if (!user?.id || user?.role?.trim() !== "admin") {
-          navigate('/login');
-        }
-      } catch {
-        navigate('/login');
-      }
-    }
-    fetchUser();
-  }, [navigate]);
+    fetchOrders(1, 'pending').then((ords => {
+      setOrders(ords.orders)
+    }));
+  }, [])
+
 
 
   return (
-    <div className="min-w-full min-h-full bg-color-medium flex flex-col items-center overflow-auto ">
-      <div className="bg-color-heavy w-[95%] mt-2 rounded-xl grid grid-cols-[repeat(auto-fit,_minmax(240px,_1fr))] gap-6 max-md:gap-2 mb-2 px-6 overflow-hidden">
+    <div className="min-w-full min-h-full px-4 max-md:px-2 pt-2 bg-color-medium flex flex-col items-center overflow-auto ">
+      <div className="bg-color-heavy w-full mt-2 rounded-xl grid grid-cols-[repeat(auto-fit,_minmax(240px,_1fr))] gap-6 max-md:gap-2 mb-2 px-6 overflow-hidden">
 
         {/* Card 1: Today's Sale Amount */}
         <ContentBox >
@@ -71,7 +41,7 @@ function Dashboard() {
           </h2>
           <div className="text-primary-color text-3xl font-bold tracking-tight flex items-baseline gap-1">
             <IndianRupee size={28} className="self-center opacity-90" />
-            <span>{formatNumber(50000)}</span>
+            <span>{formatNumber()}</span>
           </div>
         </ContentBox>
 
@@ -81,7 +51,7 @@ function Dashboard() {
             New Orders
           </h2>
           <div className="text-primary-color text-3xl font-bold tracking-tight">
-            {formatNumber(5000)}
+            {formatNumber(getOrdersTotalAmount())}
           </div>
         </ContentBox>
 
@@ -91,30 +61,56 @@ function Dashboard() {
             Total Customers
           </h2>
           <div className="text-primary-color text-3xl font-bold tracking-tight flex items-baseline gap-1">
-            <span>{formatNumber(10)}</span>
+            {/* <span>{formatNumber(10)}</span> */}
+            <span>---</span>
           </div>
         </ContentBox>
 
       </div>
-      <div className="w-[95%] bg-color-heavy rounded-xl min-h-80 p-4 mb-2">
-        <h2 className="text-primary-color text-2xl font-bold tracking-tight max-md:text-xl ">Recent Orders</h2>
-        <div className="w-full border-1 border border-primary-color/50 flex my-2"></div>
-        {orders.slice(0,3).map(ord => <OrderListItem key={ord.id}
-        orderId={"ORD-" + ord.id} status={ord.status} totalBill={ord.totalBill} />)}
-      </div>
 
-      <div className="flex gap-2 w-[95%] mb-2 max-md:flex-col ">
+
+      {/* <div className="flex gap-2 w-full mb-2 max-md:flex-col ">
         <div className="w-[50%] bg-color-heavy rounded-xl h-72 overflow-auto p-4 max-md:p-2 max-md:w-full">
           <h2 className="text-primary-color text-2xl font-bold tracking-tight max-md:text-xl">Recent Users</h2>
           <div className="w-full border-1 border border-primary-color/50 flex my-2"></div>
-          {users.slice(0,3).map(ord => <UserListItem key={ord.id+ ord.phone} id={ord.id} name={ord.name} phone={ord.phone} />)}
+          {users.length < 1 &&
+            <div className="w-full min-h-40 flex items-center justify-center text-white font-semibold p-4 text-xl">
+              No Users Yet</div>
+            }
+          {users.slice(0, 3).map(ord => <UserListItem key={ord.id + ord.phone} id={ord.id} name={ord.name} phone={ord.phone} />)}
         </div>
         <div className="w-[50%] bg-color-heavy rounded-xl h-72 overflow-auto p-4 max-md:p-2 max-md:w-full">
           <h2 className="text-primary-color text-2xl font-bold tracking-tight max-md:text-xl">Todo Tasks</h2>
           <div className="w-full border-1 border border-primary-color/50 flex my-2"></div>
           <Todo />
         </div>
+      </div> */}
+
+      <div className="flex gap-2 w-full mb-2 max-md:flex-col min-h-96 md:max-h-96 overflow-hidden  ">
+        <div className="w-[50%] bg-color-heavy rounded-xl  overflow-hidden p-4 max-md:p-2 max-md:w-full">
+          <h2 className="text-primary-color text-2xl font-bold tracking-tight max-md:text-xl ">Recent Orders</h2>
+          <div className="w-full border-1 border border-primary-color/50 flex my-2"></div>
+          {orders.length < 1 &&
+            <div className="w-full min-h-40 flex items-center justify-center text-white font-semibold p-4 text-xl">
+              No Orders Yet</div>
+          }
+          {orders.slice(0, 3).map(ord => <OrderListItem key={ord.id}
+            orderId={"ORD-" + ord.id} status={ord.status} totalBill={ord.totalBill} />)}
+        </div>
+        <div className="w-[50%] bg-color-heavy rounded-xl  overflow-hidden p-4 max-md:p-2 max-md:w-full">
+          <h2 className="text-primary-color text-2xl font-bold tracking-tight max-md:text-xl">Payment Options</h2>
+          <div className="w-full border-1 border border-primary-color/50 flex my-2"></div>
+          <PaymentOptionMenu />
+        </div>
+
+        
       </div>
+      <div className="w-full bg-color-heavy rounded-xl overflow-auto p-4 max-md:p-2 max-md:w-full mb-4">
+          <h2 className="text-primary-color text-2xl font-bold tracking-tight max-md:text-xl">Charges</h2>
+          <div className="w-full border-1 border border-primary-color/50 flex my-2"></div>
+          <ChargesMenu />
+        </div>
+
     </div>
   )
 }

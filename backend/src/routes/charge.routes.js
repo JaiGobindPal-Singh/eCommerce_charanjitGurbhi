@@ -4,7 +4,7 @@ import express from 'express';
 
 const router = express.Router();
 
-router.get('/', authorizeAdmin, getAllCharges);
+router.get('/', authenticateUser, getAllCharges);
 router.post('/', authorizeAdmin, createCharge);
 
 router.get('/applicable-charges', authenticateUser, getApplicableCharges);

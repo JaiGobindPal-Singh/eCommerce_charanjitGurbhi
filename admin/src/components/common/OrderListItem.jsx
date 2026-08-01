@@ -1,6 +1,5 @@
-import { IndianRupee } from 'lucide-react'; // Or your preferred icon library
+import { IndianRupee } from 'lucide-react';
 
-// Helper to map status to beautiful, accessible Tailwind colors
 const getStatusStyles = (status) => {
     switch (status) {
         case 'delivered':
@@ -9,7 +8,7 @@ const getStatusStyles = (status) => {
 
         case 'order_placed':
         case 'processing':
-        case 'out_for_delivery':
+        case 'shipped':
             return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
 
         case 'payment_pending':
@@ -28,7 +27,6 @@ const getStatusStyles = (status) => {
     }
 };
 
-// Helper to format the status text cleanly (e.g., 'out_for_delivery' -> 'Out For Delivery')
 const formatStatusText = (status) => {
     if (!status) return '';
     return status
@@ -37,13 +35,22 @@ const formatStatusText = (status) => {
         .join(' ');
 };
 
-export default function OrderListItem({ orderId, totalBill, status }) {
+export default function OrderListItem({ orderId, totalBill, status, onClick }) {
     const statusStyles = getStatusStyles(status);
 
     return (
-        <div className="w-full mb-1 flex flex-col md:flex-row md:items-center md:justify-between p-3 md:p-4 gap-3 md:gap-0 bg-slate-900/90 border border-slate-800 rounded-xl shadow-sm transition-all duration-200 hover:border-slate-700 hover:bg-slate-900/80">
-
-            {/* Left Side: Order Identity */}
+        <div
+            className={`w-full mb-1 flex flex-col md:flex-row md:items-center md:justify-between p-3 md:p-4 gap-3 md:gap-0 bg-slate-900/90 border border-slate-800 rounded-xl shadow-sm transition-all duration-200 hover:border-slate-700 hover:bg-slate-900/80 ${onClick ? 'cursor-pointer' : ''}`}
+            onClick={onClick}
+            role={onClick ? 'button' : undefined}
+            tabIndex={onClick ? 0 : undefined}
+            onKeyDown={(event) => {
+                if (onClick && (event.key === 'Enter' || event.key === ' ')) {
+                    event.preventDefault();
+                    onClick();
+                }
+            }}
+        >
             <div className="flex flex-col gap-1">
                 <span className="text-xs font-medium tracking-wider text-slate-500 uppercase">
                     Order ID
@@ -53,9 +60,7 @@ export default function OrderListItem({ orderId, totalBill, status }) {
                 </span>
             </div>
 
-            {/* Right Side: Status and Financials */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full md:w-auto">
-                {/* Status Badge */}
                 <div className="flex flex-col items-start sm:items-end gap-1 min-w-[80px]">
                     <span className="text-xs font-medium tracking-wider text-slate-500 uppercase">
                         status
@@ -65,7 +70,6 @@ export default function OrderListItem({ orderId, totalBill, status }) {
                     </div>
                 </div>
 
-                {/* Total Bill Amount */}
                 <div className="flex flex-col items-start sm:items-end gap-1 min-w-[80px]">
                     <span className="text-xs font-medium tracking-wider text-slate-500 uppercase">
                         Total
@@ -76,7 +80,6 @@ export default function OrderListItem({ orderId, totalBill, status }) {
                     </div>
                 </div>
             </div>
-
         </div>
     );
 }

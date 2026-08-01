@@ -38,7 +38,7 @@ const chargeSchema = new mongoose.Schema({
         },
         paymentOption:{
             type: String,
-            enum: ['cod',  'online']
+            enum: ['cod',  'online','']
         }
     }
 });

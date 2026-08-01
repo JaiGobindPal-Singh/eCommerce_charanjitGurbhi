@@ -29,10 +29,8 @@ function Sidebar() {
     }, []);
     const menuItemStyle = "text-primary-color  hover:bg-white/20 rounded-xl px-4 py-2 max-lg:px-2 max-lg:py-1 flex items-center flex gap-4";
     return (
-
-        <div className={`sticky top-0 z-20 bg-color-heavy min-w-48 max-w-48 h-[100dvh] py-8 max-md:hidden flex flex-col justify-between`}>
-
-            <div className="links px-5 text-base font-semibold w-full">
+        <div className="sticky top-0 z-20 hidden h-screen w-48 shrink-0 flex-col justify-between overflow-y-auto bg-color-heavy py-8 md:flex">
+            <div className="links w-full px-5 text-base font-semibold">
                 <h1 className="text-primary-color font-bold capitalize text-xl rounded-xl flex items-center gap-4 mb-12 mt-2">Hi {user?.name || "Admin"} 👋</h1>
                 <NavLink to="/"
                     className={menuItemStyle}
