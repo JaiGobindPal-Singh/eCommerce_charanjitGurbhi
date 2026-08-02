@@ -1,15 +1,16 @@
-import { Plus, PackageOpen, Pencil, Trash2 } from "lucide-react";
+import { Plus, PackageOpen, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import Pagination from "../utilents/Pagination";
-import { fetchCategories } from "../../utils/categoryUtils";
+import { deleteCategory, fetchCategories } from "../../utils/categoryUtils";
 import SpinLoader from "../utilents/SpinLoader";
+import CreateCategory from "./CreateCategory";
 
 export default function Categories() {
     const [categories, setCategories] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [hasNextPage, setHasNextPage] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-
+    const [createCategory, setCreateCategory] = useState(false);
     useEffect(() => {
         let isMounted = true;
 
@@ -41,6 +42,15 @@ export default function Categories() {
         };
     }, [currentPage]);
 
+    const handleDeleteCategory = async (categoryId) =>{
+        const yes = confirm("are you sure to delete category ? this action is irreversible");
+        if(yes){
+            
+            await deleteCategory(categoryId);
+            setCategories(cats=>cats.filter(cat=> cat.id != categoryId));
+        }
+    }
+    if(createCategory) return <CreateCategory setIsOpen={setCreateCategory}/>
     return (
         <div className="min-h-screen bg-color-medium p-4">
             <div className="relative w-full flex flex-col items-center bg-color-heavy p-4 rounded-xl">
@@ -51,7 +61,8 @@ export default function Categories() {
                         <h1 className="text-4xl max-md:text-2xl text-primary-color font-bold">Categories</h1>
                     </div>
 
-                    <button className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-900/90 text-sm px-5 py-3 font-medium text-white transition hover:bg-slate-900 active:scale-95">
+                    <button className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-900/90 text-sm px-5 py-3 font-medium text-white transition hover:bg-slate-900 active:scale-95"
+                    onClick={()=>{setCreateCategory(true)}}>
                         <Plus size={18} />
                         <span className="max-lg:hidden">Add New Category</span>
                     </button>
@@ -99,11 +110,10 @@ export default function Categories() {
                                             </div>
 
                                             <div className="flex items-center gap-2">
-                                                <button className="rounded-lg bg-blue-50 p-2 text-blue-600 transition hover:bg-blue-100">
-                                                    <Pencil size={18} />
-                                                </button>
-
-                                                <button className="rounded-lg bg-red-50 p-2 text-red-600 transition hover:bg-red-100">
+                                            
+                                                <button className="rounded-lg bg-red-50 p-2 text-red-600 transition hover:bg-red-100"
+                                                onClick={()=>handleDeleteCategory(category.id)}
+                                                >
                                                     <Trash2 size={18} />
                                                 </button>
                                             </div>

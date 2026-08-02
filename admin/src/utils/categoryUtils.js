@@ -1,3 +1,4 @@
+import { generateNotification } from './notificationUtils'
 import useCategoryStore from "../store/categoryStore";
 import api from "../configs/axiosConfig";
 
@@ -9,10 +10,10 @@ import api from "../configs/axiosConfig";
  */
 export const fetchCategories = async (page) => {
     try {
-        const {pages} = useCategoryStore.getState();
+        const { pages } = useCategoryStore.getState();
         //return stored categories if already stored
         const storedCategories = pages[page];
-        if(storedCategories && storedCategories?.categories?.length){
+        if (storedCategories && storedCategories?.categories?.length) {
             return storedCategories;
         }
         //fetching from api 
@@ -41,13 +42,39 @@ export const fetchCategories = async (page) => {
  * @param {String} categoryId
  * @returns {any} category
  */
-export const getCategory = async (categoryId) =>{
-    try{
+export const getCategory = async (categoryId) => {
+    try {
         //fetching and return category based on id 
         const response = await api.get(`categories/${categoryId}`);
         const payload = response?.data ?? {};
         return payload?.category ?? {};
-    }catch(e){
+    } catch (e) {
         console.error("error getting category", e.message);
-    } 
+    }
+}
+
+export const createCategory = async (formData) => {
+    try {
+        const res = await api.post('categories/', formData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                }
+            });
+        const payload = res.data;
+        generateNotification("New Category added")();
+        return payload.category;
+    } catch (e) {
+        generateNotification("Unable to create category")();
+        console.log(e);
+    }
+}
+export const deleteCategory = async (categoryId) => {
+    try {
+        await api.delete(`categories/${categoryId.trim()}`);
+        generateNotification("category Deleted")();
+    } catch (e) {
+        generateNotification("unable to delete category")();
+        console.log(e);
+    }
 }

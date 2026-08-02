@@ -1,4 +1,4 @@
-import { uploadImage } from "../utils/imageHandler.js";
+import { uploadImage, deleteImage } from "../utils/imageHandler.js";
 import Category from "../models/category.model.js";
 
 export const createCategory = async (req, res) => {
@@ -28,6 +28,22 @@ export const createCategory = async (req, res) => {
   }
 };
 
+export const deleteCategory = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    const deletedCategory = await Category.findByIdAndDelete(categoryId).lean();
+    if (!deletedCategory) {
+      return res.status(404).json({ error: "Category not found" });
+    }
+    //delete the category image from cloudinary
+    await deleteImage(deletedCategory.iconUrl);
+
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Error deleting Category:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
 // export const getAllCategories = async (req, res) => {
 //     try{
 //         const categories = ( await Category.find().lean() ).map((cat)=>{
