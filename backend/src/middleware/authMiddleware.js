@@ -77,7 +77,7 @@ export const authorizeAdmin = async (req, res, next) => {
             httpOnly: true,
             sameSite: 'none', // Allows cross-origin cookie sharing
             secure: true,     // Required for sameSite: 'none'
-            maxAge: 7 * 24 * 60 * 60 * 1000
+            maxAge:  60 * 60 * 1000  //1hr timeout
         });
         next();
     } catch (error) {

@@ -1,6 +1,6 @@
 import useProductStore from "../store/productStore";
 import api from "../configs/axiosConfig";
-
+import { generateNotification } from "./notificationUtils";
 /**
 * 
  * @param {Number} page 
@@ -9,10 +9,10 @@ import api from "../configs/axiosConfig";
  */
 export const fetchProducts = async (page) => {
     try {
-        const {pages} = useProductStore.getState();
+        const { pages } = useProductStore.getState();
         //return stored products if already stored
         const storedProducts = pages[page];
-        if(storedProducts && storedProducts?.products?.length){
+        if (storedProducts && storedProducts?.products?.length) {
             return storedProducts;
         }
         //fetching from api 
@@ -44,13 +44,13 @@ export const fetchProducts = async (page) => {
  */
 export const fetchProductsByKey = async (page, key) => {
     try {
-        const {pages} = useProductStore.getState();
+        const { pages } = useProductStore.getState();
         if (!key || key.trim().length < 3) {
             return await fetchProducts(page);
         }
         //return stored products if already stored
         const storedProducts = pages[page];
-        if(storedProducts && storedProducts?.length){
+        if (storedProducts && storedProducts?.length) {
             return storedProducts;
         }
 
@@ -77,13 +77,57 @@ export const fetchProductsByKey = async (page, key) => {
  * @param {String} productId 
  * @returns {any} product
  */
-export const getProduct = async (productId) =>{
-    try{
+export const getProduct = async (productId) => {
+    try {
         //fetching and return product based on id 
         const response = await api.get(`products/${productId}`);
         const payload = response?.data ?? {};
         return payload?.product ?? {};
-    }catch(e){
+    } catch (e) {
         console.error("error getting product", e.message);
-    } 
+    }
+}
+
+export const createProduct = async (formData) => {
+    try {
+        const res = await api.post('products/', formData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                }
+            });
+        const payload = res.data;
+        generateNotification("New Product added")();
+        return payload.product;
+    } catch (e) {
+        generateNotification("unable to create product")();
+        console.log(e);
+    }
+}
+
+export const updateProduct = async (productId, productData) => {
+    try {
+        console.log(productData);
+        const res = await api.put(`products/${productId}`, productData,{
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                }
+            });
+        const payload = res.data;
+        generateNotification("Product updated successfully")();
+        return payload.product;
+    } catch (e) {
+        generateNotification("unable to update product")();
+        console.log(e);
+    }
+}
+
+export const deleteProduct = async (productId) => {
+    try {
+        await api.delete(`products/${productId.trim()}`);
+        generateNotification("Product Deleted")();
+    } catch (e) {
+        generateNotification("unable to delete product")();
+        console.log(e);
+    }
 }

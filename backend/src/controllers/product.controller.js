@@ -4,7 +4,7 @@ import Product from "../models/product.model.js";
 //only admin access
 export const createProduct = async (req, res) => {
   try {
-    const { name, description, category, price, comparePrice, stockAvailable, priceTiers = [],  } =
+    const { name, description, category, price, comparePrice, stockAvailable, pricingTiers = [],  } =
       req.body;
     if (!name || !description || !price || !req.file) {
       return res
@@ -22,8 +22,8 @@ export const createProduct = async (req, res) => {
       price,
       comparePrice: !isNaN(Number(comparePrice)) ? comparePrice : 0,
       stockAvailable: stockAvailable ?? 1,
-      imageUrl: productImageUrl,
-      priceTiers
+      imageUrl: [productImageUrl],
+      pricingTiers
     });
     await product.save();
 
@@ -41,11 +41,11 @@ export const createProduct = async (req, res) => {
           comparePrice: product.comparePrice,
           stockAvailable: product.stockAvailable,
           imageUrl: product.imageUrl,
-          priceTiers:product.priceTiers
+          pricingTiers:product.pricingTiers
         }
       });
   } catch (error) {
-    // console.error("Error creating product:", error);
+    console.error("Error creating product:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -57,26 +57,26 @@ export const deleteProduct = async (req, res) => {
       return res.status(404).json({ error: "Product not found" });
     }
     //delete the product image from cloudinary
-    await deleteImage(deletedProduct.imageUrl);
+    await deleteImage(Array.isArray(deletedProduct.imageUrl) ? deletedProduct.imageUrl[0] : deletedProduct.imageUrl);
 
     return res.status(200).json({ success: true });
   } catch (error) {
-    // console.error("Error deleting product:", error);
+    console.error("Error deleting product:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
 export const updateProduct = async (req, res) => {
   try {
+    const { productId } = req.params;
     //validating the data
     const {
-      productId,
       name,
       description,
       category,
       price,
       comparePrice,
       stockAvailable,
-      priceTiers,
+      pricingTiers,
     } = req.body;
     if (!productId) {
       return res.status(400).json({ error: "Product ID is required" });
@@ -89,32 +89,34 @@ export const updateProduct = async (req, res) => {
     //handle image update if a new file is uploaded
     if (req.file) {
       //delete the old image from cloudinary
-      await deleteImage(product.imageUrl);
+      await deleteImage(Array.isArray(product.imageUrl) ? product.imageUrl[0] : product.imageUrl);
+
       //upload the new image and get the URL
       const productImageUrl = await uploadImage(req.file);
-      product.imageUrl = productImageUrl;
+      product.imageUrl = [productImageUrl];
     }
     //update the product details
     if (name) product.name = name;
     if (description) product.description = description;
     if (Array.isArray(category) && category.length) product.category = category;
     if (price) product.price = price;
-    if (priceTiers && priceTiers.length) product.priceTiers = priceTiers;
+    if (pricingTiers && pricingTiers.length) product.pricingTiers = pricingTiers;
     if (comparePrice) product.comparePrice = comparePrice;
     if (stockAvailable) product.stockAvailable = stockAvailable;
 
     await product.save();
-    product.id = product._id;
-    delete product._id;
-    delete product.__v;
-    delete product.createdAt;
-    delete product.updatedAt;
+    const productF = product.toObject();
+    productF.id = product._id;
+    delete productF._id;
+    delete productF.__v;
+    delete productF.createdAt;
+    delete productF.updatedAt;
 
     return res
       .status(200)
-      .json({ success: true, product });
+      .json({ success: true, product: productF });
   } catch (error) {
-    // console.error("Error updating product:", error);
+    console.error("Error updating product:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 };

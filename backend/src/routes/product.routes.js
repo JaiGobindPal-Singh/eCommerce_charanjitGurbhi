@@ -16,7 +16,7 @@ const router = express.Router();
 //admin routes
 router.post("/", authorizeAdmin, upload.single('image'), createProduct);
 router.delete("/:productId", authorizeAdmin, deleteProduct);
-router.put("/", authorizeAdmin, updateProduct);
+router.put("/:productId",upload.single('image'), authorizeAdmin, updateProduct);
 
 //client routes
 router.get("/", getAllProducts);

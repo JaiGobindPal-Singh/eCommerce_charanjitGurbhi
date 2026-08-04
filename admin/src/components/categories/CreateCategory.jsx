@@ -57,8 +57,8 @@ export default function CreateCategory({setIsOpen}) {
     };
 
     return (
-        <div className="min-h-screen bg-color-medium flex p-4 sm:p-6 lg:p-8">
-            <div className="mx-auto flex w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-slate-800/70 bg-color-heavy shadow-2xl shadow-slate-950/30">
+        <div className="min-h-screen bg-color-medium flex p-4 ">
+            <div className="mx-auto flex w-full flex-col overflow-hidden rounded-3xl border border-slate-800/70 bg-color-heavy shadow-2xl shadow-slate-950/30">
                 <div className="border-b border-slate-800/80 bg-slate-900/60 px-6 py-6 sm:px-8">
                     <div className="flex flex-wrap items-center justify-between">
                         <div>

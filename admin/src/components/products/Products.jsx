@@ -1,8 +1,9 @@
 import { Plus, PackageOpen, Pencil, Trash2, IndianRupee, Search } from "lucide-react";
 import Pagination from "../utilents/Pagination";
 import { useEffect, useRef, useState } from "react";
-import { fetchProductsByKey } from "../../utils/productUtils";
+import { fetchProductsByKey, deleteProduct } from "../../utils/productUtils";
 import SpinLoader from "../utilents/SpinLoader";
+import ProductModal from "./ProductModal";
 
 export default function Products() {
     const [products, setProducts] = useState([]);
@@ -11,8 +12,22 @@ export default function Products() {
     const [defferedSearch, setDefferedSearch] = useState('');
     const [hasNextPage, setHasNextPage] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+    const [currentProductId, setCurrentProductId] = useState('');
     const searchRef = useRef(null);
 
+    const handleDeleteProduct = async (productId) => {
+        try {
+            const yes = window.confirm("Are you sure you want to delete this product?");
+            if (!yes) return;
+            deleteProduct(productId).then(()=>{
+                setProducts((prevProducts) => prevProducts.filter((product) => product.id !== productId));
+            });
+        }
+        catch (error) {
+            console.error('Failed to delete product', error);
+        }
+    };
     useEffect(() => {
         let isMounted = true;
 
@@ -55,6 +70,9 @@ export default function Products() {
         };
     }, [searchKey]);
 
+    if(isProductModalOpen) {
+        return <ProductModal setIsOpen={setIsProductModalOpen} productId={currentProductId} />
+    }
     return (
         <div className="min-h-screen bg-color-medium p-4">
             <div className="relative w-full flex flex-col items-center bg-color-heavy p-4 rounded-xl min-h-[95dvh]">
@@ -76,7 +94,10 @@ export default function Products() {
                             }} />
                         <Search size={24} />
                     </div>
-                    <button className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-900/90 text-sm px-5 py-3 font-medium text-white transition hover:bg-slate-900 active:scale-95">
+                    <button 
+                        className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-900/90 text-sm px-5 py-3 font-medium text-white transition hover:bg-slate-900 active:scale-95"
+                        onClick={() => setIsProductModalOpen(true)}
+                    >
                         <Plus size={18} />
                         <span className="max-lg:hidden">Add New Product</span>
                     </button>
@@ -111,7 +132,7 @@ export default function Products() {
                                 >
                                     <div className="h-52 overflow-hidden bg-color-heavy">
                                         <img
-                                            src={product.imageUrl}
+                                            src={product.imageUrl || product.imageUrl[0]}
                                             alt={product.name}
                                             className="h-full w-full object-cover transition duration-300 hover:scale-105"
                                         />
@@ -135,11 +156,13 @@ export default function Products() {
                                             </span>
 
                                             <div className="flex items-center gap-2">
-                                                <button className="rounded-lg bg-blue-50 p-2 text-blue-600 transition hover:bg-blue-100">
+                                                <button className="rounded-lg bg-blue-50 p-2 text-blue-600 transition hover:bg-blue-100"
+                                                onClick = {() =>{setCurrentProductId(product.id); setIsProductModalOpen(true)}}>
                                                     <Pencil size={18} />
                                                 </button>
 
-                                                <button className="rounded-lg bg-red-50 p-2 text-red-600 transition hover:bg-red-100">
+                                                <button className="rounded-lg bg-red-50 p-2 text-red-600 transition hover:bg-red-100"
+                                                onClick = {() => handleDeleteProduct(product.id)}>
                                                     <Trash2 size={18} />
                                                 </button>
                                             </div>
