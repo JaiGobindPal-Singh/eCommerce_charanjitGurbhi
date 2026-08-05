@@ -121,6 +121,14 @@ const orderSchema = new mongoose.Schema({
             required: true,
             trim: true
         },
+        subtotal: {
+            type: Number,
+            required: true
+        },
+        discount: {
+            type: Number,
+            default: 0
+        },
         charges: { type: [chargeSchema], default: [] },
         totalBill: { type: Number, required: true }
     },

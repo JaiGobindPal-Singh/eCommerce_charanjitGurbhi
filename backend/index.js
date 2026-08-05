@@ -11,6 +11,7 @@ const startServer = async () => {
 
     // Register cron jobs
     await import('./src/jobs/expireOrders.js');
+    await import('./src/jobs/updateDiscounts.js');
 
     app.listen(PORT, () => {
         console.log(`Backend server running on port ${PORT}`);

@@ -6,6 +6,7 @@ import cartRoutes from "./routes/cart.routes.js";
 import orderRoutes from "./routes/order.routes.js";
 import chargeRoutes from "./routes/charge.routes.js"
 import { isUserLoggedIn } from "./controllers/auth.controller.js";
+import discountRoutes from "./routes/discount.routes.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import paymentOptionsRoutes from "./routes/paymentOptions.routes.js"
@@ -32,7 +33,7 @@ app.use("/api/v0/products", productRoutes);
 app.use("/api/v0/charges", chargeRoutes);
 app.use("/api/v0/orders", orderRoutes);
 app.use("/api/v0/razorpay", razorpayRoutes);
-
+app.use("/api/v0/discounts", discountRoutes)
 app.get("/health", (_request, response) => {
   response.json({ status: "ok" });
 });

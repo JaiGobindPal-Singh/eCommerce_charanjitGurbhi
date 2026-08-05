@@ -43,10 +43,10 @@ const discountSchema = new mongoose.Schema({
             default: 0,
             min: 0
         },
-        isNewUserOnly: {
-            type: Boolean,
-            default: false
-        },
+        // isNewUserOnly: {
+        //     type: Boolean,
+        //     default: false
+        // },
         maxDiscountAmount: {
             type: Number, // Useful cap for PERCENT discounts (e.g., 50% off up to ₹500)
             min: 0,
