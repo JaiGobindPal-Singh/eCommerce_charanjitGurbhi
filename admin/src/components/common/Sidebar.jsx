@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom"
 import { House } from "lucide-react"
 import { ShoppingBasket } from "lucide-react"
 import { List } from "lucide-react"
-import { ReceiptText } from "lucide-react"
+import { ReceiptText, TicketPercent } from "lucide-react"
 import { useEffect, useState } from "react";
 import { getUser, logoutUser } from "../../utils/userUtils";
 import { LogOut } from "lucide-react"
@@ -59,6 +59,13 @@ function Sidebar() {
                         backgroundColor: isActive ? "var(--color-border-subtle)" : "",
                         color: isActive ? "var(--color-text-primary" : ""
                     })}><List />Categories</NavLink>
+
+                <NavLink to="/discounts"
+                    className={menuItemStyle}
+                    style={({ isActive }) => ({
+                        backgroundColor: isActive ? "var(--color-border-subtle)" : "",
+                        color: isActive ? "var(--color-text-primary" : ""
+                    })}><TicketPercent/>  Discounts</NavLink>
 
 
 

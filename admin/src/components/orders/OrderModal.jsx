@@ -93,15 +93,8 @@ function OrderModal({ isOpen, onClose, orderId }) {
     const deliveryPartner = order.deliveryDetails?.deliveryPartner;
     const trackingId = order.deliveryDetails?.trackingId;
 
-    const calculateSubtotal = (totalBill, charges) => {
-        let subtotal = totalBill;
-        charges?.forEach(ch => {
-            subtotal -= ch.chargeAmount
-        })
-        return subtotal
-    }
     const billTotal = order.billing?.totalBill;
-    const subtotal = calculateSubtotal(order.billing?.totalBill ?? 0, order.billing?.charges ?? []);
+    const subtotal = order.billing?.subtotal;
     const discount = order.billing?.discount;
     const paymentMethod = order.billing?.paymentMode;
     const charges = order.billing?.charges;
@@ -142,12 +135,12 @@ function OrderModal({ isOpen, onClose, orderId }) {
                                     items.map((item, index) => {
 
                                         return (
-                                            <div key={`${item.product.name}-${index}`} className="flex items-center justify-between rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-3">
+                                            <div key={`${item.product?.name}-${index}`} className="flex items-center justify-between rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-3">
                                                 <div>
-                                                    <p className="font-medium text-slate-100">{item.product.name}</p>
+                                                    <p className="font-medium text-slate-100">{item.product?.name}</p>
                                                     <p className="text-sm text-slate-400">Qty: {item.quantity}</p>
                                                 </div>
-                                                <p className="text-sm font-semibold text-slate-100">{formatCurrency(item.product.price * item.quantity)}</p>
+                                                <p className="text-sm font-semibold text-slate-100">{formatCurrency(item.product?.price * item.quantity || 0)}</p>
                                             </div>
                                         );
                                     })
@@ -191,7 +184,7 @@ function OrderModal({ isOpen, onClose, orderId }) {
 
                     <div className="space-y-4">
                         {
-                            !['payment_failed', 'payment_pending', 'abandoned', 'cancelled'].includes(order.status) &&
+                            
                             <div className="rounded-2xl border border-slate-800 bg-slate-800/70 p-4">
                                 <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.25em] text-slate-400">
                                     <PencilLine size={16} />

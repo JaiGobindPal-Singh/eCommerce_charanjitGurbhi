@@ -85,7 +85,7 @@ function ProductModal({ setIsOpen, productId }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!title.trim() || !image || isSubmitting) return;
+        if (!title.trim()  || isSubmitting) return;
 
         const hasInvalidPricingTier = pricingTiers.some(
             (tier) => tier.minQuantity === "" || tier.price === ""
@@ -349,7 +349,7 @@ function ProductModal({ setIsOpen, productId }) {
 
                         <button
                             type="submit"
-                            disabled={!title.trim() || !image || isSubmitting}
+                            disabled={!title.trim()  || isSubmitting}
                             className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-primary-color/90 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {isSubmitting ? (
@@ -359,7 +359,7 @@ function ProductModal({ setIsOpen, productId }) {
                                 </>
                             ) : (
                                 <>
-                                    Create Product
+                                    {!productId ? "Create Product" : "Update Product"}
                                 </>
                             )}
                         </button>

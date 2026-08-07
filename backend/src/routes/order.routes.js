@@ -1,5 +1,5 @@
 import express from 'express';
-import { createOrder, getCancelledOrders, getCompletedOrders, getOrderDetails, getPendingOrders, getUserOrders, updateOrderStatus, getAllOrders, getShippedOrders, getProcessingOrders } from '../controllers/order.controller.js';
+import { createOrder, getCancelledOrders, getCompletedOrders, getOrderDetails, getPendingOrders, getUserOrders, updateOrderStatus, getAllOrders, getShippedOrders, getProcessingOrders, getOrderCondition, setOrderCondition } from '../controllers/order.controller.js';
 import { authenticateUser, authorizeAdmin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -14,6 +14,9 @@ router.get('/cancelled', authorizeAdmin, getCancelledOrders);
 router.get('/all', authorizeAdmin, getAllOrders);
 router.get('/shipped', authorizeAdmin, getShippedOrders);
 router.get('/processing', authorizeAdmin, getProcessingOrders);
+
+router.get('/conditions', authenticateUser, getOrderCondition);
+router.put('/conditions', authorizeAdmin, setOrderCondition);
 
 router.get('/:orderId', authenticateUser, getOrderDetails);
 export default router;

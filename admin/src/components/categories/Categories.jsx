@@ -97,6 +97,7 @@ export default function Categories() {
                                 >
                                     <div className="h-52 overflow-hidden bg-white">
                                         <img
+                                            loading="lazy"
                                             src={category.iconUrl}
                                             alt={category.name}
                                             className="h-full w-full object-cover transition duration-300 hover:scale-105"

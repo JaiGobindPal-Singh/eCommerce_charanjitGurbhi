@@ -6,6 +6,7 @@ import Dashboard from "./components/dashboard/Dashboard.jsx"
 import Products from "./components/products/Products.jsx";
 import Categories from "./components/categories/Categories.jsx";
 import Orders from "./components/orders/Orders.jsx"
+import Discounts from "./components/discounts/Discounts.jsx";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUser } from "./utils/userUtils.js";
@@ -50,6 +51,7 @@ const App = () => {
       <Route  path="/products" element={<Products/>} />
       <Route  path="/categories" element={<Categories/>} />
       <Route path="/orders" element={<Orders />} />
+      <Route path="/discounts" element={<Discounts />} />
         {/* <Route path="/" element={<Homepage />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/categories" element={<CategoriesPage />} />

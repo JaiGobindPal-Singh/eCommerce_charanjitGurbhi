@@ -36,7 +36,7 @@ export default function LoginPage() {
             generateNotification("Welcome Back")();
             navigate('/');
         }).catch((e)=>{
-            generateNotification(e.response?.data?.error || e.message)();
+            console.log(e);
             setPassword("");
         })
         

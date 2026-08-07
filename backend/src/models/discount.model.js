@@ -18,6 +18,7 @@ const discountSchema = new mongoose.Schema({
     discountType: {
         type: String,
         required: true,
+        uppercase: true,
         enum: ['FIXED', 'PERCENT']
     },
     discountValue: {
@@ -75,11 +76,10 @@ const discountSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Pre-save hook to automatically deactivate expired coupons on save
-discountSchema.pre('save', function (next) {
+discountSchema.pre('save', function () {
     if (this.endDate && this.endDate < new Date()) {
         this.isActive = false;
     }
-    next();
 });
 
 const Discount = mongoose.model('Discount', discountSchema);

@@ -142,6 +142,42 @@ const updateInventory = async (cartItems, session) => {
     }
 };
 
+export const getOrderCondition = async (req, res) => {
+    try {
+        const orderCondition = await OrderCondition.findOne().lean();
+        
+        return res.status(200).json(orderCondition);
+    }catch (error) {
+        console.error('Error fetching order condition:', error);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+export const setOrderCondition = async (req, res) => {
+    try {
+        const { minAmount } = req.body;    
+        
+        if (!minAmount || minAmount <= 0) {
+            return res.status(400).json({ message: "invalid order condition" });
+        }
+
+        const ord = await OrderCondition.findOneAndUpdate(
+            {},
+            { minAmount },
+            { 
+                returnDocument: "after", 
+                upsert: true // Creates the document if the collection is empty
+            }
+        );
+
+        return res.status(200).json(ord);
+
+    } catch (e) {
+        // Move console.log before return, otherwise it never executes
+        console.error(e); 
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
 export const createOrder = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -315,6 +351,8 @@ export const createOrder = async (req, res) => {
                         ],
                         items: cart.items,
                         billing: {
+                            subtotal: discountedTotal,
+                            discount: discount,
                             paymentMode,
                             charges: chargesFormatted,
                             totalBill: totalBill,
@@ -515,8 +553,12 @@ export const getOrderDetails = async (req, res) => {
 
         fullOrder.id = fullOrder._id;
         delete fullOrder._id;
-        fullOrder.statusHistory?.forEach((sh) => delete sh?._id);
-        fullOrder.items?.forEach((it) => delete it.product._id);
+        try{
+            fullOrder.statusHistory?.forEach((sh) => delete sh?._id);
+            fullOrder.items?.forEach((it) => delete it.product._id);
+        }catch(e){
+            console.error("Error cleaning up order details:", e);
+        }
         delete fullOrder.__v;
 
         return res.status(200).json({ order: fullOrder });

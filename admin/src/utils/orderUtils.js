@@ -53,8 +53,30 @@ export const fetchOrders = async (page, filter) => {
     }
 };
 
+export const getOrderCondition = async() =>{
+    try{
+        const condition = await api.get('/orders/conditions');
+        return condition.data;
+    }catch(e){
+        console.log(e);
+    }
+}
+export const setOrderCondition = async(minAmount) =>{
+    try{
+        const con = await api.put('/orders/conditions', {
+            minAmount
+        });
+        const payload = con.data;
+        generateNotification("updated condition")();
+        return payload;
+    }catch(e){
+        generateNotification("unable to update condition")();
+        console.log(e);
+    }
+}
 export const updateOrderStatus = async (orderId, status, cancellationReason, deliveryPartner, trackingId ) =>{
     try{
+        console.log(status, "00");
         const response = await api.patch(`orders/status/${orderId}`,{
             status,
             cancellationReason,

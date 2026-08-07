@@ -5,19 +5,7 @@ cron.schedule('0 0 * * *', async () => {
     const now = new Date();
     
     try {
-        // 1. ACTIVATE: Start date reached/passed AND currently inactive
-        const activated = await Discount.updateMany(
-            {
-                isActive: false,
-                startDate: { $lte: now },
-                endDate: { $gt: now } // Ensure it hasn't expired yet
-            },
-            {
-                $set: { isActive: true }
-            }
-        );
-
-        // 2. DEACTIVATE: End date passed AND currently active
+        // 1. DEACTIVATE: End date passed AND currently active
         const deactivated = await Discount.updateMany(
             {
                 isActive: true,
@@ -28,7 +16,7 @@ cron.schedule('0 0 * * *', async () => {
             }
         );
 
-        //3. Deactivate if max use limit reached
+        //2. Deactivate if max use limit reached
         const maxUsageDeactivated = await Discount.updateMany(
             {
                 isActive: true,

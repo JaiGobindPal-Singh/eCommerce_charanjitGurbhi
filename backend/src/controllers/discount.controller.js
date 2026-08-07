@@ -84,10 +84,10 @@ export const validateDiscountCoupon = async (req, res) => {
     }
 }
 
-export const updateDiscountCoupon = async (req, res) => {
+export const updateDiscountCoupon = async (req, res) => {  
     try {
         const { id } = req.params;
-        const { code, description, discountType, discountValue, conditions, startDate, endDate } = req.body;
+        const { code, description, discountType, discountValue, conditions, startDate, endDate, active } = req.body;
         const discount = await Discount.findByIdAndUpdate(id, {
             code,
             description,
@@ -95,6 +95,7 @@ export const updateDiscountCoupon = async (req, res) => {
             discountValue,
             startDate,
             endDate,
+            isActive: active,
             conditions: {
                 minCartValue: conditions?.minCartValue || 0,
                 // isNewUserOnly: conditions?.isNewUserOnly || false,
@@ -115,6 +116,40 @@ export const deleteDiscountCoupon = async (req, res) => {
         return res.status(200).json({ message: 'Discount coupon deleted successfully' });
     } catch (e) {
         console.error('Error deleting discount:', e);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+}
+export const getDiscountCouponByCode = async (req, res) => {
+    try {
+        const { code } = req.params;
+        const discount = await Discount.findOne({ code }).lean();
+        if(!discount) {
+            return res.status(404).json({ message: 'Discount coupon not found' });
+        }
+        const { _id, ...dis } = discount;
+        return res.status(200).json({
+            id: _id,
+            ...dis
+        });
+    } catch (e) {
+        console.error('Error fetching discount:', e);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+}
+export const getDiscountCouponById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const discount = await Discount.findById(id).lean();
+        if(!discount) {
+            return res.status(404).json({ message: 'Discount coupon not found' });
+        }
+        const { _id, ...dis } = discount;
+        return res.status(200).json({
+            id: _id,
+            ...dis
+        });
+    } catch (e) {
+        console.error('Error fetching discount:', e);
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 }

@@ -132,6 +132,7 @@ export default function Products() {
                                 >
                                     <div className="h-52 overflow-hidden bg-color-heavy">
                                         <img
+                                            loading="lazy"
                                             src={product.imageUrl || product.imageUrl[0]}
                                             alt={product.name}
                                             className="h-full w-full object-cover transition duration-300 hover:scale-105"
@@ -160,11 +161,11 @@ export default function Products() {
                                                 onClick = {() =>{setCurrentProductId(product.id); setIsProductModalOpen(true)}}>
                                                     <Pencil size={18} />
                                                 </button>
-
-                                                <button className="rounded-lg bg-red-50 p-2 text-red-600 transition hover:bg-red-100"
+                                                {/*//! currently removed deleting the product causes existing orders with deleted products to malfunction */}
+                                                {/* <button className="rounded-lg bg-red-50 p-2 text-red-600 transition hover:bg-red-100"
                                                 onClick = {() => handleDeleteProduct(product.id)}>
                                                     <Trash2 size={18} />
-                                                </button>
+                                                </button> */}
                                             </div>
                                         </div>
                                     </div>
