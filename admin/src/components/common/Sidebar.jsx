@@ -11,7 +11,7 @@ function Sidebar() {
         const surity = confirm("Are you sure you want to logout?");
         if (surity) {
             logoutUser();
-            window.location.href = "/sudo-admin/login";  //refresh the page to redirect to login
+            window.location.href = "/admin/login";  //refresh the page to redirect to login
         }
     }
     const [user, setUser] = useState(null);
