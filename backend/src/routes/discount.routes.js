@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post('/', authorizeAdmin, createDiscountCoupon);
 router.get('/', getAllDiscountCoupons);
-router.get('/validate', validateDiscountCoupon);
+router.post('/validate', validateDiscountCoupon);
 router.get('/:id', authorizeAdmin, getDiscountCouponById);
 router.get('/code/:code', getDiscountCouponByCode);
 router.put('/:id', authorizeAdmin, updateDiscountCoupon);

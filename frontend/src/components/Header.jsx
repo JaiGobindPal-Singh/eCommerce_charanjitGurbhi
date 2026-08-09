@@ -3,51 +3,81 @@ import { UserRound, ShoppingCart, X, Menu, House, ShoppingBasket, List, ReceiptT
 import headerDecorator from "../assets/headerDecorator.png"
 import companyLogo from "../assets/companyLogo1.png"
 import ProfilePopup from "./ProfilePopup";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { getUser, logoutUser } from "../utils/userUtils";
+import { generateNotification } from "../utils/notificationUtils";
 
 function HamburgerMenu({ menuOpen, toggleHamburger, setIsProfileOpen }) {
+    const navigate = useNavigate();
+    const manageLogout = async () => {
+        await logoutUser();
+        generateNotification("Logged Out")();
+        setIsProfileOpen(false);
+        navigate('/login');
+    }
+    const [user, setUser] = useState({})
+    useEffect(() => {
+        getUser().then(data => setUser(data));
+    }, [])
+
     const menuItemStyle = "text-main-background  hover:bg-white/20 transition-all duration-200 rounded-xl px-4 py-2 max-lg:px-2 max-lg:py-1 flex items-center flex gap-4";
     return (
         <>
             {menuOpen && <div onClick={() => toggleHamburger(false)} className="hmBackground fixed z-40 bg-black opacity-40 w-full h-screen " >
             </div>}
             <div className={`hamburger z-50 bg-light-textcolor h-full w-48 top-0  fixed bottom-0 ${menuOpen ? "right-0" : "-right-52"} transition-all duration-500  `}>
-    <X className="text-main-background absolute right-6 top-8 hover:bg-white hover:text-dark-textcolor rounded-lg " onClick={() => toggleHamburger(false)} />                
-                <div className="links px-5 text-base font-semibold w-full">
+                <X className="text-main-background absolute right-6 top-8 hover:bg-white hover:text-dark-textcolor rounded-lg " onClick={() => toggleHamburger(false)} />
+                <div className="links px-5 text-base font-semibold w-full h-full flex flex-col">
                     <div className="h-40 w-full"></div>
 
-                    <p onClick={() => setIsProfileOpen(true)}
+                    {/* <p onClick={() => setIsProfileOpen(true)}
                         className={menuItemStyle}
-                    ><UserRound /> Profile</p>
+                    ><UserRound /> Profile</p> */}
 
-                    <NavLink to="/"
-                        className={menuItemStyle}
-                        style={({ isActive }) => ({
-                            backgroundColor: isActive ? "var(--color-main-background)" : "",
-                            color: isActive ? "var(--color-dark-textcolor" : ""
-                        })}><House />Home</NavLink>
+                    <div className="flex flex-col gap-2">
+                        <NavLink to="/"
+                            className={menuItemStyle}
+                            style={({ isActive }) => ({
+                                backgroundColor: isActive ? "var(--color-main-background)" : "",
+                                color: isActive ? "var(--color-dark-textcolor" : ""
+                            })}><House />Home</NavLink>
 
-                    <NavLink to="/products"
-                        className={menuItemStyle}
-                        style={({ isActive }) => ({
-                            backgroundColor: isActive ? "var(--color-main-background)" : "",
-                            color: isActive ? "var(--color-dark-textcolor" : ""
-                        })}><ShoppingBasket />Products</NavLink>
+                        <NavLink to="/products"
+                            className={menuItemStyle}
+                            style={({ isActive }) => ({
+                                backgroundColor: isActive ? "var(--color-main-background)" : "",
+                                color: isActive ? "var(--color-dark-textcolor" : ""
+                            })}><ShoppingBasket />Products</NavLink>
 
-                    <NavLink to="/categories"
-                        className={menuItemStyle}
-                        style={({ isActive }) => ({
-                            backgroundColor: isActive ? "var(--color-main-background)" : "",
-                            color: isActive ? "var(--color-dark-textcolor" : ""
-                        })}><List />Categories</NavLink>
+                        <NavLink to="/categories"
+                            className={menuItemStyle}
+                            style={({ isActive }) => ({
+                                backgroundColor: isActive ? "var(--color-main-background)" : "",
+                                color: isActive ? "var(--color-dark-textcolor" : ""
+                            })}><List />Categories</NavLink>
 
-                    <NavLink to="/orders"
-                        className={menuItemStyle}
-                        style={({ isActive }) => ({
-                            backgroundColor: isActive ? "var(--color-main-background)" : "",
-                            color: isActive ? "var(--color-dark-textcolor" : ""
-                        })}><ReceiptText />Orders</NavLink>
+                        <NavLink to="/orders"
+                            className={menuItemStyle}
+                            style={({ isActive }) => ({
+                                backgroundColor: isActive ? "var(--color-main-background)" : "",
+                                color: isActive ? "var(--color-dark-textcolor" : ""
+                            })}><ReceiptText />Orders</NavLink>
+                    </div>
+
+
+
+                    {(user && user?.id) ?
+                        <button
+                            onClick={manageLogout}
+                            className={`${menuItemStyle} justify-center mt-auto mb-6`}>Logout</button>
+                        : <NavLink to="/register"
+                            className={`${menuItemStyle} justify-center mt-auto mb-6`}
+                            style={({ isActive }) => ({
+                                backgroundColor: isActive ? "var(--color-main-background)" : "",
+                                color: isActive ? "var(--color-dark-textcolor" : ""
+                            })}>Register/Login</NavLink>
+                    }
                 </div>
             </div>
         </>
@@ -74,7 +104,7 @@ export default function Header() {
         <>
             <ProfilePopup isProfileOpen={isProfileOpen} setIsProfileOpen={setIsProfileOpen} />
             <HamburgerMenu toggleHamburger={toggleHamburger} menuOpen={menuOpen} setIsProfileOpen={setIsProfileOpen} />
-                <img src={headerDecorator} alt="Header design" className="w-full h-4" />
+            <img src={headerDecorator} alt="Header design" className="w-full h-4" />
             <header className="w-full h-24 max-md:h-14 z-30 sticky top-0 backdrop-blur-sm bg-main-background/80">
                 <div className="flex items-center justify-between w-full h-full gap-8 px-8 max-md:gap-4 max-md:px-4">
                     <div className="flex">

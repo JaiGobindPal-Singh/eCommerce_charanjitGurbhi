@@ -15,6 +15,7 @@ import api from "./configs/axiosConfig.js"
 import userStore from "./store/userStore.js"
 import CheckoutPage from "./pages/CheckoutPage.jsx"
 import ProfilePage from "./pages/ProfilePage.jsx"
+import Legal from "./pages/Legal.jsx"
 const MainLayout = () => (
   <>
     <Header />
@@ -65,6 +66,8 @@ const App = () => {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/products/:productId" element={<DisplayProductPage />} />
+        <Route path="/legal" element={<Legal />} />
+
       </Route>
 
       {/* footer only pages */}

@@ -11,6 +11,7 @@ import { env } from "../config/env.js";
 import Transaction from "../models/transaction.model.js";
 import Charge from "../models/charge.model.js";
 import mongoose from "mongoose";
+import Discount from "../models/discount.model.js";
 
 const findApplicableCharges = async (user, cartTotal) => {
     //getting charges
@@ -92,7 +93,7 @@ const calculateDiscount = async (code, cartTotal) => {
         return 0; // No discount if the coupon is inactive
     }
     //validate cartValue
-    if (discount.conditions.minCartValue && cartValue < discount.conditions.minCartValue) {
+    if (discount.conditions.minCartValue && cartTotal < discount.conditions.minCartValue) {
         return 0;
     }
 
@@ -105,7 +106,7 @@ const calculateDiscount = async (code, cartTotal) => {
     if (discount.discountType === 'FIXED') {
         discountAmount = discount.discountValue;
     } else if (discount.discountType === 'PERCENT') {
-        discountAmount = (cartValue * discount.discountValue) / 100;
+        discountAmount = (cartTotal * discount.discountValue) / 100;
     }
 
     //apply max discount amount if applicable
@@ -403,7 +404,7 @@ export const createOrder = async (req, res) => {
     } catch (error) {
         console.log(error);
         return res.status(500).json({
-            error: "internal server error",
+            error,
         });
     }
 };

@@ -25,7 +25,7 @@ function Homepage() {
             </section>
 
             <section className=' w-full grid grid-cols-1 md:grid-cols-2 gap-6 mt-2 px-4 shadow-black/20 shadow-inner'>
-                <div className="companies gap-4 flex justify-center flex-col py-6 px-4 border-r-2 border-light-textcolor/20">
+                <div className="companies gap-4 flex justify-center flex-col py-6 px-4 ">
                     <h2 className="font-bold text-2xl sm:text-3xl w-full max-sm:text-lg flex gap-2 items-center justify-center"><img src={leftGoldenStyler} className="w-12 h-12 sm:w-16 sm:h-16" alt="" /> Our Brands<img src={rightGoldenStyler} className="w-12 h-12 sm:w-16 sm:h-16" alt="" /></h2>
                     <div className="grid grid-cols-3 gap-10 max-md:gap-4 w-full items-center px-4">
                     <img loading='lazy' className="w-full object-contain" src={companyLogo} alt="Company Logo" />

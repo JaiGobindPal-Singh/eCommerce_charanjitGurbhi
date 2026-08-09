@@ -29,7 +29,7 @@ function ProfilePopup({ isProfileOpen, setIsProfileOpen }) {
         <>
             {
                 isProfileOpen &&
-                <div className={`absolute bg-main-background border-dark-textcolor border-2 rounded-xl p-2 flex flex-col z-50 opacity-100 items-center h-80 w-60 right-6  top-20 gap-2 transition-all overflow-hidden duration-500 `}>
+                <div className={` max-md:hidden absolute bg-main-background border-dark-textcolor border-2 rounded-xl p-2 flex flex-col z-50 opacity-100 items-center h-80 w-60 right-6  top-20 gap-2 transition-all overflow-hidden duration-500 `}>
                     <div className="relative w-full h-4">
                         <div className="absolute right-2 px-1 text-xl font-semibold hover:bg-light-textcolor hover:text-main-background rounded-lg cursor-pointer" onClick={()=>setIsProfileOpen(false)}>X</div>
                     </div>

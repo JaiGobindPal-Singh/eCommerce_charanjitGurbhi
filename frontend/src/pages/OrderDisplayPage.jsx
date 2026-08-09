@@ -46,7 +46,6 @@ function OrderDisplayPage() {
     const billing = order?.billing;
     const paymentMode = billing?.paymentMode || "-";
     const statusHistory = order?.statusHistory || [];
-    console.log(billing);
     if (!order) {
         return (
             <div className="page min-h-screen bg-main-background px-4 py-8 text-dark-textcolor sm:px-6 lg:px-8">

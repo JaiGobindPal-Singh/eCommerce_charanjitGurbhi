@@ -7,6 +7,7 @@ import { createOrder } from "../utils/orderUtils.js";
 import { getCharges } from "../utils/chargeUtils.js";
 import { getPaymentOptions } from "../utils/paymentUtils.js";
 import { getCartTotal } from "../utils/cartUtils.js";
+import { validateDiscount } from "../utils/discountUtils.js";
 import { initiatePayment } from "../utils/payment.js";
 import OrderSuccess from "../components/OrderSuccess.jsx";
 
@@ -25,6 +26,10 @@ function ShippingAddressPage() {
     const [applicableCharges, setApplicableCharges] = useState([]);
     const [availablePaymentOptions, setAvailablePaymentOptions] = useState({});
     const [paymentOption, setPaymentOption] = useState("online");
+    const [discountCode, setDiscountCode] = useState("");
+    const [discountAmount, setDiscountAmount] = useState(0);
+    const [discountMessage, setDiscountMessage] = useState("");
+    const [isApplyingDiscount, setIsApplyingDiscount] = useState(false);
     const [errors, setErrors] = useState({});
     const [rerender, setRerender] = useState(true);
 
@@ -139,6 +144,10 @@ function ShippingAddressPage() {
         setDisableSaveAddrBtn(false);
     }, [city])
 
+    const chargeTotal = applicableCharges?.reduce((acc, item) => acc + Object.values(item)[0], 0) || 0;
+    const subtotal = cartTotal + chargeTotal;
+    const finalBill = Math.max(subtotal - discountAmount, 0);
+
     const validateForm = () => {
         const nextErrors = {};
         if (!fullName.trim()) nextErrors.fullName = "Full name is required";
@@ -173,6 +182,33 @@ function ShippingAddressPage() {
         }
     }
 
+    const handleApplyDiscount = async (e) => {
+        e?.preventDefault();
+        if (!discountCode.trim()) {
+            setDiscountMessage("Enter a discount code");
+            setDiscountAmount(0);
+            return;
+        }
+
+        try {
+            setIsApplyingDiscount(true);
+            const amount = await validateDiscount(discountCode.trim(), cartTotal);
+            if (amount && Number(amount) > 0) {
+                setDiscountAmount(Number(amount));
+                setDiscountMessage("Discount applied");
+            } else {
+                setDiscountAmount(0);
+                setDiscountMessage("Invalid or expired discount code");
+            }
+        } catch (e) {
+            setDiscountAmount(0);
+            setDiscountMessage("Unable to validate discount code");
+            console.error(e);
+        } finally {
+            setIsApplyingDiscount(false);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e?.preventDefault();
         setIsSubmitting(true);
@@ -189,7 +225,7 @@ function ShippingAddressPage() {
                 city,
                 state: stateValue,
                 postalCode
-            }, paymentOption);
+            }, paymentOption, discountCode);
 
             //if payment option is cod
             if (paymentOption === "cod") {
@@ -373,33 +409,67 @@ function ShippingAddressPage() {
                             <span className="text-sm font-semibold text-dark-textcolor">₹ {cartTotal}</span>
                         </div>
 
-                        <div className="rounded-3xl border border-gray-200 bg-white px-5 py-4" >
-                            <div className="flex items-center justify-between ">
-                                <span className=" flex items-center gap-1 text-sm text-dark-textcolor/80">Charges </span>
-                                <span className="text-sm font-semibold text-dark-textcolor">₹ {applicableCharges?.reduce((acc, item) => acc + Object.values(item)[0], 0) || 0}</span>
-
+                        <div className="rounded-3xl border border-gray-200 bg-white px-5 py-4">
+                            <div className="flex items-center justify-between">
+                                <span className="flex items-center gap-1 text-sm text-dark-textcolor/80">Charges</span>
+                                <span className="text-sm font-semibold text-dark-textcolor">₹ {chargeTotal}</span>
                             </div>
-                            <div className=" pt-5">
+                            <div className="pt-5">
                                 {
                                     applicableCharges?.map((charge) => {
                                         return <div key={Object.keys(charge)[0]} className="flex gap-20 max-md:gap-10 flex-nowrap text-nowrap">
                                             <span className="text-sm font-medium w-20 text-dark-textcolor/80">{Object.keys(charge)[0]}: </span>
-                                            <span className="text-xs  text-dark-textcolor">₹ {Object.values(charge)[0]}</span>
+                                            <span className="text-xs text-dark-textcolor">₹ {Object.values(charge)[0]}</span>
                                         </div>
                                     })
                                 }
                             </div>
                         </div>
 
+                        <div className="rounded-3xl border border-gray-200 bg-white px-5 py-4">
+                            <div className="mb-3 text-sm font-semibold text-dark-textcolor">Discount code</div>
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={discountCode}
+                                    onChange={(e) => setDiscountCode(e.target.value)}
+                                    placeholder="Enter code"
+                                    className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-dark-textcolor outline-none focus:border-light-textcolor focus:ring-2 focus:ring-light-textcolor/30"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleApplyDiscount}
+                                    disabled={isApplyingDiscount}
+                                    className="rounded-full bg-dark-textcolor px-5 py-3 text-xs font-semibold text-white transition hover:bg-light-textcolor disabled:cursor-not-allowed disabled:opacity-70"
+                                >
+                                    {isApplyingDiscount ? "Checking..." : "Apply"}
+                                </button>
+                            </div>
+                            {discountMessage && (
+                                <p className={`mt-2 text-xs ${discountMessage.includes("applied") ? "text-green-700" : "text-light-textcolor"}`}>{discountMessage}</p>
+                            )}
+                        </div>
+
+                        {discountAmount > 0 && (
+                            <div className="flex items-center justify-between rounded-3xl border border-[#EBD8C0] bg-[#FFF8EF] px-5 py-4">
+                                <span className="text-sm text-dark-textcolor/80">Discount</span>
+                                <span className="text-sm font-semibold text-green-800">- ₹ {discountAmount}</span>
+                            </div>
+                        )}
+
                         <div className="mt-6 rounded-[2rem] bg-[#f8f3ea] p-6">
                             <div className="flex items-center justify-between text-sm text-dark-textcolor/80">
+                                <span>Subtotal</span>
+                                <span className="text-sm font-semibold text-dark-textcolor">₹ {subtotal}</span>
+                            </div>
+                            <div className="mt-3 flex items-center justify-between text-sm text-dark-textcolor/80">
                                 <span>Total bill</span>
-                                <span className="text-lg font-semibold text-dark-textcolor">₹ {applicableCharges?.reduce((acc, item) => acc + Object.values(item)[0], 0) + cartTotal}</span>
+                                <span className="text-lg font-semibold text-dark-textcolor">₹ {Math.floor(finalBill * 1000) / 1000}</span>
                             </div>
 
                             <button
                                 type="button"
-                                onClick={() => handleSubmit()}
+                                onClick={(e) => handleSubmit(e)}
                                 disabled={isSubmitting}
                                 className={`mt-6 w-full rounded-full ${isSubmitting ? 'bg-gray-100 text-light-textcolor cursor-not-allowed' : 'bg-light-textcolor text-white'} px-6 py-3 text-sm font-semibold  transition hover:opacity-95`}>Proceed to checkout
                             </button>

@@ -1,6 +1,6 @@
 import api from "../configs/axiosConfig";
 
-export const createOrder = async (deliveryDetails, paymentOption) => {
+export const createOrder = async (deliveryDetails, paymentOption, discountCode) => {
     if (!deliveryDetails || !paymentOption || !(["cod","online"].includes(paymentOption))) {
         throw new Error("delivery details and payment option is required");
     }
@@ -18,7 +18,8 @@ export const createOrder = async (deliveryDetails, paymentOption) => {
             deliveryDetails:{
                 deliveryAddress:deliveryDetails
             },
-            paymentMode:paymentOption
+            paymentMode:paymentOption,
+            discountCouponCode: discountCode
         })
         const payload = response.data;
         
@@ -27,7 +28,7 @@ export const createOrder = async (deliveryDetails, paymentOption) => {
         }
         return payload;
     }catch(e){
-        console.log(e);
+        console.log(e.response);
         throw e;
     }
 }

@@ -52,7 +52,7 @@ function OrdersPage() {
     
     if (loading) return <Loader />
     return (
-        <div className="page min-h-screen bg-main-background shadow-xl shadow-orange-950 px-4 py-8 text-dark-textcolor sm:px-6 lg:px-8">
+        <div className="page min-h-screen bg-main-background  px-4 py-8 text-dark-textcolor sm:px-6 lg:px-8">
             <div className="mx-auto max-w-6xl">
                 <div className="mb-6">
                     <h1 className="text-3xl font-semibold">My Orders</h1>
