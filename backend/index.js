@@ -23,9 +23,14 @@ const startServer = async () => {
 
     // Serve static assets specifically for the dashboard route
     app.use('/admin', express.static(path.join(__dirname, 'dist')));
+    app.use('/',  express.static(path.join(__dirname, 'front')));
+
     // Catch-all refresh handler for dashboard sub-routes (e.g., /dashboard/settings)
     app.get('/admin*any', (req, res) => {
         res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+    });
+    app.get('/*any', (req, res) => {
+        res.sendFile(path.join(__dirname, 'front', 'index.html'));
     });
 
     app.listen(PORT, () => {

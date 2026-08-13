@@ -114,7 +114,7 @@ const calculateDiscount = async (code, cartTotal) => {
         discountAmount = discount.conditions.maxDiscountAmount;
     }
 
-    return discountAmount;
+    return Math.min(discountAmount, cartTotal);
 }
 
 const updateInventory = async (cartItems, session) => {

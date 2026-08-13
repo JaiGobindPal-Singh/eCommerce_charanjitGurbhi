@@ -76,6 +76,8 @@ export const validateDiscountCoupon = async (req, res) => {
             discountAmount = discount.conditions.maxDiscountAmount;
         }
 
+        discountAmount = Math.min(discountAmount, cartValue);
+
         return res.status(200).json({ isValid: true, discountAmount });
 
     }catch (e) {

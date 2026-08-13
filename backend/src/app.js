@@ -18,13 +18,13 @@ initializePaymentOptions();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(
-  cors({
-    // frontend URL (DO NOT use a trailing slash '/')
-    origin: "http://localhost:5173",
-    credentials: true,
-  }),
-);
+// app.use(
+//   cors({
+//     // frontend URL (DO NOT use a trailing slash '/')
+//     origin: "http://localhost:5000",
+//     credentials: true,
+//   }),
+// );
 app.use("/api/v0/payment-options",paymentOptionsRoutes);
 app.use("/api/v0/cart", cartRoutes);
 app.use("/api/v0/auth", authRoutes);

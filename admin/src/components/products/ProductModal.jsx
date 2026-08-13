@@ -114,7 +114,7 @@ function ProductModal({ setIsOpen, productId }) {
             stockAvailable: stock,
             pricingTiers: normalizedPricingTiers,
         };
-        
+
         try {
             if (!productId) {
                 await createProduct(productPayload);
@@ -203,7 +203,7 @@ function ProductModal({ setIsOpen, productId }) {
                             <input
                                 id="product-stock"
                                 type="number"
-                                min="1"
+                                min="0"
                                 value={stock}
                                 onChange={(e) => setStock(e.target.value)}
                                 placeholder="Enter stock available"

@@ -51,13 +51,13 @@ function ProductCard({ product, onClick, isLoading, ref }) {
                             </> : <SkeletonLoading />}
                     </div>
                     {!isLoading ?
-                        <button className={`text-left mt-2 rounded-3xl px-3 md:px-3 py-2 md:py-2 font-semibold text-sm md:text-xs max-sm:text-xs hover:scale-110 text-white transition-all duration-150 ${!addedToCartBtn ? 'bg-dark-textcolor hover:bg-light-textcolor hover:text-white' : 'bg-gray-300 cursor-not-allowed text-gray-700'}`} disabled={isLoading || addedToCartBtn} onClick={
+                        <button className={`text-left mt-2 rounded-3xl px-3 md:px-3 py-2 md:py-2 font-semibold text-sm md:text-xs max-sm:text-xs hover:scale-110 text-white transition-all duration-150 ${!addedToCartBtn && product.stockAvailable ? 'bg-dark-textcolor hover:bg-light-textcolor hover:text-white' : 'bg-gray-300 cursor-not-allowed text-gray-700'}`} disabled={isLoading || addedToCartBtn || !product.stockAvailable} onClick={
                             (e) => {
                                 addToCart(product, 1);
                                 handleButtonUI();
                                 generateNotification("Added to cart")();
                                 e.stopPropagation();
-                            }}>Add To Cart</button>
+                            }}>{product?.stockAvailable ? 'Add to Cart' : 'Out of Stock'}</button>
                         : <SkeletonLoading />}
                 </div>
             </div>
