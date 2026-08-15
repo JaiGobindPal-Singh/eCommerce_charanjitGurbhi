@@ -1,10 +1,10 @@
 import HeroBanner from '../components/HeroBanner.jsx';
 import HomepageBestSellers from '../components/HomepageBestSellers.jsx';
 import HomepageCategory from '../components/HomepageCategory.jsx';
-import heroBanner from '../assets/heroBanner.png'
-import promiseBanner from '../assets/promise.png';
+import heroBanner from '../assets/heroBanner.webp'
+import promiseBanner from '../assets/promise.webp';
 import leftGoldenStyler from '../assets/leftGolden.svg';
-import advertisement from '../assets/advertisement.jpeg'
+import advertisement from '../assets/advertisement.webp'
 import rightGoldenStyler from '../assets/rightGolden.svg';
 // import tastikaLogo from '../assets/tastikaLogo.png';
 import companyLogo from '../assets/companyLogo.png';
@@ -12,7 +12,7 @@ import zaikaLogo from '../assets/zaikaLogo.png';
 import fssaiLogo from '../assets/fssaiLogo.png';
 import msmeLogo from '../assets/msmeLogo.png';
 import gstLogo from '../assets/gstLogo.png';
-import processBanner from '../assets/processBanner.jpeg';
+import processBanner from '../assets/processBanner.webp';
 function Homepage() {
     return (
         <div id="page homepage-main" className="w-full min-h-screen overflow-x-hidden text-dark-textcolor">

@@ -89,7 +89,7 @@ export default function DisplayProductPage() {
                                 
                         }
                         {
-                            !isLoading && product.pricingTiers?.length &&
+                            !isLoading && !!product.pricingTiers?.length &&
                                 <div className="flex flex-col gap-4 rounded-3xl bg-white p-5 shadow-sm shadow-slate-200">
                                     <div className="flex justify-between flex-col gap-2">
                                         <span className="text-sm uppercase tracking-[0.2em] text-light-textcolor">Special Offers</span>

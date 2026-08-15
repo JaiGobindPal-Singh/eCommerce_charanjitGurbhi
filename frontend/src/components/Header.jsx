@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { UserRound, ShoppingCart, X, Menu, House, ShoppingBasket, List, ReceiptText } from 'lucide-react';
-import headerDecorator from "../assets/headerDecorator.png"
+import headerDecorator from "../assets/headerDecorator.webp"
 import companyLogo from "../assets/companyLogo1.png"
 import ProfilePopup from "./ProfilePopup";
 import { useEffect, useState } from "react";

@@ -6,7 +6,7 @@ import { generateNotification } from "../utils/notificationUtils.js";
 import { createOrder } from "../utils/orderUtils.js";
 import { getCharges } from "../utils/chargeUtils.js";
 import { getPaymentOptions } from "../utils/paymentUtils.js";
-import { getCartTotal } from "../utils/cartUtils.js";
+import { clearCartStore, getCartTotal } from "../utils/cartUtils.js";
 import { validateDiscount } from "../utils/discountUtils.js";
 import { initiatePayment } from "../utils/payment.js";
 import OrderSuccess from "../components/OrderSuccess.jsx";
@@ -22,7 +22,6 @@ function ShippingAddressPage() {
     const [stateValue, setStateValue] = useState("");
     const [postalCode, setPostalCode] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [savingAddr, setSavingAddr] = useState(false);
     const [applicableCharges, setApplicableCharges] = useState([]);
     const [availablePaymentOptions, setAvailablePaymentOptions] = useState({});
     const [paymentOption, setPaymentOption] = useState("online");
@@ -170,13 +169,11 @@ function ShippingAddressPage() {
             validateForm();
             return;
         }
-        setSavingAddr(true);
         try {
             await setUserAddress(streetAddress, city, stateValue, postalCode);
         } catch (e) {
             console.error(e);
         } finally {
-            setSavingAddr(false);
             setRerender(!rerender);
             setDisableSaveAddrBtn(true);
         }
@@ -230,10 +227,11 @@ function ShippingAddressPage() {
             //if payment option is cod
             if (paymentOption === "cod") {
                 setOrderSucceeded(true);
+                clearCartStore();
                 return;
             }
             //if payment is online
-            await initiatePayment(res.razorpayKey, res.razorpayOrderId, res.order);
+            await initiatePayment(res.razorpayKey, res.razorpayOrderId, res.order, setOrderSucceeded);
             setIsSubmitting(false);
 
         } catch (e) {

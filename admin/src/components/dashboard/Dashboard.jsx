@@ -17,15 +17,15 @@ function Dashboard() {
   const [minAmount, setMinAmount] = useState(0);
   const [orders, setOrders] = useState([]);
   // const [newOrders, setNewOrders] = useState(0);
-  const getOrdersTotalAmount = () => {
-    let total = 0;
-    orders.forEach(o => total += o.totalBill)
-    return total;
-  }
+  // const getOrdersTotalAmount = () => {
+  //   let total = 0;
+  //   orders.forEach(o => total += o.totalBill)
+  //   return total;
+  // }
 
   useEffect(() => {
     fetchOrders(1, 'pending').then((ords => {
-      setOrders(ords.orders)
+      setOrders(ords.orders);
     }));
     getOrderCondition().then(c => setMinAmount(c?.minAmount || 0))
   }, [])
@@ -53,7 +53,7 @@ function Dashboard() {
             New Orders
           </h2>
           <div className="text-primary-color text-3xl font-bold tracking-tight">
-            {formatNumber(getOrdersTotalAmount())}
+            {formatNumber(orders?.length || 0)}
           </div>
         </ContentBox>
 

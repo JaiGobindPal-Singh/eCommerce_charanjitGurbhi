@@ -17,8 +17,8 @@ export async function verifyOrderPayment(response) {
 
 }
 
-export function initiatePayment(razorpayKey, razorpayOrderId, order) {
-  const user = getUser()
+export async function initiatePayment(razorpayKey, razorpayOrderId, order, toggleSuccessPage) {
+  const user = await getUser()
   const options = {
     key: razorpayKey,
     amount: order.totalBill * 100,
@@ -29,6 +29,7 @@ export function initiatePayment(razorpayKey, razorpayOrderId, order) {
 
     handler: function () {
       clearCartStore();
+      toggleSuccessPage(true);
     },
     modal:{
       ondismiss: async function(){
