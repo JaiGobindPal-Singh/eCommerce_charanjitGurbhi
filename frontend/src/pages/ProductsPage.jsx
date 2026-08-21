@@ -12,7 +12,7 @@ import { generateNotification } from "../utils/notificationUtils.js";
 
 function ProductCard({ product, onClick, isLoading, ref }) {
     const [addedToCartBtn, setaddedToCartBtn] = useState(false);
-    const handleButtonUI = ()=>{
+    const handleButtonUI = () => {
         setaddedToCartBtn(true);
         setTimeout(() => {
             setaddedToCartBtn(false);
@@ -27,11 +27,11 @@ function ProductCard({ product, onClick, isLoading, ref }) {
         >
             <div className="flex flex-col max-sm:flex-row">
                 {!isLoading ?
-                    <div className="w-full h-64 md:h-56 sm:h-48 max-sm:w-[40%] max-sm:h-40 bg-gray-100 flex items-center justify-center overflow-hidden">
+                    <div className="w-full aspect-square bg-gray-100 flex items-center justify-center overflow-hidden">
                         <img
-                            className="object-cover w-full h-full"
+                            className="w-full h-full object-cover"
                             src={product?.imageUrl}
-                            alt={product?.name || 'product'}
+                            alt={product?.name || "product"}
                             loading="lazy"
                         />
                     </div> : <SkeletonLoading className='w-full h-64 md:h-56 sm:h-48 max-sm:w-[40%] max-sm:h-40' />}
@@ -95,12 +95,12 @@ export default function ProductsPage() {
 
     const searchHandler = (e) => {
         const value = e.target.value;
-        if(value){
-            setSearchParam({search: value})
-        }else{ 
+        if (value) {
+            setSearchParam({ search: value })
+        } else {
             setSearchParam({});
         }
-        
+
         setSearchValue(value);
 
         clearTimeout(timeoutRef.current);
@@ -151,7 +151,7 @@ export default function ProductsPage() {
             isMounted = false;
         };
     }, [currentPage, delayedSearchValue]);
-    
+
     return (
         <>
             <div className=" page productPage w-full bg-gradient-to-r from-main-background to-[#EEDEC1] pb-20  ">
