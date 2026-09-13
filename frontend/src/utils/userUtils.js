@@ -92,6 +92,29 @@ export const logoutUser = async()=>{
         userStore.getState().resetUser();
     });
 }
+/**
+ * 
+ * @param {String} name 
+ * @param {Number} phone 
+ * @param {String} password 
+ */
+export const forgotPassword = async(name, phone, password)=>{
+    if(!name || !phone || !password){
+        throw new Error("All credentials are required");
+    }
+    try{
+        await api.post("/auth/forget", {
+            name,
+            phone,
+            password,
+        });
+        generateNotification("password reset success! Login to Continue")();
+    }catch(e){
+        // console.log(e);
+        generateNotification("unable to forget password")();
+    }
+        
+}
 export const setUserAddress = async (streetAddressP, cityP, stateP, postalCodeP) => {
     try{
         
@@ -110,7 +133,6 @@ export const setUserAddress = async (streetAddressP, cityP, stateP, postalCodeP)
             state: stateP,
             postalCode: postalCodeP
         })
-        generateNotification('Address Saved')();
     }catch(e){
         console.error(e);
         generateNotification(e.response?.data?.error || e.message)();

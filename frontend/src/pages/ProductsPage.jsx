@@ -12,7 +12,7 @@ import { generateNotification } from "../utils/notificationUtils.js";
 
 function ProductCard({ product, onClick, isLoading, ref }) {
     const [addedToCartBtn, setaddedToCartBtn] = useState(false);
-    const handleButtonUI = ()=>{
+    const handleButtonUI = () => {
         setaddedToCartBtn(true);
         setTimeout(() => {
             setaddedToCartBtn(false);
@@ -27,31 +27,31 @@ function ProductCard({ product, onClick, isLoading, ref }) {
         >
             <div className="flex flex-col max-sm:flex-row">
                 {!isLoading ?
-                    <div className="w-full h-64 md:h-56 sm:h-48 max-sm:w-[40%] max-sm:h-40 bg-gray-100 flex items-center justify-center overflow-hidden">
+                    <div className="w-full max-sm:max-w-[50%] max-sm:min-w-[50%] aspect-square bg-gray-100 flex items-center justify-center overflow-hidden">
                         <img
-                            className="object-cover w-full h-full"
+                            className="w-full h-full object-cover"
                             src={product?.imageUrl}
-                            alt={product?.name || 'product'}
+                            alt={product?.name || "product"}
                             loading="lazy"
                         />
                     </div> : <SkeletonLoading className='w-full h-64 md:h-56 sm:h-48 max-sm:w-[40%] max-sm:h-40' />}
-                <div className="p-4 md:p-3 sm:p-3 flex-1">
-                    <div className="capitalize font-semibold text-xl md:text-lg sm:text-base max-sm:text-sm truncate">{isLoading ? <SkeletonLoading /> : product?.name || "--"}</div>
+                <div className="flex-1 p-4 md:p-3">
+                    <div className="capitalize truncate text-xl font-semibold md:text-lg sm:text-base max-sm:text-sm text-wrap">{isLoading ? <SkeletonLoading /> : product?.name || "--"}</div>
 
 
                     <div className="mt-2 flex items-center gap-2">
                         {!isLoading ?
                             <>
 
-                                <div className='flex items-center gap-1 font-semibold text-base md:text-sm sm:text-sm max-sm:text-xs'>
-                                    <IndianRupee className="h-5 w-5 md:h-4 md:w-4 sm:h-4 sm:w-4 max-sm:h-3 max-sm:w-3" />
+                                <div className='flex items-center gap-1 text-base font-semibold sm:text-sm max-sm:text-xs'>
+                                    <IndianRupee className="h-5 w-5 sm:h-4 sm:w-4 max-sm:h-3 max-sm:w-3" />
                                     <span>{isLoading ? "--" : product?.price || "--"}</span>
                                 </div>
-                                <div className='text-base md:text-sm sm:text-sm max-sm:text-xs text-gray-500 line-through'>{isLoading ? "" : product?.comparePrice || ""}</div>
+                                <div className='text-base text-gray-500 line-through sm:text-sm max-sm:text-xs'>{isLoading ? "" : product?.comparePrice || ""}</div>
                             </> : <SkeletonLoading />}
                     </div>
                     {!isLoading ?
-                        <button className={`text-left mt-2 rounded-3xl px-3 md:px-3 py-2 md:py-2 font-semibold text-sm md:text-xs max-sm:text-xs hover:scale-110 text-white transition-all duration-150 ${!addedToCartBtn && product.stockAvailable ? 'bg-dark-textcolor hover:bg-light-textcolor hover:text-white' : 'bg-gray-300 cursor-not-allowed text-gray-700'}`} disabled={isLoading || addedToCartBtn || !product.stockAvailable} onClick={
+                        <button className={`mt-2 rounded-3xl px-3 py-2 text-left text-sm font-semibold md:text-xs max-sm:text-xs text-white transition-all duration-150 hover:scale-110 ${!addedToCartBtn && product.stockAvailable ? 'bg-dark-textcolor hover:bg-light-textcolor hover:text-white' : 'bg-gray-300 cursor-not-allowed text-gray-700'}`} disabled={isLoading || addedToCartBtn || !product.stockAvailable} onClick={
                             (e) => {
                                 addToCart(product, 1);
                                 handleButtonUI();
@@ -95,12 +95,12 @@ export default function ProductsPage() {
 
     const searchHandler = (e) => {
         const value = e.target.value;
-        if(value){
-            setSearchParam({search: value})
-        }else{ 
+        if (value) {
+            setSearchParam({ search: value })
+        } else {
             setSearchParam({});
         }
-        
+
         setSearchValue(value);
 
         clearTimeout(timeoutRef.current);
@@ -151,11 +151,11 @@ export default function ProductsPage() {
             isMounted = false;
         };
     }, [currentPage, delayedSearchValue]);
-    
+
     return (
         <>
-            <div className=" page productPage w-full bg-gradient-to-r from-main-background to-[#EEDEC1] pb-20  ">
-                <div className="searchHeader shadow-md shadow-[#EEDEC1]  w-full h-24 flex items-center px-5 justify-between max-sm:h-16 ">
+            <div className="page productPage w-full bg-gradient-to-r from-main-background to-[#EEDEC1] pb-20">
+                <div className="searchHeader flex h-24 w-full items-center justify-between px-5 shadow-md shadow-[#EEDEC1] max-sm:h-16">
                     <div className="flex flex-col items-start gap-2">
                         <h1 className="text-dark-textcolor font-semibold text-4xl max-sm:text-xl">Products</h1>
                         <div className="inline-flex items-center gap-2 text-sm max-sm:text-xs">

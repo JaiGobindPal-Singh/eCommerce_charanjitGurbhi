@@ -143,20 +143,55 @@ const updateInventory = async (cartItems, session) => {
     }
 };
 
+//*modified
+const getProductApplicablePrice =(product, ordQ = 1) => {
+    let finalPrice = -1;
+    product?.pricingTiers?.forEach((pt) => {
+        if (ordQ >= pt.minQuantity) finalPrice = pt.price;
+    });
+
+    if(finalPrice === -1){
+        finalPrice = product?.price;
+    }
+    return finalPrice;
+}
+const calculateCartGst = async (cart) => {
+    try {
+        let gst = 0;
+        const calculateGstOfFinalPrice = (priceF, gstPercent)=>{
+            const pbt = (100 * priceF) / (100 + gstPercent);  //price before tax
+            const tx = priceF - pbt;
+            return tx;
+        }
+        cart?.items.forEach(item => {
+            const chargeP = item?.product?.gst;
+            const itemPrice = getProductApplicablePrice(item?.product, item?.quantity);
+            const applicableGstAmount = calculateGstOfFinalPrice(itemPrice, chargeP) * (item?.quantity || 1);
+            gst += applicableGstAmount;
+        })
+
+        return gst;
+    } catch (e) {
+        console.log("error calculating taxes");
+        throw e;
+    }
+}
+
+//*
 export const getOrderCondition = async (req, res) => {
     try {
         const orderCondition = await OrderCondition.findOne().lean();
-        
+
         return res.status(200).json(orderCondition);
-    }catch (error) {
+    } catch (error) {
         console.error('Error fetching order condition:', error);
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 };
 export const setOrderCondition = async (req, res) => {
     try {
-        const { minAmount } = req.body;    
-        
+        const { minAmount } = req.body;
+
         if (!minAmount || minAmount <= 0) {
             return res.status(400).json({ message: "invalid order condition" });
         }
@@ -164,8 +199,8 @@ export const setOrderCondition = async (req, res) => {
         const ord = await OrderCondition.findOneAndUpdate(
             {},
             { minAmount },
-            { 
-                returnDocument: "after", 
+            {
+                returnDocument: "after",
                 upsert: true // Creates the document if the collection is empty
             }
         );
@@ -174,7 +209,7 @@ export const setOrderCondition = async (req, res) => {
 
     } catch (e) {
         // Move console.log before return, otherwise it never executes
-        console.error(e); 
+        console.error(e);
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 };
@@ -264,6 +299,26 @@ export const createOrder = async (req, res) => {
             };
         });
 
+        //calculating gst
+        const applicableGst = await calculateCartGst(cart);
+        const applicableTaxes = [];
+        if(deliveryDetails.deliveryAddress.state.toLowerCase().trim() === "punjab"){
+            applicableTaxes[0] = {
+                name: "cgst",
+                amount: applicableGst/2
+            }
+            applicableTaxes[1] = {
+                name: "sgst",
+                amount: applicableGst/2
+            }
+            
+        }else{
+            applicableTaxes[0] = {
+                name: "igst",
+                amount: applicableGst
+            }
+        }
+
         //payment mode is cod clear cart and return
         if (paymentMode == "cod") {
             const moSe = await mongoose.startSession(); //starting mongo session
@@ -273,7 +328,7 @@ export const createOrder = async (req, res) => {
                 //update inventory
                 await updateInventory(cart.items, moSe);
 
-                // Create order
+                // Create order for cod
                 const [order] = await Order.create(
                     [
                         {
@@ -286,6 +341,7 @@ export const createOrder = async (req, res) => {
                             ],
                             items: cart.items,
                             billing: {
+                                taxes: applicableTaxes,
                                 subtotal: discountedTotal,
                                 discount: discount,
                                 paymentMode,
@@ -352,6 +408,7 @@ export const createOrder = async (req, res) => {
                         ],
                         items: cart.items,
                         billing: {
+                            taxes: applicableTaxes,
                             subtotal: discountedTotal,
                             discount: discount,
                             paymentMode,
@@ -492,7 +549,7 @@ export const getUserOrders = async (req, res) => {
         // Fetch orders and total count in parallel
         const [orders, totalOrders] = await Promise.all([
             Order.find({ user: userId })
-                .select("status items billing.totalBill createdAt")
+                .select("status items billing.totalBill billing.discount taxes createdAt")
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(pageSize)
@@ -554,10 +611,10 @@ export const getOrderDetails = async (req, res) => {
 
         fullOrder.id = fullOrder._id;
         delete fullOrder._id;
-        try{
+        try {
             fullOrder.statusHistory?.forEach((sh) => delete sh?._id);
             fullOrder.items?.forEach((it) => delete it.product._id);
-        }catch(e){
+        } catch (e) {
             console.error("Error cleaning up order details:", e);
         }
         delete fullOrder.__v;

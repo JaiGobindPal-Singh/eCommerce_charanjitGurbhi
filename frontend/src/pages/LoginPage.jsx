@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { getUser, loginUser } from "../utils/userUtils.js";
 import { generateNotification } from "../utils/notificationUtils.js";
+import { Eye } from "lucide-react";
 export default function LoginPage() {
     const navigate = useNavigate();
 
@@ -19,6 +20,7 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [invalidPhone, setInvalidPhone] = useState(false);
     const [invalidPass, setinvalidPass] = useState(false);
+    const [showPaswd, setShowPaswd] = useState(false);
 
 
     const handleSubmit = (e) => {
@@ -64,14 +66,18 @@ export default function LoginPage() {
 
                     <div>
                         <label className="block text-sm text-dark-textcolor mb-1">Password</label>
+                        <div className="flex items-center gap-1">
+
                         <input
-                            type="password"
+                            type={showPaswd ? "text": "password"}
                             value={password}
                             required={true}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="Password"
                             className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-light-textcolor"
-                        />
+                            />
+                            <Eye onClick={()=>setShowPaswd(st => !st)}/>
+                            </div>
                         {invalidPass && <span className="text-sm">password length must be atleast 8</span>}
                     </div>
 
@@ -82,8 +88,11 @@ export default function LoginPage() {
                         Login
                     </button>
                 </form>
+                <div className="flex justify-between">
 
-                <p className="mt-4 text-center text-sm text-dark-textcolor">New User? <Link to="/register" className="text-light-textcolor font-semibold underline">Register</Link></p>
+                <p className="mt-4 text-center text-sm max-sm:text-xs text-dark-textcolor">New User? <Link to="/register" className="text-light-textcolor font-semibold underline">Register</Link></p>
+                <p className="mt-4 text-center text-sm max-sm:text-xs text-dark-textcolor"><Link to="/forgot" className="text-light-textcolor font-semibold underline">Forgot Password</Link></p>
+                </div>
             </div>
         </div>
     );

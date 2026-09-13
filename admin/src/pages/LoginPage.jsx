@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { getUser, loginUser } from "../utils/userUtils.js";
+import { Eye } from 'lucide-react';
 import { generateNotification } from "../utils/notificationUtils.js";
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -19,6 +20,7 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [invalidPhone, setInvalidPhone] = useState(false);
     const [invalidPass, setinvalidPass] = useState(false);
+    const [showPaswd, setShowPaswd] = useState(false);
 
 
     const handleSubmit = (e) => {
@@ -64,14 +66,23 @@ export default function LoginPage() {
 
                     <div>
                         <label className="block text-sm text-color-heavy mb-1">Password</label>
+                        <div className="flex  rounded-lg border border-gray-200 gap-1 pr-1">
+
                         <input
-                            type="password"
+                            id="inputPass"
+                            type={showPaswd ?"text":"password"}
                             value={password}
                             required={true}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="Password"
                             className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-light-textcolor"
-                        />
+                            />
+                        <button onClick={(e)=>{
+                            e.preventDefault();
+                            setShowPaswd(st => !st);
+                        }} ><Eye /></button>
+                        </div>
+                        
                         {invalidPass && <span className="text-sm">password length must be atleast 8</span>}
                     </div>
 

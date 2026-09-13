@@ -57,12 +57,50 @@ export const registerUser = async (req, res) => {
     }
 }
 
+export const forgotUser = async (req, res) => {
+    try {
+        const { name, phone } = req.body;
+        const password = String(req.body.password);
+
+        if (!name || !phone || !password) {
+            return res.status(400).json({ error: 'Name, phone and password are required' });
+        }
+
+        if (password.trim().length < 8) {
+            return res.status(400).json({ error: "short password" })
+        }
+
+        //user validation if it even exists
+        const user = await User.findOne({ phone }).lean();
+        if (!user) {
+            return res.status(400).json({ message: "Invalid phone or user name" });
+        }
+
+        //updating db if name and phone number matches
+        if (String(name || "").toLowerCase().trim() === String(user?.name).toLowerCase().trim()) {
+            const hashedPassword = await generateHash(password);
+            const r = await User.updateOne(
+                {phone:phone},
+                {$set: {password: hashedPassword}}
+            );
+            if(!r || !r.matchedCount){
+                return res.status(400).json({ message: "Invalid phone or user name" });
+                console.log(r);
+            }
+            return res.status(200).json({ message: "successfully forget" });
+        }
+        return res.status(400).json({ message: "Invalid phone or user name" });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({ error: "internal server error" });
+    }
+}
 export const loginUser = async (req, res) => {
     try {
 
         const { phone } = req.body;
         const password = String(req.body.password);
-        
+
         if (!phone || !password) {
             return res.status(400).json({ message: 'Phone and password are required' });
         }
@@ -85,7 +123,7 @@ export const loginUser = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
-        
+
         return res.status(200).json({
             user: {
                 id: user._id,

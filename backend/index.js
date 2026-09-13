@@ -18,7 +18,7 @@ const startServer = async () => {
 
     // Register cron jobs
     await import('./src/jobs/expireOrders.js');
-    await import('./src/jobs/updateDiscounts.js');
+//    await import('./src/jobs/updateDiscounts.js');
 
 
     // Serve static assets specifically for the dashboard route

@@ -189,3 +189,44 @@ export const getCartTotal = async() =>{
     const total = () => items?.reduce((acc, item) => acc + getFinalPrice(item, item.quantity)*item.quantity, 0);
     return total;
 }
+
+export const getCartRawTotal =async() =>{
+    const items = await getCart();
+    const total = items?.reduce((acc, item) => acc + item.product.comparePrice*item.quantity, 0);
+    return total;
+}
+
+const getProductApplicablePrice =(product, ordQ = 1) => {
+    let finalPrice = -1;
+    product?.pricingTiers?.forEach((pt) => {
+        if (ordQ >= pt.minQuantity) finalPrice = pt.price;
+    });
+
+    if(finalPrice === -1){
+        finalPrice = product?.price;
+    }
+    return finalPrice;
+}
+export const calculateCartGst = async () => {
+    try {
+        const cart = await getCart();
+        let gst = 0;
+        const calculateGstOfFinalPrice = (priceF, gstPercent)=>{
+            
+            const pbt = (100 * priceF) / (100 + gstPercent);  //price before tax  
+            const tx = priceF - pbt;
+            return tx;
+        }
+        cart?.forEach(item => {
+            const chargeP = item?.product?.gst;
+            const itemPrice = getProductApplicablePrice(item?.product, item?.quantity);
+            const applicableGstAmount = calculateGstOfFinalPrice(itemPrice, chargeP) * (item?.quantity || 1);
+            gst += applicableGstAmount;
+        })
+
+        return gst;
+    } catch (e) {
+        console.log("error calculating taxes");
+        throw e;
+    }
+}

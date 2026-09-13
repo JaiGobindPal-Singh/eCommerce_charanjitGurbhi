@@ -4,7 +4,7 @@ import Product from "../models/product.model.js";
 //only admin access
 export const createProduct = async (req, res) => {
   try {
-    const { name, description, category, price, comparePrice, stockAvailable, pricingTiers = [],  } =
+    const { name, description, category, price, comparePrice, stockAvailable, pricingTiers = [],  gst} =
       req.body;
     if (!name || !description || !price || !req.file) {
       return res
@@ -23,6 +23,7 @@ export const createProduct = async (req, res) => {
       comparePrice: !isNaN(Number(comparePrice)) ? comparePrice : 0,
       stockAvailable: stockAvailable ?? 1,
       imageUrl: [productImageUrl],
+      gst,
       pricingTiers
     });
     await product.save();
@@ -41,7 +42,8 @@ export const createProduct = async (req, res) => {
           comparePrice: product.comparePrice,
           stockAvailable: product.stockAvailable,
           imageUrl: product.imageUrl,
-          pricingTiers:product.pricingTiers
+          pricingTiers:product.pricingTiers,
+          gst: product.gst
         }
       });
   } catch (error) {
@@ -77,6 +79,7 @@ export const updateProduct = async (req, res) => {
       comparePrice,
       stockAvailable,
       pricingTiers,
+      gst
     } = req.body;
     if (!productId) {
       return res.status(400).json({ error: "Product ID is required" });
@@ -103,6 +106,7 @@ export const updateProduct = async (req, res) => {
     if (pricingTiers && pricingTiers.length) product.pricingTiers = pricingTiers;
     if (comparePrice) product.comparePrice = comparePrice;
     if (stockAvailable) product.stockAvailable = stockAvailable;
+    if (gst !== null || gst !== undefined || gst !== false) product.gst = gst;
 
     await product.save();
     const productF = product.toObject();

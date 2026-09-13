@@ -17,7 +17,7 @@ function Homepage() {
     return (
         <div id="page homepage-main" className="w-full min-h-screen overflow-x-hidden text-dark-textcolor">
 
-            <HeroBanner img={heroBanner} />
+            <HeroBanner img={heroBanner} loading="eager" fetchPriority="high" />
             <HomepageCategory />
             <HomepageBestSellers />
             {advertisement && <HeroBanner img={advertisement} />}

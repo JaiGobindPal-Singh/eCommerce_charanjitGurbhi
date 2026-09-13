@@ -28,7 +28,7 @@ export const createOrder = async (deliveryDetails, paymentOption, discountCode) 
         }
         return payload;
     }catch(e){
-        console.log(e.response);
+        // console.log(e.response);
         throw e;
     }
 }

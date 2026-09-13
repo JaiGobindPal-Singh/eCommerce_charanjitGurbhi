@@ -12,7 +12,7 @@ function ProductModal({ setIsOpen, productId }) {
     const [stock, setStock] = useState(1);
     const [image, setImage] = useState(null);
     const [pricingTiers, setPricingTiers] = useState([]);
-
+    const [productGst, setProductGst] = useState(null);
     const [previewUrl, setPreviewUrl] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
@@ -39,6 +39,7 @@ function ProductModal({ setIsOpen, productId }) {
             setComparePrice(product?.comparePrice ?? '');
             setStock(product?.stockAvailable ?? 1);
             setPricingTiers(product?.pricingTiers ?? []);
+            setProductGst(product?.gst ?? 5);
             setPreviewUrl((!Array.isArray(product?.imageUrl) ? product?.imageUrl : product?.imageUrl[0]));
         }
         fetchProduct();
@@ -113,6 +114,7 @@ function ProductModal({ setIsOpen, productId }) {
             comparePrice,
             stockAvailable: stock,
             pricingTiers: normalizedPricingTiers,
+            gst: productGst
         };
 
         try {
@@ -165,7 +167,7 @@ function ProductModal({ setIsOpen, productId }) {
                         <div className="flex gap-2 grow">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-slate-300" htmlFor="product-price">
-                                    Product Price
+                                    Product Price (including GST)
                                 </label>
                                 <input
                                     id="product-price"
@@ -206,6 +208,21 @@ function ProductModal({ setIsOpen, productId }) {
                                 min="0"
                                 value={stock}
                                 onChange={(e) => setStock(e.target.value)}
+                                placeholder="Enter stock available"
+                                className="w-full rounded-2xl border border-slate-700 bg-slate-900/80 px-4 py-3 text-sm text-white outline-none transition focus:border-primary-color focus:ring-2 focus:ring-primary-color/20"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-slate-300" htmlFor="product-gst">
+                                GST
+                            </label>
+                            <input
+                                id="product-stock"
+                                type="number"
+                                min="0"
+                                max="100"
+                                value={productGst}
+                                onChange={(e) => setProductGst(e.target.value)}
                                 placeholder="Enter stock available"
                                 className="w-full rounded-2xl border border-slate-700 bg-slate-900/80 px-4 py-3 text-sm text-white outline-none transition focus:border-primary-color focus:ring-2 focus:ring-primary-color/20"
                             />

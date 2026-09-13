@@ -12,7 +12,7 @@ export const validateDiscount = async (code, cartValue) => {
         }
         return 0;
     } catch (e) {
-        console.log(e.response);
+        // console.log(e.response);
         throw e;
     }
 }

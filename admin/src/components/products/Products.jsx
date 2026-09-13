@@ -1,7 +1,7 @@
-import { Plus, PackageOpen, Pencil, Trash2, IndianRupee, Search } from "lucide-react";
+import { Plus, PackageOpen, Pencil, IndianRupee, Search } from "lucide-react";
 import Pagination from "../utilents/Pagination";
 import { useEffect, useRef, useState } from "react";
-import { fetchProductsByKey, deleteProduct } from "../../utils/productUtils";
+import { fetchProductsByKey, } from "../../utils/productUtils";
 import SpinLoader from "../utilents/SpinLoader";
 import ProductModal from "./ProductModal";
 
@@ -16,18 +16,18 @@ export default function Products() {
     const [currentProductId, setCurrentProductId] = useState('');
     const searchRef = useRef(null);
 
-    const handleDeleteProduct = async (productId) => {
-        try {
-            const yes = window.confirm("Are you sure you want to delete this product?");
-            if (!yes) return;
-            deleteProduct(productId).then(()=>{
-                setProducts((prevProducts) => prevProducts.filter((product) => product.id !== productId));
-            });
-        }
-        catch (error) {
-            console.error('Failed to delete product', error);
-        }
-    };
+    // const handleDeleteProduct = async (productId) => {
+    //     try {
+    //         const yes = window.confirm("Are you sure you want to delete this product?");
+    //         if (!yes) return;
+    //         deleteProduct(productId).then(()=>{
+    //             setProducts((prevProducts) => prevProducts.filter((product) => product.id !== productId));
+    //         });
+    //     }
+    //     catch (error) {
+    //         console.error('Failed to delete product', error);
+    //     }
+    // };
     useEffect(() => {
         let isMounted = true;
 
@@ -117,10 +117,10 @@ export default function Products() {
                             products into products for a cleaner inventory.
                         </p>
 
-                        <button className="mt-10 inline-flex items-center gap-2 rounded-xl bg-slate-700 px-6 py-3 font-semibold text-white transition-all hover:bg-slate-600 hover:shadow-lg hover:shadow-slate-900/40">
+                        {/* <button className="mt-10 inline-flex items-center gap-2 rounded-xl bg-slate-700 px-6 py-3 font-semibold text-white transition-all hover:bg-slate-600 hover:shadow-lg hover:shadow-slate-900/40">
                             <Plus size={18} />
                             Create First product
-                        </button>
+                        </button> */}
                     </div>
                 ) : (
                     !isLoading && (
@@ -155,17 +155,17 @@ export default function Products() {
                                                 <IndianRupee className="inline-flex" size={18} />
                                                 {product.price}
                                             </span>
+                                            
 
                                             <div className="flex items-center gap-2">
+                                                <span className={`text-sm font-bold ${product.stockAvailable > 10 ? "text-blue-400" : "text-red-400"}`}>
+                                                Stock:
+                                                {product.stockAvailable}
+                                            </span>
                                                 <button className="rounded-lg bg-blue-50 p-2 text-blue-600 transition hover:bg-blue-100"
                                                 onClick = {() =>{setCurrentProductId(product.id); setIsProductModalOpen(true)}}>
                                                     <Pencil size={18} />
                                                 </button>
-                                                {/*//! currently removed deleting the product causes existing orders with deleted products to malfunction */}
-                                                {/* <button className="rounded-lg bg-red-50 p-2 text-red-600 transition hover:bg-red-100"
-                                                onClick = {() => handleDeleteProduct(product.id)}>
-                                                    <Trash2 size={18} />
-                                                </button> */}
                                             </div>
                                         </div>
                                     </div>

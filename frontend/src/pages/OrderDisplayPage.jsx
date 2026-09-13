@@ -162,14 +162,11 @@ function OrderDisplayPage() {
                             <h2 className="text-lg font-semibold">Billing Summary</h2>
                             <div className="mt-4 space-y-3 text-sm">
                                 <div className="flex items-center justify-between text-light-textcolor">
-                                    <span>Subtotal</span>
-                                    <span>₹{order.items.reduce((total, item) => {
-                                        // Safe check in case product wasn't populated or is missing
-                                        const price = item.product?.price || 0;
-                                        return total + (price * item.quantity);
-                                    }, 0)
+                                    <span>Cart Total (Incl. GST)</span>
+                                    <span>₹{billing.subtotal + billing.discount
                                     }</span>
                                 </div>
+
                                 {
 
                                     billing?.charges.map((charge) => {
@@ -177,11 +174,32 @@ function OrderDisplayPage() {
 
                                             <div className="flex items-center justify-between text-light-textcolor">
 
-                                                <span>{charge.chargeName}</span>
+                                                <span>{charge.chargeName} (Incl. GST)</span>
                                                 <span>{charge.chargeAmount}</span>
                                             </div>
                                         )
                                     })}
+                                {!!(billing?.discount) && <div className="flex items-center justify-between text-light-textcolor">
+
+                                    <span>Discount</span>
+                                    <span>{billing?.discount}</span>
+                                </div>
+                                }
+                                <div className="h-2"></div>
+                                {
+
+                                    billing?.taxes.map((charge) => {
+                                        return (
+
+                                            <div className="flex items-center text-xs justify-between uppercase text-light-textcolor">
+
+                                                <span>{charge.name}</span>
+                                                <span>{charge.amount.toFixed(2)}</span>
+                                            </div>
+                                        )
+                                    })}
+
+
                                 <div className="my-2 h-px bg-[#f2dcc4]" />
                                 <div className="flex items-center justify-between text-base font-semibold text-dark-textcolor">
                                     <span>Total</span>

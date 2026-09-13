@@ -12,6 +12,17 @@ export const chargeSchema = new mongoose.Schema({
     }
 }, { _id: false })
 
+export const taxSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true,
+    },
+    amount: {
+        type: Number,
+        required: true
+    }
+}, { _id: false })
+
 
 const addressSchema = new mongoose.Schema(
     {
@@ -120,6 +131,10 @@ const orderSchema = new mongoose.Schema({
             enum: ["cod", "online"],
             required: true,
             trim: true
+        },
+        taxes:{
+            type: [taxSchema],
+            
         },
         subtotal: {
             type: Number,

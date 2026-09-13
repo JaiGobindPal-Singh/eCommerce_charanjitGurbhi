@@ -8,6 +8,7 @@ import Order from '../models/order.model.js';
 // Runs every day at 2:00 AM IST
 cron.schedule(
     '0 2 * * *',
+    // '* * * * * *',  //testing run every second
     async () => {
         try {
             const result = await Transaction.updateMany(

@@ -26,6 +26,10 @@ const productSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    gst:{
+      type: Number,
+      required: true
+    },
     imageUrl: {
       type: [
         {

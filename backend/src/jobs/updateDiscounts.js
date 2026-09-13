@@ -27,8 +27,8 @@ cron.schedule('0 0 * * *', async () => {
             }
         );
 
-        if (activated.modifiedCount > 0 || deactivated.modifiedCount > 0 || maxUsageDeactivated.modifiedCount > 0) {
-            console.log(`[Cron] Synced coupons: Activated ${activated.modifiedCount}, Deactivated ${deactivated.modifiedCount}, Max Usage Deactivated ${maxUsageDeactivated.modifiedCount}`);
+        if (deactivated.modifiedCount > 0 || deactivated.modifiedCount > 0 || maxUsageDeactivated.modifiedCount > 0) {
+            console.log(`[Cron] Synced coupons: deactivated ${deactivated.modifiedCount}, Deactivated ${deactivated.modifiedCount}, Max Usage Deactivated ${maxUsageDeactivated.modifiedCount}`);
         }
         
     } catch (error) {
