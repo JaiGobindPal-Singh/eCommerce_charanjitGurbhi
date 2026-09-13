@@ -96,7 +96,7 @@ export default function DisplayProductPage() {
                                         <div className="ml-8">
 
                                         {product.pricingTiers?.map(pt=>{
-                                            return <p>
+                                            return <p key={pt.minQuantity+ pt.price}>
                                                 Get <span  className="font-semibold">{pt.minQuantity + " " + product.name}  </span> or more @<span className="font-semibold">{pt.price}</span>
                                             </p>
                                         })}
